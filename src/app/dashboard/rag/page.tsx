@@ -63,11 +63,9 @@ export default function KnowledgeBasePage() {
         </div>
         
         <Dialog>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Source
-            </Button>
+          <DialogTrigger render={<Button className="gap-2" />}>
+            <Plus className="w-4 h-4" />
+            Add Source
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
