@@ -1,13 +1,24 @@
 import * as React from "react"
 import Link from "next/link"
-import { Sparkles, BarChart, PenTool, LayoutDashboard, Settings } from "lucide-react"
+import { LayoutDashboard, PenTool, BookOpen, BarChart3, Settings, LogOut } from "lucide-react"
+import { createClient } from "@/utils/supabase/client"
+import { useRouter } from "next/navigation"
 
 export function Sidebar() {
+  const router = useRouter()
+  const supabase = createClient()
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    router.push("/login")
+    router.refresh()
+  }
+
   const links = [
     { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/dashboard/studio", label: "Content Studio", icon: PenTool },
-    { href: "/dashboard/rag", label: "Knowledge Base", icon: Sparkles },
-    { href: "/dashboard/metrics", label: "Analytics", icon: BarChart },
+    { href: "/dashboard/rag", label: "Knowledge Base", icon: BookOpen },
+    { href: "/dashboard/metrics", label: "Analytics", icon: BarChart3 },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ]
 
@@ -37,6 +48,15 @@ export function Sidebar() {
                )
             })}
           </nav>
+        </div>
+        <div className="absolute bottom-4 w-full px-4">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
         </div>
       </div>
     </aside>
