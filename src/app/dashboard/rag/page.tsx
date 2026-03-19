@@ -63,9 +63,9 @@ export default function KnowledgeBasePage() {
   async function handleDelete(id: string) {
     setSources(prev => prev.filter(s => s.id !== id))
     try {
-      await fetch(`/api/rag/sources/${id}?workspaceId=${WORKSPACE_ID}`, { method: 'DELETE' })
+      const res = await fetch(`/api/rag/sources/${id}?workspaceId=${WORKSPACE_ID}`, { method: 'DELETE' })
+      if (!res.ok) loadSources()
     } catch {
-      // revert on error
       loadSources()
     }
   }

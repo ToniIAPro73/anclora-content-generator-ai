@@ -3,10 +3,7 @@ import { ThemeToggle } from "@/components/theme/theme-toggle"
 
 export function Topbar() {
   return (
-    <header
-      className="flex h-14 lg:h-[60px] flex-shrink-0 items-center justify-between px-4 lg:px-6"
-      style={{ borderBottom: "1px solid hsl(var(--border))" }}
-    >
+    <header className="flex h-14 lg:h-[60px] flex-shrink-0 items-center justify-between border-b border-border px-4 lg:px-6">
       <div className="flex-1" />
       <div className="flex items-center gap-2">
         <ThemeToggle />
