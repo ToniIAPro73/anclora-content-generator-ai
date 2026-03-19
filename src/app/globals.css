@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --font-sans: var(--font-inter);
-  --font-heading: var(--font-outfit);
+  --font-sans: var(--font-dm-sans);
+  --font-heading: var(--font-bricolage);
 
   --color-border: hsl(var(--border));
   --color-input: hsl(var(--input));
@@ -40,73 +40,72 @@
   --radius-sm: calc(var(--radius) - 4px);
 }
 
-/*
-  The default border color has changed to `currentColor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
+    border-color: var(--color-border, currentColor);
   }
 }
 
 @layer base {
   :root {
-    --background: 210 40% 98%; /* slate-50 limpios */
-    --foreground: 222.2 84% 4.9%;
+    /* LIGHT — warm ivory editorial */
+    --background: 36 25% 97%;
+    --foreground: 20 20% 8%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 20 20% 8%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    
-    /* ACENTOS: Tonos Cian a Purpura Eléctrico */
-    --primary: 189 94% 43%; /* hsl(189, 94%, 43%) aprox cian */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 262 83% 58%; /* purpura */
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 189 94% 43%; /* cian ring */
+    --popover-foreground: 20 20% 8%;
+
+    /* Amber primary — the unexpected choice for an AI tool */
+    --primary: 38 92% 48%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Sage green secondary — knowledge, nature, calm */
+    --secondary: 158 42% 38%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 36 15% 93%;
+    --muted-foreground: 20 10% 46%;
+    --accent: 36 15% 93%;
+    --accent-foreground: 20 20% 8%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 36 15% 87%;
+    --input: 36 15% 87%;
+    --ring: 38 92% 48%;
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 240 10% 4%; /* zinc-950/slate-950 muy profundos */
-    --foreground: 210 40% 98%;
-    --card: 240 10% 6%;
-    --card-foreground: 210 40% 98%;
-    --popover: 240 10% 6%;
-    --popover-foreground: 210 40% 98%;
-    
-    --primary: 189 94% 43%; /* cian */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 262 83% 58%; /* purpura */
-    --secondary-foreground: 210 40% 98%;
-    
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 189 94% 43%;
+    /* DARK — warm charcoal systems, not cold blue-black */
+    --background: 20 18% 5%;
+    --foreground: 36 15% 93%;
+    --card: 20 14% 8%;
+    --card-foreground: 36 15% 93%;
+    --popover: 20 14% 8%;
+    --popover-foreground: 36 15% 93%;
+
+    /* Amber gold — warm, premium, authoritative */
+    --primary: 38 92% 55%;
+    --primary-foreground: 20 18% 5%;
+
+    /* Sage green — for knowledge base, success states */
+    --secondary: 158 42% 45%;
+    --secondary-foreground: 20 18% 5%;
+
+    --muted: 20 12% 13%;
+    --muted-foreground: 20 8% 56%;
+    --accent: 20 12% 13%;
+    --accent-foreground: 36 15% 93%;
+    --destructive: 0 62% 44%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 20 10% 15%;
+    --input: 20 10% 15%;
+    --ring: 38 92% 55%;
   }
 }
 
@@ -120,6 +119,34 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;
   }
+
+  /* Custom scrollbar — amber thumb, no track */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary) / 0.5);
+  }
+
+  /* Text selection — amber tint */
+  ::selection {
+    background: hsl(var(--primary) / 0.22);
+    color: hsl(var(--foreground));
+  }
+
+  /* Focus-visible — beautiful amber ring */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
 }
 
 /* Scroll settings for dashboard shell consistency */
@@ -129,4 +156,12 @@ html, body {
 
 #root, #__next, .h-screen {
   @apply h-full;
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

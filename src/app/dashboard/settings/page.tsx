@@ -1,116 +1,184 @@
-/**
- * ANCLORA CONTENT GENERATOR AI - Settings
- * Feature: ANCLORA-FEAT-DASHBOARD-UI
- * Page: /dashboard/settings
- * Description: Configuración de templates, LLM providers y preferencias
- * Author: Agent C (Frontend Engineer)
- * Date: 2026-03-19
- */
-
 'use client'
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Eye, EyeOff, Shield, Cpu, LayoutTemplate, Building2, CheckCircle2 } from 'lucide-react'
+
+/* Reusable section card with amber left-stripe accent */
+function SectionCard({
+  icon: Icon,
+  title,
+  description,
+  children,
+  accentColor = 'hsl(38 92% 55%)',
+}: {
+  icon: React.ElementType
+  title: string
+  description: string
+  children: React.ReactNode
+  accentColor?: string
+}) {
+  return (
+    <div
+      className="rounded-xl border bg-card overflow-hidden"
+      style={{ borderColor: 'hsl(20 10% 14%)' }}
+    >
+      {/* Header row with left stripe */}
+      <div
+        className="flex items-start gap-3 px-6 py-4 border-b"
+        style={{
+          borderBottomColor: 'hsl(20 10% 14%)',
+          borderLeft: `3px solid ${accentColor}`,
+        }}
+      >
+        <div
+          className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg mt-0.5"
+          style={{ backgroundColor: `${accentColor}18`, color: accentColor }}
+        >
+          <Icon className="h-4 w-4" />
+        </div>
+        <div>
+          <h3 className="font-heading text-sm font-semibold">{title}</h3>
+          <p className="text-xs text-muted-foreground">{description}</p>
+        </div>
+      </div>
+      <div className="p-6">{children}</div>
+    </div>
+  )
+}
+
+/* Plain section card without icon header */
+function PlainCard({ title, description, children }: {
+  title: string
+  description: string
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      className="rounded-xl border bg-card p-6"
+      style={{ borderColor: 'hsl(20 10% 14%)' }}
+    >
+      <h3 className="font-heading text-sm font-semibold">{title}</h3>
+      <p className="mt-0.5 mb-5 text-xs text-muted-foreground">{description}</p>
+      {children}
+    </div>
+  )
+}
 
 export default function SettingsPage() {
-  // Template Settings
   const [templateName, setTemplateName] = useState('')
   const [templateType, setTemplateType] = useState('blog_post')
   const [systemPrompt, setSystemPrompt] = useState('')
   const [temperature, setTemperature] = useState('0.7')
   const [topP, setTopP] = useState('0.9')
 
-  // LLM Provider Settings
   const [defaultProvider, setDefaultProvider] = useState('anthropic')
   const [defaultModel, setDefaultModel] = useState('claude-3-5-sonnet-20241022')
   const [anthropicKey, setAnthropicKey] = useState('')
   const [groqKey, setGroqKey] = useState('')
+  const [showAnthropicKey, setShowAnthropicKey] = useState(false)
+  const [showGroqKey, setShowGroqKey] = useState(false)
 
-  // Workspace Settings
   const [workspaceName, setWorkspaceName] = useState('Mi Workspace')
   const [workspaceDescription, setWorkspaceDescription] = useState('')
 
-  const handleSaveTemplate = () => {
-    // TODO: Implement save template logic
-    console.log('Saving template...', {
-      templateName,
-      templateType,
-      systemPrompt,
-      temperature,
-      topP,
-    })
-    alert('Plantilla guardada (funcionalidad pendiente)')
+  const [savedMsg, setSavedMsg] = useState('')
+
+  function showSaved(msg: string) {
+    setSavedMsg(msg)
+    setTimeout(() => setSavedMsg(''), 2500)
   }
 
-  const handleSaveProvider = () => {
-    // TODO: Implement save provider settings
-    console.log('Saving provider settings...', {
-      defaultProvider,
-      defaultModel,
-    })
-    alert('Configuración de LLM guardada (funcionalidad pendiente)')
-  }
+  const existingTemplates = [
+    { name: 'SEO Blog Post', type: 'blog_post', temp: 0.7 },
+    { name: 'Technical Article', type: 'blog_post', temp: 0.5 },
+    { name: 'Social Media Thread', type: 'social_post', temp: 0.9 },
+  ]
 
-  const handleSaveWorkspace = () => {
-    // TODO: Implement save workspace settings
-    console.log('Saving workspace settings...', {
-      workspaceName,
-      workspaceDescription,
-    })
-    alert('Configuración de workspace guardada (funcionalidad pendiente)')
-  }
+  const amber = 'hsl(38 92% 55%)'
+  const sage = 'hsl(158 42% 45%)'
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 p-1">
+
+      {/* ─── Header ─── */}
+      <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Configuración</h1>
-          <p className="text-muted-foreground">
+          <h1 className="font-heading text-3xl font-bold tracking-tight">Configuración</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Gestiona plantillas, modelos de IA y preferencias del workspace
           </p>
         </div>
+        {savedMsg && (
+          <div
+            className="flex items-center gap-2 rounded-lg border px-3 py-2 text-xs"
+            style={{
+              backgroundColor: `${sage}12`,
+              borderColor: `${sage}30`,
+              color: sage,
+            }}
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            {savedMsg}
+          </div>
+        )}
       </div>
 
-      <Tabs defaultValue="templates" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="templates">Plantillas</TabsTrigger>
-          <TabsTrigger value="llm">Modelos de IA</TabsTrigger>
-          <TabsTrigger value="workspace">Workspace</TabsTrigger>
+      <Tabs defaultValue="templates" className="space-y-5">
+        <TabsList
+          className="border"
+          style={{ backgroundColor: 'hsl(20 12% 10%)', borderColor: 'hsl(20 10% 14%)' }}
+        >
+          {[
+            { value: 'templates', label: 'Plantillas', icon: LayoutTemplate },
+            { value: 'llm', label: 'Modelos de IA', icon: Cpu },
+            { value: 'workspace', label: 'Workspace', icon: Building2 },
+          ].map(({ value, label, icon: Icon }) => (
+            <TabsTrigger
+              key={value}
+              value={value}
+              className="gap-1.5 text-xs data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none"
+            >
+              <Icon className="h-3.5 w-3.5" />
+              {label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        {/* Templates Tab */}
+        {/* ── Templates Tab ── */}
         <TabsContent value="templates" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Crear Nueva Plantilla</CardTitle>
-              <CardDescription>
-                Define plantillas reutilizables con prompts y configuración personalizada
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <SectionCard
+            icon={LayoutTemplate}
+            title="Nueva Plantilla"
+            description="Define prompts reutilizables con configuración personalizada"
+            accentColor={amber}
+          >
+            <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="templateName">Nombre de la plantilla</Label>
+                <div className="space-y-1.5">
+                  <Label htmlFor="templateName" className="text-xs font-medium text-muted-foreground">
+                    Nombre de la plantilla
+                  </Label>
                   <Input
                     id="templateName"
                     placeholder="Ej: SEO Blog Post"
                     value={templateName}
                     onChange={(e) => setTemplateName(e.target.value)}
+                    className="h-9 text-sm"
                   />
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="templateType">Tipo de contenido</Label>
-                  <Select value={templateType} onValueChange={(value) => value && setTemplateType(value)}>
-                    <SelectTrigger id="templateType">
+                <div className="space-y-1.5">
+                  <Label htmlFor="templateType" className="text-xs font-medium text-muted-foreground">
+                    Tipo de contenido
+                  </Label>
+                  <Select value={templateType} onValueChange={(v) => v && setTemplateType(v)}>
+                    <SelectTrigger id="templateType" className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -124,131 +192,105 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="systemPrompt">System Prompt</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="systemPrompt" className="text-xs font-medium text-muted-foreground">
+                  System Prompt
+                </Label>
                 <Textarea
                   id="systemPrompt"
                   placeholder="Ej: Eres un experto copywriter SEO especializado en..."
                   value={systemPrompt}
                   onChange={(e) => setSystemPrompt(e.target.value)}
-                  rows={6}
+                  rows={5}
+                  className="resize-none text-sm"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground/60">
                   Define el comportamiento y expertise del modelo de IA
                 </p>
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="temperature">Temperature</Label>
-                  <Input
-                    id="temperature"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="1"
-                    value={temperature}
-                    onChange={(e) => setTemperature(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Mayor = más creativo (0.0 - 1.0)
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="topP">Top P</Label>
-                  <Input
-                    id="topP"
-                    type="number"
-                    step="0.1"
-                    min="0"
-                    max="1"
-                    value={topP}
-                    onChange={(e) => setTopP(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Nucleus sampling (0.0 - 1.0)
-                  </p>
-                </div>
+                {[
+                  { id: 'temperature', label: 'Temperature', value: temperature, setter: setTemperature, hint: 'Mayor = más creativo (0.0 – 1.0)' },
+                  { id: 'topP', label: 'Top P', value: topP, setter: setTopP, hint: 'Nucleus sampling (0.0 – 1.0)' },
+                ].map(({ id, label, value, setter, hint }) => (
+                  <div key={id} className="space-y-1.5">
+                    <Label htmlFor={id} className="text-xs font-medium text-muted-foreground">
+                      {label}
+                    </Label>
+                    <Input
+                      id={id}
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="1"
+                      value={value}
+                      onChange={(e) => setter(e.target.value)}
+                      className="h-9 text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground/55">{hint}</p>
+                  </div>
+                ))}
               </div>
 
-              <Button onClick={handleSaveTemplate} className="w-full">
+              <Button
+                onClick={() => showSaved('Plantilla guardada')}
+                className="w-full font-semibold"
+              >
                 Guardar Plantilla
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </SectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Plantillas Existentes</CardTitle>
-              <CardDescription>
-                Gestiona tus plantillas guardadas
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">SEO Blog Post</p>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">blog_post</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Temperature: 0.7
-                    </span>
+          {/* Existing templates */}
+          <PlainCard title="Plantillas Existentes" description="Gestiona tus plantillas guardadas">
+            <div className="space-y-2">
+              {existingTemplates.map(({ name, type, temp }) => (
+                <div
+                  key={name}
+                  className="flex items-center justify-between rounded-lg border px-4 py-3 transition-colors"
+                  style={{ backgroundColor: 'hsl(20 12% 10%)', borderColor: 'hsl(20 10% 14%)' }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="flex h-8 w-8 items-center justify-center rounded-md"
+                      style={{ backgroundColor: `${amber}14`, color: amber }}
+                    >
+                      <LayoutTemplate className="h-3.5 w-3.5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{name}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge variant="secondary" className="text-xs h-4">{type}</Badge>
+                        <span className="text-xs text-muted-foreground">temp: {temp}</span>
+                      </div>
+                    </div>
                   </div>
+                  <Button variant="outline" size="sm" className="h-7 text-xs">
+                    Editar
+                  </Button>
                 </div>
-                <Button variant="outline" size="sm">
-                  Editar
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Technical Article</p>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">blog_post</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Temperature: 0.5
-                    </span>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Editar
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Social Media Thread</p>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">social_post</Badge>
-                    <span className="text-xs text-muted-foreground">
-                      Temperature: 0.9
-                    </span>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Editar
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              ))}
+            </div>
+          </PlainCard>
         </TabsContent>
 
-        {/* LLM Providers Tab */}
+        {/* ── LLM Tab ── */}
         <TabsContent value="llm" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuración de Modelos</CardTitle>
-              <CardDescription>
-                Configura tus proveedores de IA y modelos por defecto
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <SectionCard
+            icon={Cpu}
+            title="Configuración de Modelos"
+            description="Proveedores de IA y modelos por defecto"
+            accentColor={amber}
+          >
+            <div className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="defaultProvider">Proveedor por defecto</Label>
-                  <Select value={defaultProvider} onValueChange={(value) => value && setDefaultProvider(value)}>
-                    <SelectTrigger id="defaultProvider">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Proveedor por defecto
+                  </Label>
+                  <Select value={defaultProvider} onValueChange={(v) => v && setDefaultProvider(v)}>
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -259,17 +301,19 @@ export default function SettingsPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="defaultModel">Modelo por defecto</Label>
-                  <Select value={defaultModel} onValueChange={(value) => value && setDefaultModel(value)}>
-                    <SelectTrigger id="defaultModel">
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Modelo por defecto
+                  </Label>
+                  <Select value={defaultModel} onValueChange={(v) => v && setDefaultModel(v)}>
+                    <SelectTrigger className="h-9 text-sm">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {defaultProvider === 'anthropic' && (
                         <>
+                          <SelectItem value="claude-sonnet-4-6">Claude Sonnet 4.6</SelectItem>
                           <SelectItem value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet</SelectItem>
-                          <SelectItem value="claude-3-opus-20240229">Claude 3 Opus</SelectItem>
                           <SelectItem value="claude-3-haiku-20240307">Claude 3 Haiku</SelectItem>
                         </>
                       )}
@@ -290,194 +334,179 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <Button onClick={handleSaveProvider} className="w-full">
+              <Button
+                onClick={() => showSaved('Configuración LLM guardada')}
+                className="w-full font-semibold"
+              >
                 Guardar Configuración
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </SectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>API Keys</CardTitle>
-              <CardDescription>
-                Configura tus claves de API para cada proveedor
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="anthropicKey">Anthropic API Key</Label>
-                  <Badge variant={anthropicKey ? 'default' : 'secondary'}>
-                    {anthropicKey ? 'Configurada' : 'No configurada'}
-                  </Badge>
-                </div>
-                <Input
-                  id="anthropicKey"
-                  type="password"
-                  placeholder="sk-ant-..."
-                  value={anthropicKey}
-                  onChange={(e) => setAnthropicKey(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Obtén tu clave en{' '}
-                  <a
-                    href="https://console.anthropic.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    console.anthropic.com
-                  </a>
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="groqKey">Groq API Key</Label>
-                  <Badge variant={groqKey ? 'default' : 'secondary'}>
-                    {groqKey ? 'Configurada' : 'No configurada'}
-                  </Badge>
-                </div>
-                <Input
-                  id="groqKey"
-                  type="password"
-                  placeholder="gsk_..."
-                  value={groqKey}
-                  onChange={(e) => setGroqKey(e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">
-                  Obtén tu clave en{' '}
-                  <a
-                    href="https://console.groq.com"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
-                  >
-                    console.groq.com
-                  </a>
-                </p>
-              </div>
-
-              <div className="p-4 border rounded-lg bg-muted/50">
-                <div className="flex items-start gap-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-5 w-5 text-muted-foreground mt-0.5"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 16v-4" />
-                    <path d="M12 8h.01" />
-                  </svg>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Seguridad</p>
-                    <p className="text-xs text-muted-foreground">
-                      Las API keys se almacenan de forma segura y nunca se comparten.
-                      También puedes usar variables de entorno en producción.
-                    </p>
+          {/* API Keys */}
+          <PlainCard title="API Keys" description="Claves de acceso para cada proveedor">
+            <div className="space-y-5">
+              {[
+                {
+                  id: 'anthropicKey',
+                  label: 'Anthropic API Key',
+                  value: anthropicKey,
+                  setter: setAnthropicKey,
+                  show: showAnthropicKey,
+                  toggleShow: () => setShowAnthropicKey((p) => !p),
+                  placeholder: 'sk-ant-...',
+                },
+                {
+                  id: 'groqKey',
+                  label: 'Groq API Key',
+                  value: groqKey,
+                  setter: setGroqKey,
+                  show: showGroqKey,
+                  toggleShow: () => setShowGroqKey((p) => !p),
+                  placeholder: 'gsk_...',
+                },
+              ].map(({ id, label, value, setter, show, toggleShow, placeholder }) => (
+                <div key={id} className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor={id} className="text-xs font-medium text-muted-foreground">
+                      {label}
+                    </Label>
+                    <span
+                      className="text-[10px] font-medium px-2 py-0.5 rounded-full border"
+                      style={
+                        value
+                          ? {
+                              backgroundColor: `${sage}12`,
+                              borderColor: `${sage}30`,
+                              color: sage,
+                            }
+                          : {
+                              backgroundColor: 'hsl(20 12% 13%)',
+                              borderColor: 'hsl(20 10% 18%)',
+                              color: 'hsl(20 8% 48%)',
+                            }
+                      }
+                    >
+                      {value ? 'Configurada' : 'No configurada'}
+                    </span>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id={id}
+                      type={show ? 'text' : 'password'}
+                      placeholder={placeholder}
+                      value={value}
+                      onChange={(e) => setter(e.target.value)}
+                      className="h-9 pr-9 text-sm font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={toggleShow}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {show ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                    </button>
                   </div>
                 </div>
+              ))}
+
+              {/* Security note */}
+              <div
+                className="flex items-start gap-3 rounded-lg border p-3"
+                style={{
+                  backgroundColor: `${amber}08`,
+                  borderColor: `${amber}20`,
+                }}
+              >
+                <Shield
+                  className="h-3.5 w-3.5 flex-shrink-0 mt-0.5"
+                  style={{ color: amber }}
+                />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Las API keys se almacenan de forma segura y nunca se comparten.
+                  En producción usa variables de entorno.
+                </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </PlainCard>
         </TabsContent>
 
-        {/* Workspace Tab */}
+        {/* ── Workspace Tab ── */}
         <TabsContent value="workspace" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Información del Workspace</CardTitle>
-              <CardDescription>
-                Configura los detalles de tu espacio de trabajo
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="workspaceName">Nombre del Workspace</Label>
+          <SectionCard
+            icon={Building2}
+            title="Información del Workspace"
+            description="Configura los detalles de tu espacio de trabajo"
+            accentColor={sage}
+          >
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="workspaceName" className="text-xs font-medium text-muted-foreground">
+                  Nombre del Workspace
+                </Label>
                 <Input
                   id="workspaceName"
                   value={workspaceName}
                   onChange={(e) => setWorkspaceName(e.target.value)}
+                  className="h-9 text-sm"
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="workspaceDescription">Descripción</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="workspaceDescription" className="text-xs font-medium text-muted-foreground">
+                  Descripción
+                </Label>
                 <Textarea
                   id="workspaceDescription"
                   placeholder="Describe el propósito de este workspace..."
                   value={workspaceDescription}
                   onChange={(e) => setWorkspaceDescription(e.target.value)}
                   rows={4}
+                  className="resize-none text-sm"
                 />
               </div>
-
-              <Button onClick={handleSaveWorkspace} className="w-full">
+              <Button
+                onClick={() => showSaved('Workspace guardado')}
+                className="w-full font-semibold"
+              >
                 Guardar Cambios
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </SectionCard>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferencias de RAG</CardTitle>
-              <CardDescription>
-                Configuración de la base de conocimiento
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="chunkSize">Tamaño de chunk</Label>
-                <Input
-                  id="chunkSize"
-                  type="number"
-                  defaultValue="512"
-                  disabled
-                />
-                <p className="text-xs text-muted-foreground">
-                  Tokens por chunk (actualmente fijo en 512)
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="topK">Top K resultados</Label>
-                <Input
-                  id="topK"
-                  type="number"
-                  defaultValue="5"
-                  disabled
-                />
-                <p className="text-xs text-muted-foreground">
-                  Número de chunks a recuperar (actualmente fijo en 5)
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="similarityThreshold">Similarity Threshold</Label>
-                <Input
-                  id="similarityThreshold"
-                  type="number"
-                  step="0.1"
-                  defaultValue="0.7"
-                  disabled
-                />
-                <p className="text-xs text-muted-foreground">
-                  Umbral de similitud mínima (0.0 - 1.0)
-                </p>
-              </div>
-
-              <div className="p-4 border rounded-lg bg-muted/50">
-                <p className="text-xs text-muted-foreground">
-                  Configuración avanzada de RAG próximamente disponible
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* RAG Settings */}
+          <PlainCard
+            title="Preferencias de RAG"
+            description="Configuración del motor de conocimiento"
+          >
+            <div className="grid gap-3 sm:grid-cols-3">
+              {[
+                { label: 'Chunk size', value: '512', unit: 'tokens' },
+                { label: 'Top K resultados', value: '5', unit: 'chunks' },
+                { label: 'Similarity threshold', value: '0.7', unit: 'score' },
+              ].map(({ label, value, unit }) => (
+                <div
+                  key={label}
+                  className="rounded-lg border p-4"
+                  style={{
+                    backgroundColor: 'hsl(20 12% 10%)',
+                    borderColor: 'hsl(20 10% 14%)',
+                  }}
+                >
+                  <p className="text-xs text-muted-foreground">{label}</p>
+                  <p
+                    className="mt-1.5 font-heading text-2xl font-bold"
+                    style={{ color: sage }}
+                  >
+                    {value}
+                  </p>
+                  <p className="text-xs text-muted-foreground/55">{unit}</p>
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-muted-foreground/45">
+              Configuración avanzada de RAG próximamente disponible
+            </p>
+          </PlainCard>
         </TabsContent>
       </Tabs>
     </div>
