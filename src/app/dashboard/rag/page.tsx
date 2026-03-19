@@ -42,7 +42,7 @@ const mockSources: Source[] = [
 ]
 
 export default function KnowledgeBasePage() {
-  const [sources] = useState<Source[]>(mockSources)
+  const [sources, setSources] = useState<Source[]>(mockSources)
   const [searchQuery, setSearchQuery] = useState("")
 
   const filteredSources = sources.filter(s => 
@@ -142,7 +142,12 @@ export default function KnowledgeBasePage() {
                   <TableCell className="text-right">{source.chunks}</TableCell>
                   <TableCell className="text-right text-muted-foreground">{source.date}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => setSources(prev => prev.filter(s => s.id !== source.id))}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
