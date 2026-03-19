@@ -151,9 +151,9 @@
   }
 }
 
-/* Scroll settings for dashboard shell consistency */
+/* Root sizing */
 html, body {
-  @apply h-full overflow-hidden;
+  @apply h-full;
 }
 
 #root, #__next, .h-screen {
