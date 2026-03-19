@@ -1,5 +1,21 @@
+/**
+ * ANCLORA CONTENT GENERATOR AI - RAG Pipeline
+ * Feature: ANCLORA-FEAT-RAG-ENGINE
+ * Description: Pipeline completo para generación de contenido con RAG
+ * Author: Agent B (API & RAG Engineer)
+ * Date: 2026-03-19
+ */
+
 import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
+import { generateText } from 'ai'
+import { retrieveSimilarChunks, buildContextFromChunks } from './retrieval-neon'
+import type { RetrievalOptions } from './retrieval-neon'
+import type { ContentType } from '@/lib/db/types'
+
+// =====================================================
+// AI CLIENTS CONFIGURATION
+// =====================================================
 
 // 1. Cliente Groq (compatible con OpenAI SDK)
 export const groqClient = createOpenAI({
@@ -26,7 +42,7 @@ export function getModel(speed: 'fast-local' | 'fast-cloud' | 'reasoning' = 'fas
   switch (speed) {
     case 'fast-local':
       // Ideal para formateo de metadatos o chunks ligeros (Zero Cost)
-      return ollamaClient('llama3') 
+      return ollamaClient('llama3')
     case 'reasoning':
       // Ideal para la redacción final del artículo comercial (Claude 3.5 Sonnet)
       return anthropicClient('claude-3-5-sonnet-20240620')
@@ -34,5 +50,108 @@ export function getModel(speed: 'fast-local' | 'fast-cloud' | 'reasoning' = 'fas
     default:
       // Ideal para ingestas pesadas, extraer entidades de Idealista, etc. (High rate limit, low latency)
       return groqClient('llama3-70b-8192')
+  }
+}
+
+// =====================================================
+// RAG PIPELINE
+// =====================================================
+
+export interface GenerateContentOptions {
+  /** Tipo de contenido a generar */
+  contentType: ContentType
+  /** System prompt del template */
+  systemPrompt: string
+  /** User prompt / instrucciones específicas */
+  userPrompt: string
+  /** Query para retrieval RAG (opcional) */
+  ragQuery?: string
+  /** Opciones de retrieval */
+  retrievalOptions?: RetrievalOptions
+  /** Modelo a usar */
+  model?: 'fast-local' | 'fast-cloud' | 'reasoning'
+  /** Configuración del modelo */
+  modelConfig?: {
+    temperature?: number
+    maxTokens?: number
+    topP?: number
+  }
+}
+
+export interface GenerateContentResult {
+  content: string
+  metadata: {
+    model: string
+    tokensUsed: number
+    ragSources?: string[]
+    retrievalTime?: number
+    generationTime: number
+  }
+}
+
+/**
+ * Pipeline completo de generación de contenido con RAG
+ * @param options Opciones de generación
+ * @returns Contenido generado con metadata
+ */
+export async function generateContentWithRAG(
+  options: GenerateContentOptions
+): Promise<GenerateContentResult> {
+  const startTime = performance.now()
+
+  try {
+    // 1. Retrieval de contexto (si ragQuery está presente)
+    let ragContext = ''
+    let ragSources: string[] = []
+    let retrievalTime = 0
+
+    if (options.ragQuery && options.retrievalOptions) {
+      const retrievalStart = performance.now()
+
+      const retrievalResult = await retrieveSimilarChunks(
+        options.ragQuery,
+        options.retrievalOptions
+      )
+
+      ragContext = buildContextFromChunks(retrievalResult.chunks, {
+        maxTokens: 3000,
+        includeMetadata: false
+      })
+
+      ragSources = retrievalResult.chunks.map(chunk => chunk.source_id)
+      retrievalTime = performance.now() - retrievalStart
+    }
+
+    // 2. Construir prompt completo
+    const fullUserPrompt = ragContext
+      ? `${options.userPrompt}\n\n=== CONTEXTO RELEVANTE ===\n${ragContext}\n\n=== FIN CONTEXTO ===`
+      : options.userPrompt
+
+    // 3. Generar contenido con el LLM
+    const model = getModel(options.model || 'reasoning')
+
+    const { text, usage } = await generateText({
+      model,
+      system: options.systemPrompt,
+      prompt: fullUserPrompt,
+      temperature: options.modelConfig?.temperature || 0.7,
+      topP: options.modelConfig?.topP || 0.9,
+    })
+
+    const generationTime = performance.now() - startTime
+
+    return {
+      content: text,
+      metadata: {
+        model: String(model),
+        tokensUsed: usage?.totalTokens || 0,
+        ragSources: ragSources.length > 0 ? ragSources : undefined,
+        retrievalTime: retrievalTime > 0 ? retrievalTime : undefined,
+        generationTime
+      }
+    }
+  } catch (error) {
+    console.error('[RAG Pipeline] Error:', error)
+    throw new Error(`Error en generación de contenido: ${error}`)
   }
 }

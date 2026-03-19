@@ -1,0 +1,205 @@
+{
+  "project": "Anclora Content Generator AI",
+  "fase_actual": "FASE 2: RAG Engine + Content Generator MVP",
+  "members": [
+    {
+      "id": "anclorabot",
+      "role": "Director",
+      "status": "active"
+    },
+    {
+      "id": "agent_a",
+      "role": "Database Architect",
+      "status": "pending"
+    },
+    {
+      "id": "agent_b",
+      "role": "API & RAG Engineer",
+      "status": "pending"
+    },
+    {
+      "id": "agent_c",
+      "role": "Frontend Engineer",
+      "status": "pending"
+    },
+    {
+      "id": "agent_d",
+      "role": "Testing Specialist",
+      "status": "pending"
+    }
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Diseñar e implementar schema SQL completo con pgvector",
+      "description": "Schema completo: content_sources, knowledge_chunks, content_templates, generated_content, scheduled_posts, content_metrics, micro_zones. Incluir funciones pgvector y políticas RLS multi-tenant con workspace_id.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_a",
+      "dependencies": [],
+      "priority": "HIGH",
+      "estimated_hours": "3-4",
+      "feature": "ANCLORA-FEAT-DB-SCHEMA",
+      "deliverables": [
+        "supabase/migrations/002_rag_schema.sql",
+        "supabase/migrations/003_rls_policies.sql",
+        "src/lib/db/types.ts (tipos TypeScript generados del schema)"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Implementar RAG Engine completo (chunking, retrieval)",
+      "description": "Implementar chunking.ts (segmentación semántica de documentos), retrieval.ts (búsqueda vectorial con pgvector), y mejorar pipeline.ts. Integración con embeddings.ts existente.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_b",
+      "dependencies": [1],
+      "priority": "HIGH",
+      "estimated_hours": "2-3",
+      "feature": "ANCLORA-FEAT-RAG-ENGINE",
+      "deliverables": [
+        "src/lib/rag/chunking.ts",
+        "src/lib/rag/retrieval.ts",
+        "src/lib/rag/pipeline.ts (mejorado)"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Implementar API routes para content generation",
+      "description": "Crear endpoints: /api/content/generate (generación de contenido), /api/content/ingest (ingesta de fuentes), /api/content/schedule (programación), /api/metrics/dashboard (métricas). Integración con Claude API.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_b",
+      "dependencies": [1, 2],
+      "priority": "HIGH",
+      "estimated_hours": "3-4",
+      "feature": "ANCLORA-FEAT-API-ROUTES",
+      "deliverables": [
+        "src/app/api/content/generate/route.ts",
+        "src/app/api/content/ingest/route.ts",
+        "src/app/api/content/schedule/route.ts",
+        "src/app/api/metrics/dashboard/route.ts"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Desarrollar Content Studio (dashboard/studio)",
+      "description": "Página principal de generación de contenido con formulario multi-paso, selección de template (blog, LinkedIn, Instagram, etc.), micro-zona, contexto RAG, preview en tiempo real.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_c",
+      "dependencies": [3],
+      "priority": "HIGH",
+      "estimated_hours": "2-3",
+      "feature": "ANCLORA-FEAT-CONTENT-STUDIO",
+      "deliverables": [
+        "src/app/dashboard/studio/page.tsx",
+        "src/components/studio/ContentForm.tsx",
+        "src/components/studio/TemplateSelector.tsx",
+        "src/components/studio/ContentPreview.tsx"
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Desarrollar Analytics Dashboard (dashboard/metrics)",
+      "description": "Dashboard de métricas con gráficos de performance, engagement por plataforma, conversión de leads, mejores contenidos. Integración con API /api/metrics/dashboard.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_c",
+      "dependencies": [3],
+      "priority": "MEDIUM",
+      "estimated_hours": "2-3",
+      "feature": "ANCLORA-FEAT-ANALYTICS",
+      "deliverables": [
+        "src/app/dashboard/metrics/page.tsx",
+        "src/components/metrics/PerformanceChart.tsx",
+        "src/components/metrics/EngagementStats.tsx"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Desarrollar Settings page (dashboard/settings)",
+      "description": "Página de configuración con gestión de templates de contenido, configuración de LLMs (API keys, modelos), preferencias de generación, gestión de micro-zonas.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_c",
+      "dependencies": [3],
+      "priority": "MEDIUM",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-SETTINGS",
+      "deliverables": [
+        "src/app/dashboard/settings/page.tsx",
+        "src/components/settings/TemplateManager.tsx",
+        "src/components/settings/LLMConfig.tsx"
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Mejorar Dashboard Overview (dashboard/page.tsx)",
+      "description": "Reemplazar placeholder por dashboard real con estadísticas clave, contenido reciente generado, próximas publicaciones programadas, quick actions.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_c",
+      "dependencies": [3],
+      "priority": "MEDIUM",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-OVERVIEW",
+      "deliverables": [
+        "src/app/dashboard/page.tsx (reescrito)",
+        "src/components/dashboard/StatsCards.tsx",
+        "src/components/dashboard/RecentContent.tsx"
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Crear suite de tests unitarios para RAG Engine",
+      "description": "Tests para embeddings.ts, chunking.ts, retrieval.ts. Casos de prueba: generación de embeddings, segmentación de documentos, búsqueda semántica, edge cases.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_d",
+      "dependencies": [2],
+      "priority": "HIGH",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-TESTS-RAG",
+      "deliverables": [
+        "src/lib/rag/__tests__/embeddings.test.ts",
+        "src/lib/rag/__tests__/chunking.test.ts",
+        "src/lib/rag/__tests__/retrieval.test.ts"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Crear tests de integración para flujo completo",
+      "description": "Tests end-to-end: ingesta de documento -> chunking -> embeddings -> almacenamiento -> retrieval -> generación de contenido. Validar flujo completo.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_d",
+      "dependencies": [3],
+      "priority": "HIGH",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-TESTS-E2E",
+      "deliverables": [
+        "src/__tests__/integration/content-generation.test.ts",
+        "src/__tests__/integration/rag-pipeline.test.ts"
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Validación final y documentación",
+      "description": "Ejecutar npm run lint, npm run build, validar cobertura de tests (objetivo 85%+), actualizar README.md con nuevas features, documentar APIs.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "anclorabot",
+      "dependencies": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "priority": "CRITICAL",
+      "estimated_hours": "1",
+      "feature": "ANCLORA-FEAT-VALIDATION",
+      "deliverables": [
+        "README.md actualizado",
+        "Validación lint PASS",
+        "Validación build PASS",
+        "Cobertura tests >= 85%"
+      ]
+    }
+  ]
+}
