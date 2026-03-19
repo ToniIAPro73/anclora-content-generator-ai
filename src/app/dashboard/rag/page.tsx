@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Plus, Database, Search, FileText, Trash2, RefreshCw } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -25,27 +25,81 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-// Tipos Mock para la UI inicial (Se conectará a Supabase posteriormente)
 type Source = {
   id: string
   title: string
-  type: "document" | "url" | "text"
-  status: "processing" | "ready" | "error"
+  type: string
+  status: string
   chunks: number
   date: string
 }
 
-const mockSources: Source[] = [
-  { id: "1", title: "Guía IRPF Autónomos Baleares 2024", type: "document", status: "ready", chunks: 45, date: "2024-03-20" },
-  { id: "2", title: "Estrategias Brand Positioning Premium", type: "text", status: "ready", chunks: 12, date: "2024-03-21" },
-  { id: "3", title: "Últimas tendencias Real Estate 2024", type: "url", status: "processing", chunks: 0, date: "2024-03-22" },
-]
+const WORKSPACE_ID = '00000000-0000-0000-0000-000000000000'
 
 export default function KnowledgeBasePage() {
-  const [sources, setSources] = useState<Source[]>(mockSources)
+  const [sources, setSources] = useState<Source[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [newTitle, setNewTitle] = useState("")
+  const [newContent, setNewContent] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const filteredSources = sources.filter(s => 
+  async function loadSources() {
+    setIsLoading(true)
+    try {
+      const res = await fetch(`/api/rag/sources?workspaceId=${WORKSPACE_ID}`)
+      const data = await res.json()
+      setSources(data.sources ?? [])
+    } catch {
+      setSources([])
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => { loadSources() }, [])
+
+  async function handleDelete(id: string) {
+    setSources(prev => prev.filter(s => s.id !== id))
+    try {
+      await fetch(`/api/rag/sources/${id}?workspaceId=${WORKSPACE_ID}`, { method: 'DELETE' })
+    } catch {
+      // revert on error
+      loadSources()
+    }
+  }
+
+  async function handleAdd(e: React.FormEvent) {
+    e.preventDefault()
+    if (!newTitle.trim()) return
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/rag/sources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          workspaceId: WORKSPACE_ID,
+          title: newTitle,
+          content: newContent,
+          sourceType: 'manual',
+        }),
+      })
+      const data = await res.json()
+      if (data.source) {
+        setSources(prev => [data.source, ...prev])
+      }
+      setNewTitle("")
+      setNewContent("")
+      setDialogOpen(false)
+    } catch {
+      // silent
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const filteredSources = sources.filter(s =>
     s.title.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
@@ -58,39 +112,51 @@ export default function KnowledgeBasePage() {
             Knowledge Base
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Manage your AI&apos;s long-term memory and context sources.
+            Gestiona la memoria a largo plazo de tu IA.
           </p>
         </div>
-        
-        <Dialog>
+
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger render={<Button className="gap-2" />}>
             <Plus className="w-4 h-4" />
-            Add Source
+            Añadir fuente
           </DialogTrigger>
           <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle>Add New Source</DialogTitle>
-              <DialogDescription>
-                Ingest new information to improve content generation accuracy.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <label htmlFor="title" className="text-sm font-medium">Title / Identifier</label>
-                <Input id="title" placeholder="e.g., Q1 Real Estate Report" />
+            <form onSubmit={handleAdd}>
+              <DialogHeader>
+                <DialogTitle>Añadir nueva fuente</DialogTitle>
+                <DialogDescription>
+                  Ingesta nuevo conocimiento para mejorar la generación de contenido.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="grid gap-2">
+                  <label htmlFor="title" className="text-sm font-medium">Título / Identificador</label>
+                  <Input
+                    id="title"
+                    placeholder="ej. Guía IRPF Autónomos 2024"
+                    value={newTitle}
+                    onChange={e => setNewTitle(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <label htmlFor="content" className="text-sm font-medium">Contenido</label>
+                  <Textarea
+                    id="content"
+                    placeholder="Pega aquí el texto o proporciona una URL..."
+                    className="min-h-[150px]"
+                    value={newContent}
+                    onChange={e => setNewContent(e.target.value)}
+                  />
+                </div>
               </div>
-              <div className="grid gap-2">
-                <label htmlFor="content" className="text-sm font-medium">Content or URL</label>
-                <Textarea 
-                  id="content" 
-                  placeholder="Paste your plain text here or provide a URL..." 
-                  className="min-h-[150px]"
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="submit">Process & Ingest</Button>
-            </DialogFooter>
+              <DialogFooter>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Procesando...' : 'Procesar e ingestar'}
+                </Button>
+              </DialogFooter>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
@@ -101,64 +167,81 @@ export default function KnowledgeBasePage() {
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="search"
-              placeholder="Search sources..."
+              placeholder="Buscar fuentes..."
               className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <Button variant="ghost" size="icon" onClick={loadSources} title="Recargar">
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
 
         <div className="border rounded-md">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Source Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Fuente</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Estado</TableHead>
                 <TableHead className="text-right">Chunks</TableHead>
-                <TableHead className="text-right">Added</TableHead>
+                <TableHead className="text-right">Añadida</TableHead>
                 <TableHead className="w-[80px]"></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSources.map((source) => (
-                <TableRow key={source.id}>
-                  <TableCell className="font-medium flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-muted-foreground" />
-                    {source.title}
-                  </TableCell>
-                  <TableCell className="capitalize">{source.type}</TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                      source.status === 'ready' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                      source.status === 'processing' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400' :
-                      'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
-                    }`}>
-                      {source.status === 'processing' && <RefreshCw className="mr-1 h-3 w-3 animate-spin" />}
-                      {source.status}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right">{source.chunks}</TableCell>
-                  <TableCell className="text-right text-muted-foreground">{source.date}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => setSources(prev => prev.filter(s => s.id !== source.id))}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {filteredSources.length === 0 && (
+              {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                    No sources found matching your search.
+                    <RefreshCw className="h-4 w-4 animate-spin inline mr-2" />
+                    Cargando fuentes...
                   </TableCell>
                 </TableRow>
+              ) : filteredSources.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                    {searchQuery ? 'No se encontraron fuentes.' : 'Aún no hay fuentes. Añade tu primera fuente de conocimiento.'}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredSources.map((source) => (
+                  <TableRow key={source.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-muted-foreground shrink-0" />
+                        {source.title}
+                      </div>
+                    </TableCell>
+                    <TableCell className="capitalize">{source.type}</TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        source.status === 'completed' || source.status === 'ready'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                          : source.status === 'processing' || source.status === 'pending'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                      }`}>
+                        {(source.status === 'processing' || source.status === 'pending') && (
+                          <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
+                        )}
+                        {source.status}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right">{source.chunks}</TableCell>
+                    <TableCell className="text-right text-muted-foreground">{source.date}</TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => handleDelete(source.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
               )}
             </TableBody>
           </Table>
