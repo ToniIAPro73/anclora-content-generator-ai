@@ -1,21 +1,23 @@
 import * as React from "react"
 import { ThemeToggle } from "@/components/theme/theme-toggle"
-import { Button } from "@/components/ui/button"
 
 export function Topbar() {
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-muted/40 px-4 lg:h-[60px] lg:px-6 justify-between">
-      <div className="flex-1">
-         {/* Mobile menu toggle would go here */}
-      </div>
-      <div className="flex items-center gap-4">
-        {/* Placeholder for Language Switcher */}
-        <Button variant="ghost" size="sm" className="font-medium text-xs">
-          ES
-        </Button>
+    <header
+      className="flex h-14 lg:h-[60px] flex-shrink-0 items-center justify-between px-4 lg:px-6"
+      style={{ borderBottom: "1px solid hsl(var(--border))" }}
+    >
+      <div className="flex-1" />
+      <div className="flex items-center gap-2">
         <ThemeToggle />
-        {/* Placeholder for User Profile Dropdown */}
-        <div className="h-8 w-8 rounded-full bg-primary/20 border border-primary/50 flex items-center justify-center text-xs font-semibold text-primary">
+        <div
+          className="flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-semibold"
+          style={{
+            backgroundColor: "hsl(38 92% 55% / 0.15)",
+            border: "1px solid hsl(38 92% 55% / 0.35)",
+            color: "hsl(38 92% 60%)",
+          }}
+        >
           A
         </div>
       </div>

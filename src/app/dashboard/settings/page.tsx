@@ -25,17 +25,11 @@ function SectionCard({
   accentColor?: string
 }) {
   return (
-    <div
-      className="rounded-xl border bg-card overflow-hidden"
-      style={{ borderColor: 'hsl(20 10% 14%)' }}
-    >
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
       {/* Header row with left stripe */}
       <div
-        className="flex items-start gap-3 px-6 py-4 border-b"
-        style={{
-          borderBottomColor: 'hsl(20 10% 14%)',
-          borderLeft: `3px solid ${accentColor}`,
-        }}
+        className="flex items-start gap-3 px-6 py-4 border-b border-border"
+        style={{ borderLeft: `3px solid ${accentColor}` }}
       >
         <div
           className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg mt-0.5"
@@ -60,10 +54,7 @@ function PlainCard({ title, description, children }: {
   children: React.ReactNode
 }) {
   return (
-    <div
-      className="rounded-xl border bg-card p-6"
-      style={{ borderColor: 'hsl(20 10% 14%)' }}
-    >
+    <div className="rounded-xl border border-border bg-card p-6">
       <h3 className="font-heading text-sm font-semibold">{title}</h3>
       <p className="mt-0.5 mb-5 text-xs text-muted-foreground">{description}</p>
       {children}
@@ -131,10 +122,7 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="templates" className="space-y-5">
-        <TabsList
-          className="border"
-          style={{ backgroundColor: 'hsl(20 12% 10%)', borderColor: 'hsl(20 10% 14%)' }}
-        >
+        <TabsList className="border border-border bg-muted/60 h-9">
           {[
             { value: 'templates', label: 'Plantillas', icon: LayoutTemplate },
             { value: 'llm', label: 'Modelos de IA', icon: Cpu },
@@ -248,8 +236,7 @@ export default function SettingsPage() {
               {existingTemplates.map(({ name, type, temp }) => (
                 <div
                   key={name}
-                  className="flex items-center justify-between rounded-lg border px-4 py-3 transition-colors"
-                  style={{ backgroundColor: 'hsl(20 12% 10%)', borderColor: 'hsl(20 10% 14%)' }}
+                  className="flex items-center justify-between rounded-lg border border-border bg-muted px-4 py-3 transition-colors hover:border-primary/25"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -486,11 +473,7 @@ export default function SettingsPage() {
               ].map(({ label, value, unit }) => (
                 <div
                   key={label}
-                  className="rounded-lg border p-4"
-                  style={{
-                    backgroundColor: 'hsl(20 12% 10%)',
-                    borderColor: 'hsl(20 10% 14%)',
-                  }}
+                  className="rounded-lg border border-border bg-muted p-4"
                 >
                   <p className="text-xs text-muted-foreground">{label}</p>
                   <p

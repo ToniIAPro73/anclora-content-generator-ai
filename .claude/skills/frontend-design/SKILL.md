@@ -43,6 +43,7 @@ Never pick colors randomly. Build a system:
 ```
 Base (background): ___________
 Surface (cards, modals): ___________
+Elevated (muted, nested content): ___________
 Accent 1 (primary action, highlight): ___________
 Accent 2 (contrast or complement): ___________
 Text primary: ___________
@@ -55,6 +56,19 @@ Border / divider: ___________
 - One color must be unexpected — the one that makes the palette alive.
 - Test the palette mentally: does it work in dark? in light? at small sizes?
 - Avoid: purple-on-white, teal-on-dark-gray, orange-on-black (overused tropes).
+
+**Three-Surface Depth System (Critical for Dark Mode):**
+
+In dark mode, surfaces must have a minimum **6 lightness points** of difference between layers. If they're too close, cards become invisible — a fatal UX failure.
+
+```
+Base layer:     L = 5–8%    (background)
+Card layer:     L = 13–16%  (cards, panels) — must be ≥6pt above base
+Elevated layer: L = 18–22%  (items inside cards: muted, inputs, tags)
+Border:         L = 22–28%  (must be visible against both card and base)
+```
+
+Anti-pattern: `--background: 20 18% 5%` with `--card: 20 14% 8%` — only 3pt difference. Cards become invisible in dark mode. **Always verify contrast before deploying.**
 
 ### 4. Typography Contract
 
@@ -214,6 +228,8 @@ These are what separate "good" from "remarkable":
 | 6+ font weights in use | Chaotic hierarchy | 3 weights max: regular, medium, bold |
 | Generic icon sets (Font Awesome defaults) | Cookie-cutter | Use Lucide, Phosphor, or custom SVG |
 | Placeholder lorem ipsum left in | Destroys credibility | Always use realistic content |
+| Ultra-low contrast dark surfaces | Cards become invisible (≤3pt lightness diff) | Enforce the three-surface minimum contrast rule |
+| Hardcoded dark color values in components | Breaks light mode, creates token drift | Always use CSS custom properties or Tailwind tokens |
 
 ---
 

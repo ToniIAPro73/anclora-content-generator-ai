@@ -81,12 +81,14 @@
   }
 
   .dark {
-    /* DARK — warm charcoal systems, not cold blue-black */
-    --background: 20 18% 5%;
+    /* DARK — warm charcoal systems, not cold blue-black
+       Three-surface depth system (min 6pt lightness gap between layers):
+       base 5% → card 13% → elevated 18% → hover 22%              */
+    --background: 20 18% 5%;       /* base layer */
     --foreground: 36 15% 93%;
-    --card: 20 14% 8%;
+    --card: 20 10% 13%;            /* surface — 8pt above base (was 8%, barely visible) */
     --card-foreground: 36 15% 93%;
-    --popover: 20 14% 8%;
+    --popover: 20 10% 15%;
     --popover-foreground: 36 15% 93%;
 
     /* Amber gold — warm, premium, authoritative */
@@ -97,14 +99,14 @@
     --secondary: 158 42% 45%;
     --secondary-foreground: 20 18% 5%;
 
-    --muted: 20 12% 13%;
+    --muted: 20 10% 18%;           /* elevated layer — items within cards */
     --muted-foreground: 20 8% 56%;
-    --accent: 20 12% 13%;
+    --accent: 20 10% 18%;
     --accent-foreground: 36 15% 93%;
     --destructive: 0 62% 44%;
     --destructive-foreground: 0 0% 100%;
-    --border: 20 10% 15%;
-    --input: 20 10% 15%;
+    --border: 20 8% 24%;           /* visible border (was 15%, too subtle) */
+    --input: 20 8% 20%;
     --ring: 38 92% 55%;
   }
 }
