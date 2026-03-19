@@ -3,8 +3,9 @@
 import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
-import { LayoutDashboard, PenTool, BookOpen, BarChart3, Settings, LogOut } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { createClient } from "@/utils/supabase/client"
+import { dashboardNavLinks } from "@/components/layout/dashboard-nav"
 
 function AnchorMark({ style }: { style?: React.CSSProperties }) {
   return (
@@ -23,14 +24,6 @@ function AnchorMark({ style }: { style?: React.CSSProperties }) {
     </svg>
   )
 }
-
-const navLinks = [
-  { href: "/dashboard", label: "Overview", icon: LayoutDashboard, exact: true },
-  { href: "/dashboard/studio", label: "Content Studio", icon: PenTool, exact: false },
-  { href: "/dashboard/rag", label: "Knowledge Base", icon: BookOpen, exact: false },
-  { href: "/dashboard/metrics", label: "Analytics", icon: BarChart3, exact: false },
-  { href: "/dashboard/settings", label: "Settings", icon: Settings, exact: false },
-]
 
 export function Sidebar() {
   const router = useRouter()
@@ -51,94 +44,90 @@ export function Sidebar() {
 
   return (
     <aside
-      className="w-64 hidden md:flex flex-col h-full flex-shrink-0"
-      style={{
-        backgroundColor: "hsl(20 14% 7%)",
-        borderRight: "1px solid hsl(20 10% 11%)",
-      }}
+      className="hidden h-full flex-shrink-0 flex-col border-r border-border/70 bg-card/70 backdrop-blur md:flex"
     >
-      {/* ─── Brand ─── */}
-      <div
-        className="flex h-14 lg:h-[60px] items-center px-5"
-        style={{ borderBottom: "1px solid hsl(20 10% 11%)" }}
-      >
+      <div className="flex h-16 items-center border-b border-border/70 px-5">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div
-            className="flex h-7 w-7 items-center justify-center rounded-md transition-opacity group-hover:opacity-80"
-            style={{ backgroundColor: "hsl(38 92% 55%)" }}
-          >
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground transition-transform group-hover:scale-[0.98]">
             <AnchorMark
               style={{
                 width: "14px",
                 height: "14px",
-                color: "hsl(20 18% 5%)",
+                color: "currentColor",
                 strokeWidth: 2.5,
               }}
             />
           </div>
-          <span
-            className="font-heading text-sm font-semibold tracking-tight"
-            style={{ color: "hsl(36 15% 88%)" }}
-          >
-            Anclora
-          </span>
+          <div className="space-y-0.5">
+            <span className="block font-heading text-sm font-semibold tracking-tight">
+              Anclora
+            </span>
+            <span className="block text-[11px] text-muted-foreground">
+              Mission Control
+            </span>
+          </div>
         </Link>
       </div>
 
-      {/* ─── Navigation ─── */}
       <nav className="flex-1 px-3 py-4 overflow-y-auto">
-        <p
-          className="mb-2 px-3 text-[10px] font-semibold tracking-widest uppercase"
-          style={{ color: "hsl(20 8% 36%)" }}
-        >
-          Menu
+        <div className="mb-4 rounded-2xl border border-border/70 bg-background/70 p-3">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-primary/80">
+            Control Loop
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            Detecta seales, redacta activos de contenido y revisa su impacto por canal.
+          </p>
+        </div>
+
+        <p className="mb-2 px-3 text-[10px] font-semibold tracking-widest uppercase text-muted-foreground/70">
+          Navegacion
         </p>
-        <div className="space-y-0.5">
-          {navLinks.map(({ href, label, icon: Icon, exact }) => {
+        <div className="space-y-1">
+          {dashboardNavLinks.map(({ href, label, description, icon: Icon, exact }) => {
             const active = isActive(href, exact)
             return (
               <Link
                 key={href}
                 href={href}
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm relative transition-all duration-150"
-                style={
+                className={`group relative flex items-start gap-3 rounded-xl px-3 py-3 text-sm transition-all duration-150 ${
                   active
-                    ? {
-                        backgroundColor: "hsl(38 92% 55% / 0.1)",
-                        color: "hsl(38 92% 60%)",
-                        fontWeight: 500,
-                      }
-                    : { color: "hsl(20 8% 54%)" }
-                }
+                    ? "bg-primary/10 text-foreground ring-1 ring-primary/20"
+                    : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
+                }`}
               >
-                {/* Active indicator bar */}
                 {active && (
-                  <div
-                    className="absolute left-0 top-2 bottom-2 w-[3px] rounded-r-full"
-                    style={{ backgroundColor: "hsl(38 92% 55%)" }}
-                  />
+                  <div className="absolute left-0 top-3 bottom-3 w-[3px] rounded-r-full bg-primary" />
                 )}
-                <Icon className="h-4 w-4 flex-shrink-0" />
-                <span>{label}</span>
+                <div
+                  className={`mt-0.5 flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg ${
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground group-hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                </div>
+                <div className="min-w-0">
+                  <p className={`font-medium ${active ? "text-foreground" : ""}`}>{label}</p>
+                  <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                    {description}
+                  </p>
+                </div>
               </Link>
             )
           })}
         </div>
       </nav>
 
-      {/* ─── Logout ─── */}
-      <div
-        className="px-3 pb-4"
-        style={{ borderTop: "1px solid hsl(20 10% 11%)" }}
-      >
+      <div className="border-t border-border/70 px-3 pb-4 pt-3">
         <button
           onClick={handleLogout}
           onMouseEnter={() => setLogoutHover(true)}
           onMouseLeave={() => setLogoutHover(false)}
-          className="mt-4 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all duration-150"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-150"
           style={{
-            color: logoutHover ? "hsl(0 62% 60%)" : "hsl(20 8% 48%)",
-            backgroundColor: logoutHover ? "hsl(0 62% 44% / 0.08)" : "transparent",
+            color: logoutHover ? "hsl(var(--destructive))" : undefined,
+            backgroundColor: logoutHover ? "hsl(var(--destructive) / 0.08)" : undefined,
           }}
         >
           <LogOut className="h-4 w-4 flex-shrink-0" />

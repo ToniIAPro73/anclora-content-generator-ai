@@ -104,8 +104,8 @@ export default function KnowledgeBasePage() {
   )
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex items-center justify-between px-6 py-4 border-b shrink-0">
+    <div className="space-y-0">
+      <div className="flex items-center justify-between border-b px-6 py-4">
         <div>
           <h1 className="text-2xl font-bold font-heading text-foreground flex items-center gap-2">
             <Database className="w-6 h-6 text-primary" />
@@ -161,7 +161,7 @@ export default function KnowledgeBasePage() {
         </Dialog>
       </div>
 
-      <div className="p-6 flex-1 overflow-y-auto">
+      <div className="p-6">
         <div className="flex items-center gap-2 mb-6">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

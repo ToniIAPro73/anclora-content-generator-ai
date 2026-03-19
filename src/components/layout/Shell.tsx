@@ -8,12 +8,13 @@ import { Topbar } from "@/components/layout/Topbar"
 // El height es estrictamente 100vh h-screen con overflow-hidden
 export function Shell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid min-h-screen w-full md:grid-cols-[256px_1fr] overflow-hidden h-screen bg-background">
+    <div className="grid h-screen min-h-screen w-full overflow-hidden bg-background md:grid-cols-[272px_1fr]">
       <Sidebar />
-      <div className="flex flex-col h-screen overflow-hidden">
+      <div className="relative flex h-screen min-h-0 flex-col overflow-hidden">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-[radial-gradient(circle_at_top,hsla(var(--primary),0.12),transparent_60%)]" />
         <Topbar />
-        <main className="flex-1 flex flex-col gap-4 p-4 lg:gap-6 lg:p-6 overflow-y-auto w-full relative">
-           {children}
+        <main className="relative flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-6 pt-4 lg:px-6 lg:pb-8 lg:pt-5">
+          {children}
         </main>
       </div>
     </div>

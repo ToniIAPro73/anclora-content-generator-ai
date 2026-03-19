@@ -1,19 +1,21 @@
-/**
- * ANCLORA CONTENT GENERATOR AI - Dashboard Home
- * Feature: ANCLORA-FEAT-DASHBOARD-UI
- * Page: /dashboard
- * Description: Overview principal del dashboard con estadísticas y accesos rápidos
- * Author: Agent C (Frontend Engineer)
- * Date: 2026-03-19
- */
+"use client"
 
-'use client'
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import {
+  ArrowRight,
+  BookOpen,
+  CalendarClock,
+  CheckCircle2,
+  FileText,
+  Radar,
+  Sparkles,
+  TrendingUp,
+} from "lucide-react"
 
-import { useEffect, useState } from 'react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface DashboardMetrics {
   totalContent: number
@@ -21,13 +23,60 @@ interface DashboardMetrics {
   draftContent: number
   avgTokensUsed: number
   totalKnowledgeChunks: number
+  scheduledPosts?: number
+  totalSources?: number
 }
+
+const workspaceId = "00000000-0000-0000-0000-000000000000"
+
+const commandCards = [
+  {
+    title: "Briefing del dia",
+    description: "Redacta una pieza ancla sobre oportunidades en Camp de Mar con soporte de micro-zona.",
+    href: "/dashboard/studio",
+    cta: "Abrir Studio",
+  },
+  {
+    title: "Actualizar contexto",
+    description: "Ingresa nuevas fuentes regulatorias y datos de mercado para mejorar el RAG.",
+    href: "/dashboard/rag",
+    cta: "Abrir Knowledge Base",
+  },
+  {
+    title: "Refinar el sistema",
+    description: "Ajusta plantillas, modelos y preferencias del workspace antes de escalar la cadencia.",
+    href: "/dashboard/settings",
+    cta: "Abrir Settings",
+  },
+] as const
+
+const marketSignals = [
+  {
+    zone: "Camp de Mar",
+    signal: "Ventana de reposicionamiento",
+    detail: "Caida de precio visible vs maximos historicos. Requiere pieza explicativa con contexto de inventario.",
+  },
+  {
+    zone: "Punta Negra",
+    signal: "Narrativa de infraestructuras",
+    detail: "El efecto hospitality premium puede empujar awareness y ticket medio en inversores internacionales.",
+  },
+  {
+    zone: "Palmanova",
+    signal: "Yield tension",
+    detail: "La divergencia entre renta y venta pide una lectura clara para captar leads analiticos.",
+  },
+] as const
+
+const publishingChecklist = [
+  "Validar 3 fuentes recientes antes de publicar una pieza de inteligencia.",
+  "Convertir el articulo principal en derivadas para LinkedIn, Instagram y newsletter.",
+  "Conectar el contenido al siguiente CTA comercial dentro de Nexus.",
+] as const
 
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-
-  const workspaceId = '00000000-0000-0000-0000-000000000000'
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -37,426 +86,208 @@ export default function DashboardPage() {
           const data = await response.json()
           setMetrics(data.metrics)
         }
-      } catch (error) {
-        console.error('Error fetching metrics:', error)
+      } catch {
+        setMetrics(null)
       } finally {
         setIsLoading(false)
       }
     }
 
     fetchMetrics()
-  }, [workspaceId])
+  }, [])
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Bienvenido a Anclora Content Generator AI
-          </p>
-        </div>
-        <Link href="/dashboard/studio">
-          <Button size="lg">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="mr-2 h-4 w-4"
-            >
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Crear Contenido
-          </Button>
-        </Link>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Contenido</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-              <path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />
-            </svg>
+    <div className="space-y-6">
+      <section className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
+        <Card className="border-primary/20 bg-[linear-gradient(135deg,hsla(var(--primary),0.14),transparent_65%)]">
+          <CardHeader>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge className="border-primary/20 bg-primary/10 text-primary" variant="outline">
+                Mission Control
+              </Badge>
+              <Badge variant="secondary">Mallorca premium real estate</Badge>
+            </div>
+            <CardTitle className="max-w-3xl text-2xl lg:text-4xl">
+              Convierte senales de mercado en contenido que refuerce autoridad de marca y genere demanda cualificada.
+            </CardTitle>
+            <CardDescription className="max-w-2xl text-sm leading-relaxed lg:text-base">
+              El valor del producto no esta en “publicar mas”, sino en detectar oportunidades antes, estructurar el contexto y empujar una narrativa consistente en todos los canales.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold">{metrics?.totalContent || 0}</div>
-                <p className="text-xs text-muted-foreground">Piezas generadas</p>
-              </>
-            )}
+          <CardContent className="flex flex-wrap items-center gap-3">
+            <Link href="/dashboard/studio">
+              <Button size="lg">
+                Abrir Content Studio
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+            </Link>
+            <Link href="/dashboard/rag">
+              <Button size="lg" variant="outline">
+                Revisar Knowledge Base
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Publicado</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-            </svg>
+        <Card className="bg-card/90">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Radar className="h-4 w-4 text-primary" />
+              Estado operativo
+            </CardTitle>
+            <CardDescription>
+              Una vista simple para saber si el sistema esta listo para escalar.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold">{metrics?.publishedContent || 0}</div>
-                <p className="text-xs text-muted-foreground">Contenido activo</p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Borradores</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold">{metrics?.draftContent || 0}</div>
-                <p className="text-xs text-muted-foreground">En progreso</p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Knowledge Base</CardTitle>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              className="h-4 w-4 text-muted-foreground"
-            >
-              <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
-            </svg>
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="h-8 w-16 bg-muted animate-pulse rounded"></div>
-            ) : (
-              <>
-                <div className="text-2xl font-bold">{metrics?.totalKnowledgeChunks || 0}</div>
-                <p className="text-xs text-muted-foreground">Chunks almacenados</p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <Link href="/dashboard/studio">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-primary/10 rounded-lg">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-6 w-6 text-primary"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                </div>
-                <div>
-                  <CardTitle>Content Studio</CardTitle>
-                  <CardDescription>Genera contenido con IA</CardDescription>
-                </div>
+          <CardContent className="space-y-4">
+            {[
+              {
+                label: "Fuentes conectadas",
+                value: metrics?.totalSources ?? 0,
+                helper: "Cuantas entradas alimentan el contexto.",
+              },
+              {
+                label: "Piezas en borrador",
+                value: metrics?.draftContent ?? 0,
+                helper: "Contenido listo para revisar y derivar.",
+              },
+              {
+                label: "Publicaciones pendientes",
+                value: metrics?.scheduledPosts ?? 0,
+                helper: "Backlog de programacion pendiente.",
+              },
+            ].map((item) => (
+              <div key={item.label} className="rounded-xl border border-border/70 bg-background/70 p-4">
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{item.label}</p>
+                <p className="mt-2 font-heading text-3xl font-semibold text-foreground">
+                  {isLoading ? "..." : item.value}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{item.helper}</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Crea contenido de alta calidad usando plantillas y RAG
-              </p>
+            ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {[
+          {
+            label: "Contenido total",
+            value: metrics?.totalContent ?? 0,
+            note: "Activos editoriales creados",
+            icon: FileText,
+          },
+          {
+            label: "Publicado",
+            value: metrics?.publishedContent ?? 0,
+            note: "Contenido ya empujando autoridad",
+            icon: CheckCircle2,
+          },
+          {
+            label: "Knowledge chunks",
+            value: metrics?.totalKnowledgeChunks ?? 0,
+            note: "Contexto reusable para el motor RAG",
+            icon: BookOpen,
+          },
+          {
+            label: "Promedio de tokens",
+            value: metrics?.avgTokensUsed ?? 0,
+            note: "Indicador de coste y densidad",
+            icon: Sparkles,
+          },
+        ].map(({ label, value, note, icon: Icon }) => (
+          <Card key={label}>
+            <CardContent className="flex items-start justify-between gap-4 pt-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{label}</p>
+                <p className="mt-3 font-heading text-4xl font-semibold text-foreground">
+                  {isLoading ? "..." : value}
+                </p>
+                <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{note}</p>
+              </div>
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Icon className="h-5 w-5" />
+              </div>
             </CardContent>
-          </Link>
+          </Card>
+        ))}
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[1.15fr_1fr_1fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-primary" />
+              Oportunidades detectadas
+            </CardTitle>
+            <CardDescription>
+              Ideas de alto valor que la interfaz deberia priorizar como piezas editoriales.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {marketSignals.map((signal) => (
+              <div key={signal.zone} className="rounded-xl border border-border/70 bg-muted/40 p-4">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-medium text-foreground">{signal.zone}</p>
+                  <Badge variant="outline">{signal.signal}</Badge>
+                </div>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {signal.detail}
+                </p>
+              </div>
+            ))}
+          </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <Link href="/dashboard/rag">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-blue-500/10 rounded-lg">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-6 w-6 text-blue-500"
-                  >
-                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                    <polyline points="3.29 7 12 12 20.71 7" />
-                    <line x1="12" x2="12" y1="22" y2="12" />
-                  </svg>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarClock className="h-4 w-4 text-primary" />
+              Cadencia editorial
+            </CardTitle>
+            <CardDescription>
+              Una operacion que funciona necesita ritmo, no solo piezas aisladas.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {publishingChecklist.map((item, index) => (
+              <div key={item} className="flex items-start gap-3 rounded-xl border border-border/70 bg-background/70 p-4">
+                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  {index + 1}
                 </div>
-                <div>
-                  <CardTitle>Knowledge Base</CardTitle>
-                  <CardDescription>Gestiona tu RAG</CardDescription>
-                </div>
+                <p className="text-sm leading-relaxed text-muted-foreground">{item}</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Ingesta documentos y construye tu base de conocimiento
-              </p>
-            </CardContent>
-          </Link>
+            ))}
+          </CardContent>
         </Card>
 
-        <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-          <Link href="/dashboard/metrics">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="p-2 bg-green-500/10 rounded-lg">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    className="h-6 w-6 text-green-500"
-                  >
-                    <path d="M3 3v18h18" />
-                    <path d="m19 9-5 5-4-4-3 3" />
-                  </svg>
+        <Card>
+          <CardHeader>
+            <CardTitle>Acciones prioritarias</CardTitle>
+            <CardDescription>
+              Atajos alineados con el flujo real del equipo.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {commandCards.map((item) => (
+              <Link
+                key={item.title}
+                href={item.href}
+                className="block rounded-xl border border-border/70 bg-background/70 p-4 transition-colors hover:border-primary/30 hover:bg-primary/5"
+              >
+                <p className="font-medium text-foreground">{item.title}</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {item.description}
+                </p>
+                <div className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                  {item.cta}
+                  <ArrowRight className="h-4 w-4" />
                 </div>
-                <div>
-                  <CardTitle>Analytics</CardTitle>
-                  <CardDescription>Métricas y estadísticas</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Visualiza el rendimiento y uso de tu contenido
-              </p>
-            </CardContent>
-          </Link>
+              </Link>
+            ))}
+          </CardContent>
         </Card>
-      </div>
-
-      {/* Feature Highlights */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Características Principales</CardTitle>
-          <CardDescription>
-            Todo lo que necesitas para generar contenido de calidad
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg mt-0.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-5 w-5 text-primary"
-                >
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                </svg>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium">RAG Engine</h3>
-                <p className="text-sm text-muted-foreground">
-                  Embeddings locales con pgvector para búsqueda semántica
-                </p>
-                <Badge variant="secondary" className="text-xs">Zero-cost</Badge>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-lg mt-0.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-5 w-5 text-blue-500"
-                >
-                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-                </svg>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium">Multi-LLM Support</h3>
-                <p className="text-sm text-muted-foreground">
-                  Claude, Groq, Ollama - elige el modelo perfecto
-                </p>
-                <Badge variant="secondary" className="text-xs">Flexible</Badge>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg mt-0.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-5 w-5 text-green-500"
-                >
-                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                  <path d="M15 2H9a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />
-                </svg>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium">Content Templates</h3>
-                <p className="text-sm text-muted-foreground">
-                  Plantillas reutilizables con prompts personalizados
-                </p>
-                <Badge variant="secondary" className="text-xs">Reusable</Badge>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <div className="p-2 bg-purple-500/10 rounded-lg mt-0.5">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  className="h-5 w-5 text-purple-500"
-                >
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                  <circle cx="12" cy="10" r="3" />
-                </svg>
-              </div>
-              <div className="space-y-1">
-                <h3 className="font-medium">Micro-Zones</h3>
-                <p className="text-sm text-muted-foreground">
-                  Segmentación geográfica para contenido localizado
-                </p>
-                <Badge variant="secondary" className="text-xs">Geo-targeted</Badge>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Getting Started */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Primeros Pasos</CardTitle>
-          <CardDescription>
-            Empieza a generar contenido en minutos
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ol className="space-y-3">
-            <li className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5">1</Badge>
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Configura tus API keys</p>
-                <p className="text-sm text-muted-foreground">
-                  Ve a{' '}
-                  <Link href="/dashboard/settings" className="underline">
-                    Settings
-                  </Link>{' '}
-                  y añade tus claves de Anthropic, Groq u Ollama
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5">2</Badge>
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Ingesta tu base de conocimiento</p>
-                <p className="text-sm text-muted-foreground">
-                  Sube documentos en{' '}
-                  <Link href="/dashboard/rag" className="underline">
-                    Knowledge Base
-                  </Link>{' '}
-                  para enriquecer el contexto
-                </p>
-              </div>
-            </li>
-            <li className="flex items-start gap-3">
-              <Badge variant="outline" className="mt-0.5">3</Badge>
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Genera tu primer contenido</p>
-                <p className="text-sm text-muted-foreground">
-                  Usa{' '}
-                  <Link href="/dashboard/studio" className="underline">
-                    Content Studio
-                  </Link>{' '}
-                  para crear contenido con IA
-                </p>
-              </div>
-            </li>
-          </ol>
-        </CardContent>
-      </Card>
+      </section>
     </div>
   )
 }
