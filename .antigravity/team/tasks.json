@@ -1,6 +1,6 @@
 {
   "project": "Anclora Content Generator AI",
-  "fase_actual": "FASE 5 CERRADA: Automatizacion y recomendaciones operativas",
+  "fase_actual": "FASE 6 ABIERTA: Ejecucion multicanal e integraciones",
   "members": [
     {
       "id": "anclorabot",
@@ -427,6 +427,22 @@
         "UX principal del dashboard consolidada"
       ]
     },
+    {
+      "id": 24,
+      "title": "Abrir fase post-roadmap",
+      "description": "Definir la siguiente fase de producto centrada en ejecucion real: scheduling ejecutor, integraciones multicanal, CRM y attribution mas profunda.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [23],
+      "priority": "HIGH",
+      "estimated_hours": "0.5-1",
+      "feature": "ANCLORA-FEAT-010",
+      "deliverables": [
+        "Nueva fase abierta en tasks.json",
+        "Spec post-roadmap",
+        "Roadmap documental rebaselinizado"
+      ]
     }
   ]
 }

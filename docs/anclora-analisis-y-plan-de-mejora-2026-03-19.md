@@ -109,6 +109,7 @@ Esto ya se ha corregido para que el dashboard siga siendo un shell contenido, si
 - Fase 3 muy avanzada: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `oportunidad -> studio -> draft` y especializacion por categoria de fuente.
 - Fase 4 muy avanzada: ciclo editorial persistido, cola programada, drilldown por pieza y comparativa temporal ya operativos.
 - Fase 5 cerrada en baseline operativo: recomendaciones auditables y acciones asistidas ya conectan Dashboard, Studio y RAG sin automatizacion destructiva.
+- Fase 6 abierta: ejecucion multicanal e integraciones como siguiente expansion natural del producto.
 
 ## Roadmap recomendado
 
@@ -193,6 +194,21 @@ Estado actual:
 - Las acciones siguen siendo humanas: el sistema recomienda y enlaza, pero no ejecuta cambios destructivos por su cuenta.
 - El Studio ya puede abrir en modo de accion asistida con contexto precargado desde la recomendacion.
 - La fase queda cerrada como automatizacion prudente sobre el core editorial, no como autonomia completa de publicacion.
+
+## Fase 6. Ejecucion multicanal e integraciones
+
+Objetivo: conectar el cockpit con ejecucion real fuera de la app.
+
+- Scheduling ejecutor y cola de publicacion real.
+- Integraciones multicanal y publicacion asistida.
+- Lead attribution externo y acoplamiento con CRM.
+- Persistencia real de configuracion editorial y libreria de plantillas.
+- Telemetria por micro-zona y por impacto comercial mas profundo.
+
+Estado actual:
+
+- La fase queda abierta como continuacion post-roadmap.
+- El producto ya tiene base suficiente para pasar de recomendacion y operacion interna a ejecucion conectada.
 
 ## Decisiones de producto recomendadas
 

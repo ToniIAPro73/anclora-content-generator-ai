@@ -38,3 +38,4 @@ Owner: Anclorabot
 - Evolucionar la Knowledge Base hacia `knowledge packs` curados y trazables
 - Especializar las fuentes del RAG por categoria de dominio y hacer legible la trazabilidad de retrieval
 - Consolidar una UX premium de cockpit antes de abrir integraciones de ejecucion real
+- Abrir una fase posterior enfocada en multicanal, CRM y scheduling ejecutor
