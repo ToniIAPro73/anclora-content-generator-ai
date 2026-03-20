@@ -30,6 +30,7 @@ const EMPTY_METRICS = {
   recentActivity: [],
   recentContent: [],
   scheduledQueue: [],
+  deliveryQueue: [],
   platformPerformance: [],
   topPerformingContent: [],
   platformMomentum: [],
@@ -63,6 +64,7 @@ export async function GET() {
       contentByTypeResult,
       recentContentResult,
       scheduledQueueResult,
+      deliveryQueueResult,
       platformPerformanceResult,
       topPerformingContentResult,
       platformMomentumResult,
@@ -101,6 +103,26 @@ export async function GET() {
             AND sp.status = 'pending'
           ORDER BY sp.scheduled_for ASC
           LIMIT 5
+        `,
+        sql`
+          SELECT
+            sp.id,
+            sp.content_id,
+            sp.platform,
+            sp.scheduled_for,
+            sp.status,
+            sp.retry_count,
+            sp.last_error,
+            sp.published_at,
+            sp.platform_post_id,
+            gc.title,
+            gc.content_type
+          FROM scheduled_posts sp
+          INNER JOIN generated_content gc ON gc.id = sp.content_id
+          WHERE sp.workspace_id = ${workspaceId}
+            AND sp.status != 'cancelled'
+          ORDER BY sp.scheduled_for DESC
+          LIMIT 8
         `,
         sql`
           SELECT
@@ -214,6 +236,19 @@ export async function GET() {
           platform: String(row.platform),
           contentType: String(row.content_type),
           scheduledFor: String(row.scheduled_for),
+        })),
+        deliveryQueue: deliveryQueueResult.map((row) => ({
+          id: String(row.id),
+          contentId: String(row.content_id),
+          title: String(row.title),
+          platform: String(row.platform),
+          contentType: String(row.content_type),
+          scheduledFor: String(row.scheduled_for),
+          status: String(row.status),
+          retryCount: Number(row.retry_count ?? 0),
+          lastError: row.last_error ? String(row.last_error) : null,
+          publishedAt: row.published_at ? String(row.published_at) : null,
+          platformPostId: row.platform_post_id ? String(row.platform_post_id) : null,
         })),
         platformPerformance: platformPerformanceResult.map((row) => ({
           platform: String(row.platform),

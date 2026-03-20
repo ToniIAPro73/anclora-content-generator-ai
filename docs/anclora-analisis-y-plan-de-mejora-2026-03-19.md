@@ -209,6 +209,7 @@ Estado actual:
 
 - La fase queda abierta como continuacion post-roadmap.
 - El producto ya tiene base suficiente para pasar de recomendacion y operacion interna a ejecucion conectada.
+- Ya existe una primera cola de ejecucion editorial visible en Dashboard y Metrics, con dispatch manual asistido y reintento operativo.
 
 ## Decisiones de producto recomendadas
 

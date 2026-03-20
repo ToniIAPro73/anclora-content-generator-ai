@@ -443,6 +443,23 @@
         "Spec post-roadmap",
         "Roadmap documental rebaselinizado"
       ]
+    },
+    {
+      "id": 25,
+      "title": "Abrir cola de ejecucion editorial",
+      "description": "Convertir scheduled_posts en una cola operativa visible y accionable, con ejecucion manual asistida y trazabilidad de entregas dentro del cockpit.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [24],
+      "priority": "HIGH",
+      "estimated_hours": "1-3",
+      "feature": "ANCLORA-FEAT-011",
+      "deliverables": [
+        "Spec de editorial delivery executor",
+        "Dashboard y Metrics con cola de ejecucion",
+        "PATCH /api/content/library con dispatch y retry_delivery"
+      ]
     }
   ]
 }

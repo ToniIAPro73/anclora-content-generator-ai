@@ -47,6 +47,19 @@ interface DashboardMetrics {
     contentType: string
     scheduledFor: string
   }>
+  deliveryQueue?: Array<{
+    id: string
+    contentId: string
+    title: string
+    platform: string
+    contentType: string
+    scheduledFor: string
+    status: string
+    retryCount: number
+    lastError: string | null
+    publishedAt: string | null
+    platformPostId: string | null
+  }>
 }
 
 interface OperationalRecommendation {
@@ -111,6 +124,7 @@ export default function DashboardPage() {
   const [recommendations, setRecommendations] = useState<OperationalRecommendation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [queueActionId, setQueueActionId] = useState<string | null>(null)
+  const [deliveryActionId, setDeliveryActionId] = useState<string | null>(null)
 
   async function fetchMetrics() {
     try {
@@ -160,6 +174,29 @@ export default function DashboardPage() {
       }
     } finally {
       setQueueActionId(null)
+    }
+  }
+
+  async function handleDeliveryAction(contentId: string, action: 'dispatch' | 'retry_delivery') {
+    setDeliveryActionId(contentId)
+
+    try {
+      const response = await fetch('/api/content/library', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: contentId,
+          action,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchMetrics()
+      }
+    } finally {
+      setDeliveryActionId(null)
     }
   }
 
@@ -406,7 +443,7 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+      <section className="grid gap-4 xl:grid-cols-[1.1fr_0.8fr_0.95fr]">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -486,6 +523,77 @@ export default function DashboardPage() {
                 <p className="font-medium text-foreground">No hay publicaciones programadas</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Cuando apruebes una pieza y la lleves a scheduled aparecerá aquí con su fecha de salida.
+                </p>
+              </SurfaceCard>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Radar className="h-4 w-4 text-primary" />
+              Cola de ejecución
+            </CardTitle>
+            <CardDescription>
+              Último estado operativo de las publicaciones programadas y ya entregadas.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {metrics?.deliveryQueue?.length ? (
+              metrics.deliveryQueue.map((item) => (
+                <SurfaceCard key={item.id} variant="inner" className="border bg-background/70 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="secondary">{item.platform}</Badge>
+                    <Badge variant="outline">{item.status}</Badge>
+                  </div>
+                  <p className="mt-3 font-medium text-foreground">{item.title}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Ventana {new Date(item.scheduledFor).toLocaleString('es-ES')}
+                  </p>
+                  {item.publishedAt ? (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Entregado {new Date(item.publishedAt).toLocaleString('es-ES')}
+                    </p>
+                  ) : null}
+                  {item.platformPostId ? (
+                    <p className="mt-1 text-xs text-muted-foreground">Post ID {item.platformPostId}</p>
+                  ) : null}
+                  {item.lastError ? (
+                    <p className="mt-2 text-xs text-red-300">{item.lastError}</p>
+                  ) : null}
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link href={`/dashboard/studio?contentId=${item.contentId}`}>
+                      <Button size="sm" variant="outline">
+                        Abrir pieza
+                      </Button>
+                    </Link>
+                    {item.status === 'pending' ? (
+                      <Button
+                        size="sm"
+                        disabled={deliveryActionId === item.contentId}
+                        onClick={() => void handleDeliveryAction(item.contentId, 'dispatch')}
+                      >
+                        {deliveryActionId === item.contentId ? 'Ejecutando...' : 'Ejecutar'}
+                      </Button>
+                    ) : null}
+                    {item.status === 'failed' ? (
+                      <Button
+                        size="sm"
+                        disabled={deliveryActionId === item.contentId}
+                        onClick={() => void handleDeliveryAction(item.contentId, 'retry_delivery')}
+                      >
+                        {deliveryActionId === item.contentId ? 'Reintentando...' : 'Reintentar'}
+                      </Button>
+                    ) : null}
+                  </div>
+                </SurfaceCard>
+              ))
+            ) : (
+              <SurfaceCard variant="inner" className="border bg-background/70 p-4">
+                <p className="font-medium text-foreground">Todavía no hay entregas en cola</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Cuando programes o ejecutes publicaciones aparecerán aquí con su estado operativo.
                 </p>
               </SurfaceCard>
             )}

@@ -7,7 +7,15 @@ import { contentMetrics, generatedContent, leadTracking, scheduledPosts } from '
 
 export const runtime = 'nodejs'
 
-type EditorialAction = 'review' | 'approve' | 'publish' | 'schedule' | 'unschedule' | 'archive'
+type EditorialAction =
+  | 'review'
+  | 'approve'
+  | 'publish'
+  | 'schedule'
+  | 'unschedule'
+  | 'archive'
+  | 'dispatch'
+  | 'retry_delivery'
 
 type UpdateRequest = {
   id?: string
@@ -35,6 +43,10 @@ function clampLimit(rawLimit: string | null) {
   return Math.min(Math.max(parsed, 1), 50)
 }
 
+function buildPlatformPostId(platform: string) {
+  return `manual-${platform}-${Date.now()}`
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { workspaceId } = await getAuthenticatedWorkspace()
@@ -50,7 +62,7 @@ export async function GET(request: NextRequest) {
       contentConditions.push(eq(generatedContent.contentType, contentTypeFilter as typeof generatedContent.contentType.enumValues[number]))
     }
 
-    const [items, scheduledQueue] = await Promise.all([
+    const [items, scheduledQueue, deliveryQueue] = await Promise.all([
       db.query.generatedContent.findMany({
         where: contentConditions.length === 1 ? contentConditions[0] : and(...contentConditions),
         orderBy: [desc(generatedContent.updatedAt)],
@@ -87,6 +99,30 @@ export async function GET(request: NextRequest) {
           )
         )
         .orderBy(asc(scheduledPosts.scheduledFor))
+        .limit(limit),
+      db
+        .select({
+          id: scheduledPosts.id,
+          contentId: scheduledPosts.contentId,
+          platform: scheduledPosts.platform,
+          scheduledFor: scheduledPosts.scheduledFor,
+          status: scheduledPosts.status,
+          retryCount: scheduledPosts.retryCount,
+          lastError: scheduledPosts.lastError,
+          publishedAt: scheduledPosts.publishedAt,
+          platformPostId: scheduledPosts.platformPostId,
+          title: generatedContent.title,
+          contentType: generatedContent.contentType,
+        })
+        .from(scheduledPosts)
+        .innerJoin(generatedContent, eq(scheduledPosts.contentId, generatedContent.id))
+        .where(
+          and(
+            eq(scheduledPosts.workspaceId, workspaceId),
+            inArray(scheduledPosts.status, ['pending', 'processing', 'failed', 'published'])
+          )
+        )
+        .orderBy(desc(scheduledPosts.scheduledFor))
         .limit(limit),
     ])
 
@@ -192,7 +228,7 @@ export async function GET(request: NextRequest) {
       },
     }))
 
-    return NextResponse.json({ success: true, items: enrichedItems, scheduledQueue })
+    return NextResponse.json({ success: true, items: enrichedItems, scheduledQueue, deliveryQueue })
   } catch (error) {
     if (error instanceof WorkspaceAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
@@ -291,6 +327,130 @@ export async function PATCH(request: NextRequest) {
         .returning()
 
       return NextResponse.json({ success: true, item: scheduled })
+    }
+
+    if (body.action === 'dispatch') {
+      const queuedPost = await db.query.scheduledPosts.findFirst({
+        where: and(
+          eq(scheduledPosts.workspaceId, workspaceId),
+          eq(scheduledPosts.contentId, existing.id),
+          inArray(scheduledPosts.status, ['pending', 'failed'])
+        ),
+        orderBy: [asc(scheduledPosts.scheduledFor)],
+        columns: {
+          id: true,
+          platform: true,
+          retryCount: true,
+        },
+      })
+
+      if (!queuedPost) {
+        return NextResponse.json({ error: 'No hay entrega pendiente o fallida para esta pieza' }, { status: 400 })
+      }
+
+      await db
+        .update(scheduledPosts)
+        .set({
+          status: 'processing',
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(scheduledPosts.id, queuedPost.id),
+            eq(scheduledPosts.workspaceId, workspaceId)
+          )
+        )
+
+      const publishedAt = new Date()
+      const platformPostId = buildPlatformPostId(queuedPost.platform)
+
+      await db
+        .update(scheduledPosts)
+        .set({
+          status: 'published',
+          publishedAt,
+          platformPostId,
+          platformResponse: {
+            mode: 'manual-assist',
+            deliveredBy: 'operator',
+            deliveredAt: publishedAt.toISOString(),
+          },
+          updatedAt: publishedAt,
+        })
+        .where(
+          and(
+            eq(scheduledPosts.id, queuedPost.id),
+            eq(scheduledPosts.workspaceId, workspaceId)
+          )
+        )
+
+      const [published] = await db
+        .update(generatedContent)
+        .set({
+          status: 'published',
+          publishedAt,
+          scheduledFor: null,
+          updatedAt: publishedAt,
+        })
+        .where(
+          and(
+            eq(generatedContent.id, existing.id),
+            eq(generatedContent.workspaceId, workspaceId)
+          )
+        )
+        .returning()
+
+      return NextResponse.json({ success: true, item: published })
+    }
+
+    if (body.action === 'retry_delivery') {
+      const failedPost = await db.query.scheduledPosts.findFirst({
+        where: and(
+          eq(scheduledPosts.workspaceId, workspaceId),
+          eq(scheduledPosts.contentId, existing.id),
+          eq(scheduledPosts.status, 'failed')
+        ),
+        orderBy: [desc(scheduledPosts.updatedAt)],
+        columns: {
+          id: true,
+          retryCount: true,
+        },
+      })
+
+      if (!failedPost) {
+        return NextResponse.json({ error: 'No hay una entrega fallida para reintentar' }, { status: 400 })
+      }
+
+      await db
+        .update(scheduledPosts)
+        .set({
+          status: 'pending',
+          retryCount: failedPost.retryCount + 1,
+          lastError: null,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(scheduledPosts.id, failedPost.id),
+            eq(scheduledPosts.workspaceId, workspaceId)
+          )
+        )
+
+      const [rescheduled] = await db
+        .update(generatedContent)
+        .set({
+          status: 'scheduled',
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(generatedContent.id, existing.id),
+            eq(generatedContent.workspaceId, workspaceId)
+          )
+        )
+        .returning()
+
+      return NextResponse.json({ success: true, item: rescheduled })
     }
 
     if (body.action === 'unschedule') {

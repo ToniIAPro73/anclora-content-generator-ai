@@ -25,6 +25,7 @@ interface DashboardMetrics {
   recentActivity?: Array<{ date: string; count: number }>
   recentContent?: Array<{ id: string; title: string; status: string; contentType: string; updatedAt: string }>
   scheduledQueue?: Array<{ id: string; contentId: string; title: string; platform: string; contentType: string; scheduledFor: string }>
+  deliveryQueue?: Array<{ id: string; contentId: string; title: string; platform: string; contentType: string; scheduledFor: string; status: string; retryCount: number; lastError: string | null; publishedAt: string | null; platformPostId: string | null }>
   platformPerformance?: Array<{ platform: string; views: number; impressions: number; clicks: number; leads: number; avgEngagementRate: number }>
   topPerformingContent?: Array<{ id: string; title: string; contentType: string; platform: string; views: number; impressions: number; clicks: number; leads: number; avgEngagementRate: number; lastSnapshot: string }>
   platformMomentum?: Array<{ platform: string; viewsCurrent: number; viewsPrevious: number; leadsCurrent: number; leadsPrevious: number; conversionsCurrent: number; conversionsPrevious: number }>
@@ -93,6 +94,7 @@ export default function MetricsPage() {
   const [libraryItems, setLibraryItems] = useState<LibraryContentItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [queueActionId, setQueueActionId] = useState<string | null>(null)
+  const [deliveryActionId, setDeliveryActionId] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [channelFilter, setChannelFilter] = useState<string>('all')
   const [selectedContentId, setSelectedContentId] = useState<string | null>(null)
@@ -134,6 +136,29 @@ export default function MetricsPage() {
       }
     } finally {
       setQueueActionId(null)
+    }
+  }
+
+  async function handleDeliveryAction(contentId: string, action: 'dispatch' | 'retry_delivery') {
+    setDeliveryActionId(contentId)
+
+    try {
+      const response = await fetch('/api/content/library', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: contentId,
+          action,
+        }),
+      })
+
+      if (response.ok) {
+        await fetchMetrics()
+      }
+    } finally {
+      setDeliveryActionId(null)
     }
   }
 
@@ -309,6 +334,67 @@ export default function MetricsPage() {
                   </div>
                 )}
               </div>
+            </SurfaceCard>
+
+            <SurfaceCard variant="panel" className="p-6">
+              <h3 className="font-heading text-sm font-semibold">Ejecución de publicaciones</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Último estado operativo de la cola programada y de las entregas ya ejecutadas.
+              </p>
+              {metrics?.deliveryQueue && metrics.deliveryQueue.length > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {metrics.deliveryQueue.map((item) => (
+                    <SurfaceCard key={item.id} variant="inner" className="rounded-lg border bg-muted px-4 py-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="secondary" className="text-xs">{item.platform}</Badge>
+                        <Badge variant="outline" className="text-xs">{item.status}</Badge>
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-foreground">{item.title}</p>
+                      <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        <span>slot {new Date(item.scheduledFor).toLocaleString('es-ES')}</span>
+                        {item.publishedAt ? <span>entregado {new Date(item.publishedAt).toLocaleString('es-ES')}</span> : null}
+                        {item.platformPostId ? <span>{item.platformPostId}</span> : null}
+                      </div>
+                      {item.lastError ? (
+                        <p className="mt-2 text-xs text-red-300">{item.lastError}</p>
+                      ) : null}
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Link href={`/dashboard/studio?contentId=${item.contentId}`}>
+                          <Button size="sm" variant="outline">Abrir</Button>
+                        </Link>
+                        {item.status === 'pending' ? (
+                          <Button
+                            size="sm"
+                            disabled={deliveryActionId === item.contentId}
+                            onClick={() => void handleDeliveryAction(item.contentId, 'dispatch')}
+                          >
+                            {deliveryActionId === item.contentId ? 'Ejecutando...' : 'Ejecutar'}
+                          </Button>
+                        ) : null}
+                        {item.status === 'failed' ? (
+                          <Button
+                            size="sm"
+                            disabled={deliveryActionId === item.contentId}
+                            onClick={() => void handleDeliveryAction(item.contentId, 'retry_delivery')}
+                          >
+                            {deliveryActionId === item.contentId ? 'Reintentando...' : 'Reintentar'}
+                          </Button>
+                        ) : null}
+                      </div>
+                    </SurfaceCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
+                    <Rocket className="h-6 w-6 text-muted-foreground/35" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Sin entregas operativas aún</p>
+                  <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
+                    La cola de ejecución se activará cuando programes o entregues publicaciones desde Studio o Dashboard.
+                  </p>
+                </div>
+              )}
             </SurfaceCard>
           </div>
 
