@@ -15,6 +15,13 @@
       "when": 1773981622762,
       "tag": "0001_black_wrecking_crew",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1773982496951,
+      "tag": "0002_dizzy_quentin_quire",
+      "breakpoints": true
     }
   ]
 }

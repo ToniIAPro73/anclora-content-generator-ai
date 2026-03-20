@@ -27,6 +27,7 @@ export const knowledgeClaimTypeEnum = pgEnum('knowledge_claim_type', ['market_si
 export const knowledgeSupportLevelEnum = pgEnum('knowledge_support_level', ['high', 'medium', 'low'])
 export const knowledgeEvidenceTypeEnum = pgEnum('knowledge_evidence_type', ['prompt', 'notebook', 'manual', 'derived', 'workflow'])
 export const knowledgeIngestionTriggerEnum = pgEnum('knowledge_ingestion_trigger', ['prompt', 'notebooklm', 'manual'])
+export const contentOpportunityStatusEnum = pgEnum('content_opportunity_status', ['new', 'accepted', 'dismissed'])
 
 // =====================================================
 // TABLES
@@ -119,6 +120,23 @@ export const knowledgeIngestionJobs = pgTable('knowledge_ingestion_jobs', {
   errorMessage: text('error_message'),
   startedAt: timestamp('started_at', { withTimezone: true }),
   finishedAt: timestamp('finished_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const contentOpportunities = pgTable('content_opportunities', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  workspaceId: uuid('workspace_id').notNull(),
+  sourceId: uuid('source_id').references(() => contentSources.id, { onDelete: 'set null' }),
+  knowledgePackId: uuid('knowledge_pack_id').references(() => knowledgePacks.id, { onDelete: 'set null' }),
+  title: text('title').notNull(),
+  angle: text('angle').notNull(),
+  rationale: text('rationale').notNull(),
+  audience: text('audience'),
+  recommendedFormat: text('recommended_format').notNull(),
+  confidenceScore: real('confidence_score'),
+  status: contentOpportunityStatusEnum('status').default('new').notNull(),
+  metadata: jsonb('metadata').default(sql`'{}'::jsonb`).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
@@ -245,6 +263,9 @@ export type KnowledgePackClaimInsert = typeof knowledgePackClaims.$inferInsert
 
 export type KnowledgeIngestionJob = typeof knowledgeIngestionJobs.$inferSelect
 export type KnowledgeIngestionJobInsert = typeof knowledgeIngestionJobs.$inferInsert
+
+export type ContentOpportunity = typeof contentOpportunities.$inferSelect
+export type ContentOpportunityInsert = typeof contentOpportunities.$inferInsert
 
 export type ContentTemplate = typeof contentTemplates.$inferSelect
 export type ContentTemplateInsert = typeof contentTemplates.$inferInsert

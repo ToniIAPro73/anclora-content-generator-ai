@@ -9,6 +9,7 @@ import {
   knowledgePacks,
 } from '@/lib/db/schema'
 import { chunkText } from '@/lib/rag/chunking'
+import { createContentOpportunitiesFromIngestion } from '@/lib/rag/content-opportunity-agent'
 import { generateLocalEmbeddings } from '@/lib/rag/embeddings'
 
 type KnowledgePackKind = 'agentic_research_pack' | 'notebooklm_notebook' | 'curated_brief'
@@ -387,6 +388,17 @@ export async function createAgenticKnowledgePack(input: AgenticPackInput) {
         updatedAt: new Date(),
       })
       .where(eq(knowledgeIngestionJobs.id, job.id))
+
+    await createContentOpportunitiesFromIngestion({
+      workspaceId: input.workspaceId,
+      sourceId: source.id,
+      knowledgePackId: pack.id,
+      title: input.title,
+      content: normalizedPack.retrievalDocument,
+      audience: input.audience,
+      topics: normalizedPack.topics,
+      recommendedUses: normalizedPack.recommendedUses,
+    })
 
     return {
       packId: pack.id,

@@ -6,11 +6,13 @@ import {
   BrainCircuit,
   Database,
   FileText,
+  FileUp,
   Plus,
   RefreshCw,
   Search,
   Sparkles,
   Trash2,
+  WandSparkles,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -72,6 +74,17 @@ type KnowledgeJob = {
   title: string | null
 }
 
+type ContentOpportunity = {
+  id: string
+  title: string
+  angle: string
+  rationale: string
+  audience: string | null
+  recommendedFormat: string
+  confidenceScore: number | null
+  createdAt: string
+}
+
 type KnowledgePackDetail = {
   id: string
   title: string
@@ -118,6 +131,7 @@ export default function KnowledgeBasePage() {
   const [packs, setPacks] = React.useState<KnowledgePack[]>([])
   const [jobs, setJobs] = React.useState<KnowledgeJob[]>([])
   const [selectedPack, setSelectedPack] = React.useState<KnowledgePackDetail | null>(null)
+  const [opportunities, setOpportunities] = React.useState<ContentOpportunity[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
   const [isPackLoading, setIsPackLoading] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -125,6 +139,13 @@ export default function KnowledgeBasePage() {
   const [newTitle, setNewTitle] = React.useState("")
   const [newContent, setNewContent] = React.useState("")
   const [isSubmitting, setIsSubmitting] = React.useState(false)
+  const [importTitle, setImportTitle] = React.useState("")
+  const [googleDocTitle, setGoogleDocTitle] = React.useState("")
+  const [googleDocUrl, setGoogleDocUrl] = React.useState("")
+  const [selectedFile, setSelectedFile] = React.useState<File | null>(null)
+  const [isImportingFile, setIsImportingFile] = React.useState(false)
+  const [isImportingGoogleDoc, setIsImportingGoogleDoc] = React.useState(false)
+  const [importError, setImportError] = React.useState<string | null>(null)
   const [packTitle, setPackTitle] = React.useState("")
   const [packPrompt, setPackPrompt] = React.useState("")
   const [packObjective, setPackObjective] = React.useState("")
@@ -148,6 +169,12 @@ export default function KnowledgeBasePage() {
     setJobs(data.jobs ?? [])
   }, [])
 
+  const loadOpportunities = React.useCallback(async () => {
+    const res = await fetch("/api/rag/content-opportunities")
+    const data = await res.json()
+    setOpportunities(data.opportunities ?? [])
+  }, [])
+
   const loadPackDetail = React.useCallback(async (id: string) => {
     setIsPackLoading(true)
     try {
@@ -162,11 +189,11 @@ export default function KnowledgeBasePage() {
   const refreshAll = React.useCallback(async () => {
     setIsLoading(true)
     try {
-      await Promise.all([loadSources(), loadPacks()])
+      await Promise.all([loadSources(), loadPacks(), loadOpportunities()])
     } finally {
       setIsLoading(false)
     }
-  }, [loadPacks, loadSources])
+  }, [loadOpportunities, loadPacks, loadSources])
 
   React.useEffect(() => {
     void refreshAll()
@@ -256,6 +283,72 @@ export default function KnowledgeBasePage() {
       setPackError(error instanceof Error ? error.message : "No se pudo crear el knowledge pack")
     } finally {
       setIsCreatingPack(false)
+    }
+  }
+
+  async function handleImportFile(e: React.FormEvent) {
+    e.preventDefault()
+    if (!selectedFile || !importTitle.trim()) return
+
+    setIsImportingFile(true)
+    setImportError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append("mode", "upload")
+      formData.append("title", importTitle)
+      formData.append("file", selectedFile)
+
+      const res = await fetch("/api/rag/import-document", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error ?? "No se pudo importar el documento")
+      }
+
+      setImportTitle("")
+      setSelectedFile(null)
+      await refreshAll()
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : "No se pudo importar el documento")
+    } finally {
+      setIsImportingFile(false)
+    }
+  }
+
+  async function handleImportGoogleDoc(e: React.FormEvent) {
+    e.preventDefault()
+    if (!googleDocTitle.trim() || !googleDocUrl.trim()) return
+
+    setIsImportingGoogleDoc(true)
+    setImportError(null)
+
+    try {
+      const formData = new FormData()
+      formData.append("mode", "google-doc")
+      formData.append("title", googleDocTitle)
+      formData.append("sourceUrl", googleDocUrl)
+
+      const res = await fetch("/api/rag/import-document", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error ?? "No se pudo importar el Google Doc")
+      }
+
+      setGoogleDocTitle("")
+      setGoogleDocUrl("")
+      await refreshAll()
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : "No se pudo importar el Google Doc")
+    } finally {
+      setIsImportingGoogleDoc(false)
     }
   }
 
@@ -568,6 +661,128 @@ export default function KnowledgeBasePage() {
         </TabsContent>
 
         <TabsContent value="sources" className="space-y-4">
+          <div className="grid gap-4 xl:grid-cols-[1fr_1fr_0.95fr]">
+            <SurfaceCard variant="panel" className="p-6">
+              <div className="flex items-center gap-2">
+                <FileUp className="h-4 w-4 text-primary" />
+                <h3 className="font-heading text-lg font-semibold">Importar documento</h3>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Sube PDF, Word (.docx), Markdown, TXT o MD y lo indexamos directamente en el RAG.
+              </p>
+              <form onSubmit={handleImportFile} className="mt-5 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="import-title">Título</Label>
+                  <Input
+                    id="import-title"
+                    value={importTitle}
+                    onChange={(event) => setImportTitle(event.target.value)}
+                    placeholder="Ej. Dossier fiscal compradores no residentes"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="import-file">Archivo</Label>
+                  <Input
+                    id="import-file"
+                    type="file"
+                    accept=".pdf,.docx,.txt,.md,text/markdown,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain"
+                    onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isImportingFile || !selectedFile || !importTitle}>
+                  {isImportingFile ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Importando documento...
+                    </>
+                  ) : (
+                    <>
+                      <FileUp className="h-4 w-4" />
+                      Importar al RAG
+                    </>
+                  )}
+                </Button>
+              </form>
+            </SurfaceCard>
+
+            <SurfaceCard variant="panel" className="p-6">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4 text-primary" />
+                <h3 className="font-heading text-lg font-semibold">Importar Google Doc</h3>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Usa la URL de un Google Doc accesible o público y lo exportamos como texto antes de indexarlo.
+              </p>
+              <form onSubmit={handleImportGoogleDoc} className="mt-5 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="gdoc-title">Título</Label>
+                  <Input
+                    id="gdoc-title"
+                    value={googleDocTitle}
+                    onChange={(event) => setGoogleDocTitle(event.target.value)}
+                    placeholder="Ej. Notas due diligence Palma 2026"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gdoc-url">URL del documento</Label>
+                  <Input
+                    id="gdoc-url"
+                    value={googleDocUrl}
+                    onChange={(event) => setGoogleDocUrl(event.target.value)}
+                    placeholder="https://docs.google.com/document/d/..."
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isImportingGoogleDoc || !googleDocTitle || !googleDocUrl}>
+                  {isImportingGoogleDoc ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      Importando Google Doc...
+                    </>
+                  ) : (
+                    <>
+                      <BookOpen className="h-4 w-4" />
+                      Importar Google Doc
+                    </>
+                  )}
+                </Button>
+              </form>
+            </SurfaceCard>
+
+            <SurfaceCard variant="panel" className="p-6">
+              <div className="flex items-center gap-2">
+                <WandSparkles className="h-4 w-4 text-primary" />
+                <h3 className="font-heading text-lg font-semibold">Agente editorial</h3>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Cada nueva ingesta dispara un analizador que propone nuevos contenidos publicables.
+              </p>
+              <div className="mt-5 space-y-3">
+                {opportunities.slice(0, 3).map((item) => (
+                  <SurfaceCard key={item.id} variant="inner" className="border bg-background/70 p-4">
+                    <p className="font-medium text-foreground">{item.title}</p>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.angle}</p>
+                    <p className="mt-3 text-xs text-muted-foreground">
+                      {item.recommendedFormat} · confianza {Math.round((item.confidenceScore ?? 0) * 100)}%
+                    </p>
+                  </SurfaceCard>
+                ))}
+                {opportunities.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Todavía no hay oportunidades generadas.</p>
+                ) : null}
+              </div>
+            </SurfaceCard>
+          </div>
+
+          {importError ? (
+            <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {importError}
+            </div>
+          ) : null}
+
           <SurfaceCard variant="panel" className="p-6">
             <div className="flex items-center justify-between gap-3">
               <div>

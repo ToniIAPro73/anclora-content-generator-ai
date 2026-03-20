@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
+import { createIndexedSource } from '@/lib/rag/source-ingestion'
 
 export const runtime = 'nodejs'
 
@@ -47,10 +48,6 @@ export async function POST(request: NextRequest) {
   try {
     const { workspaceId } = await getAuthenticatedWorkspace()
 
-    if (!process.env.DATABASE_URL) {
-      return NextResponse.json({ error: 'DATABASE_URL no configurado' }, { status: 503 })
-    }
-
     const body = await request.json()
     const { title, content, sourceUrl, sourceType = 'manual' } = body
 
@@ -58,25 +55,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'title es requerido' }, { status: 400 })
     }
 
-    const { neon } = await import('@neondatabase/serverless')
-    const sql = neon(process.env.DATABASE_URL)
-
-    const [row] = await sql`
-      INSERT INTO content_sources (workspace_id, title, source_type, source_url, content, status)
-      VALUES (${workspaceId}, ${title}, ${sourceType}, ${sourceUrl ?? null}, ${content ?? null}, 'pending')
-      RETURNING id, title, source_type, status, chunks_count, created_at
-    `
+    const source = await createIndexedSource({
+      workspaceId,
+      title,
+      sourceType,
+      sourceUrl: sourceUrl ?? undefined,
+      content: content ?? '',
+      metadata: {
+        ingestionMode: 'manual',
+      },
+    })
 
     return NextResponse.json({
       success: true,
-      source: {
-        id: row.id,
-        title: row.title,
-        type: row.source_type,
-        status: row.status,
-        chunks: row.chunks_count,
-        date: (row.created_at as string).slice(0, 10),
-      },
+      source,
     })
   } catch (error) {
     if (error instanceof WorkspaceAuthError) {

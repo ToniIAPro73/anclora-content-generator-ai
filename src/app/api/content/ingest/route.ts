@@ -8,12 +8,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { db, insertChunks } from '@/lib/db/neon'
-import { contentSources } from '@/lib/db/schema'
-import { chunkText } from '@/lib/rag/chunking'
-import { generateLocalEmbeddings } from '@/lib/rag/embeddings'
-import { eq } from 'drizzle-orm'
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
+import { createIndexedSource } from '@/lib/rag/source-ingestion'
 
 export const runtime = 'nodejs'
 
@@ -46,62 +42,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Crear source
-    const [source] = await db.insert(contentSources).values({
+    const source = await createIndexedSource({
       workspaceId,
       title: body.title,
       sourceType: body.sourceType,
       sourceUrl: body.sourceUrl,
-      content: body.content,
+      content: body.content || '',
       metadata: body.metadata || {},
-      status: 'processing'
-    }).returning()
-
-    // Procesar contenido (chunking + embeddings)
-    const contentToProcess = body.content || ''
-
-    const chunks = chunkText(contentToProcess, {
-      maxChunkSize: 1000,
-      overlap: 200,
-      mode: 'semantic'
     })
-
-    // Generar embeddings y preparar para inserción
-    const chunksWithEmbeddings = await Promise.all(
-      chunks.map(async (chunk) => {
-        const embedding = await generateLocalEmbeddings(chunk.content)
-        return {
-          content: chunk.content,
-          chunkIndex: chunk.index,
-          embedding,
-          metadata: chunk.metadata,
-          tokenCount: chunk.metadata.tokenCount as number | undefined
-        }
-      })
-    )
-
-    // Insertar todos los chunks de una vez (bulk insert)
-    await insertChunks({
-      workspaceId,
-      sourceId: source.id,
-      chunks: chunksWithEmbeddings
-    })
-
-    // Actualizar source
-    await db.update(contentSources)
-      .set({
-        status: 'completed',
-        chunksCount: chunks.length,
-        processedAt: new Date()
-      })
-      .where(eq(contentSources.id, source.id))
 
     return NextResponse.json({
       success: true,
-      source: {
-        ...source,
-        chunksCount: chunks.length
-      }
+      source,
     })
 
   } catch (error) {
