@@ -528,6 +528,23 @@
         "Dashboard y Metrics con lectura territorial y alertas operativas",
         "Fases 3 y 4 cerradas en roadmap y especificaciones"
       ]
+    },
+    {
+      "id": 30,
+      "title": "Crear una capa de test reutilizable",
+      "description": "Añadir configuración, utilidades y suites base de test para validar UI pública, componentes críticos y configuración RAG con smoke E2E y tests unitarios.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [29],
+      "priority": "HIGH",
+      "estimated_hours": "1-3",
+      "feature": "ANCLORA-FEAT-015",
+      "deliverables": [
+        "playwright.config.ts y smoke tests E2E",
+        "render helper y tests de componente",
+        "Tests unitarios de configuración RAG"
+      ]
     }
   ]
 }

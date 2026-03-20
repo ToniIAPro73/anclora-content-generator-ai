@@ -8,6 +8,12 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
+    exclude: ['e2e/**', 'node_modules/**', '.next/**'],
+    pool: 'forks',
+    isolate: false,
+    fileParallelism: false,
+    maxWorkers: 1,
+    execArgv: ['--max-old-space-size=4096'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

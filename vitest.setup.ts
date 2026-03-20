@@ -1,6 +1,7 @@
 import '@testing-library/jest-dom'
 import { beforeAll, afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
+import { createElement } from 'react'
 
 // Cleanup after each test
 afterEach(() => {
@@ -27,6 +28,20 @@ vi.mock('next/navigation', () => ({
   }),
   usePathname: () => '/dashboard',
   useSearchParams: () => new URLSearchParams(),
+}))
+
+vi.mock('next/image', () => ({
+  default: ({
+    alt,
+    src,
+    fill,
+    priority,
+    ...props
+  }: { alt?: string; src?: string; fill?: boolean; priority?: boolean } & Record<string, unknown>) => {
+    void fill
+    void priority
+    return createElement('img', { alt: alt ?? '', src: src ?? '', ...props })
+  },
 }))
 
 // Mock Supabase client
