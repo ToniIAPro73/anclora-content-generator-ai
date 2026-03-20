@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SurfaceCard } from '@/components/ui/surface-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BarChart3, FileText, Rocket, BookOpen, Layers, Clock } from 'lucide-react'
@@ -27,6 +28,28 @@ interface DashboardMetrics {
   platformPerformance?: Array<{ platform: string; views: number; impressions: number; clicks: number; leads: number; avgEngagementRate: number }>
   topPerformingContent?: Array<{ id: string; title: string; contentType: string; platform: string; views: number; impressions: number; clicks: number; leads: number; avgEngagementRate: number; lastSnapshot: string }>
 }
+
+interface LibraryContentItem {
+  id: string
+  title: string
+  content: string
+  contentType: string
+  status: string
+  updatedAt: string
+  scheduledFor?: string | null
+  publishedAt?: string | null
+  performance?: {
+    views: number
+    impressions: number
+    clicks: number
+    leadsGenerated: number
+    conversions: number
+    engagementRate: number
+    leadsTracked: number
+    convertedLeads: number
+  }
+}
+
 const amber = 'hsl(38 92% 55%)'
 const sage  = 'hsl(158 42% 45%)'
 
@@ -45,15 +68,24 @@ function Skeleton({ className }: { className?: string }) {
 
 export default function MetricsPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
+  const [libraryItems, setLibraryItems] = useState<LibraryContentItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [queueActionId, setQueueActionId] = useState<string | null>(null)
+  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [channelFilter, setChannelFilter] = useState<string>('all')
+  const [selectedContentId, setSelectedContentId] = useState<string | null>(null)
 
   async function fetchMetrics() {
-    await fetch('/api/metrics/dashboard')
-      .then((r) => r.json())
-      .then((data) => setMetrics(data.metrics ?? null))
-      .catch(() => setMetrics(null))
-      .finally(() => setIsLoading(false))
+    await Promise.all([
+      fetch('/api/metrics/dashboard')
+        .then((r) => r.json())
+        .then((data) => setMetrics(data.metrics ?? null))
+        .catch(() => setMetrics(null)),
+      fetch('/api/content/library?limit=40')
+        .then((r) => r.json())
+        .then((data) => setLibraryItems(data.items ?? []))
+        .catch(() => setLibraryItems([])),
+    ]).finally(() => setIsLoading(false))
   }
 
   useEffect(() => {
@@ -82,6 +114,28 @@ export default function MetricsPage() {
       setQueueActionId(null)
     }
   }
+
+  const filteredLibraryItems = useMemo(() => {
+    return libraryItems.filter((item) => {
+      const matchesStatus = statusFilter === 'all' || item.status === statusFilter
+      const matchesChannel = channelFilter === 'all' || item.contentType === channelFilter
+      return matchesStatus && matchesChannel
+    })
+  }, [channelFilter, libraryItems, statusFilter])
+
+  useEffect(() => {
+    if (!filteredLibraryItems.length) {
+      setSelectedContentId(null)
+      return
+    }
+
+    const stillVisible = filteredLibraryItems.some((item) => item.id === selectedContentId)
+    if (!stillVisible) {
+      setSelectedContentId(filteredLibraryItems[0]?.id ?? null)
+    }
+  }, [filteredLibraryItems, selectedContentId])
+
+  const selectedContent = filteredLibraryItems.find((item) => item.id === selectedContentId) ?? null
 
   return (
     <div className="space-y-6 p-1">
@@ -329,7 +383,7 @@ export default function MetricsPage() {
 
         {/* ── Contenido ── */}
         <TabsContent value="content">
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid gap-4 xl:grid-cols-[1.1fr_1.2fr_0.9fr]">
             <SurfaceCard variant="panel" className="p-6">
               <h3 className="font-heading text-sm font-semibold">Pipeline Editorial</h3>
               <p className="mt-0.5 text-xs text-muted-foreground">
@@ -365,6 +419,145 @@ export default function MetricsPage() {
                   </p>
                 </div>
               )}
+            </SurfaceCard>
+
+            <SurfaceCard variant="panel" className="p-6">
+              <div className="flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-heading text-sm font-semibold">Detalle por Pieza</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    Filtra, selecciona y lee tracción editorial sin salir de Metrics.
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value ?? 'all')}>
+                    <SelectTrigger className="w-[150px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los estados</SelectItem>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="review">Review</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="scheduled">Scheduled</SelectItem>
+                      <SelectItem value="published">Published</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+
+                  <Select value={channelFilter} onValueChange={(value) => setChannelFilter(value ?? 'all')}>
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todos los canales</SelectItem>
+                      <SelectItem value="blog">Blog</SelectItem>
+                      <SelectItem value="linkedin">LinkedIn</SelectItem>
+                      <SelectItem value="instagram">Instagram</SelectItem>
+                      <SelectItem value="newsletter">Newsletter</SelectItem>
+                      <SelectItem value="facebook">Facebook</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="mt-5 grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
+                <div className="space-y-2">
+                  {filteredLibraryItems.length > 0 ? (
+                    filteredLibraryItems.map((item) => (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setSelectedContentId(item.id)}
+                        className="block w-full text-left"
+                      >
+                        <SurfaceCard
+                          variant="inner"
+                          className={[
+                            'rounded-lg border px-4 py-3 transition-colors',
+                            selectedContentId === item.id
+                              ? 'border-primary/40 bg-primary/5'
+                              : 'bg-muted hover:border-primary/20 hover:bg-primary/5',
+                          ].join(' ')}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <Badge variant="secondary" className="text-xs">{item.contentType}</Badge>
+                            <Badge variant="outline" className="text-xs">{item.status}</Badge>
+                          </div>
+                          <p className="mt-3 text-sm font-medium text-foreground">{item.title}</p>
+                          <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                            <span>{item.performance?.views ?? 0} views</span>
+                            <span>{item.performance?.clicks ?? 0} clicks</span>
+                            <span>{item.performance?.leadsGenerated ?? 0} leads</span>
+                          </div>
+                        </SurfaceCard>
+                      </button>
+                    ))
+                  ) : (
+                    <SurfaceCard variant="inner" className="rounded-lg border bg-muted px-4 py-6 text-center">
+                      <p className="text-sm font-medium text-muted-foreground">Sin piezas para este filtro</p>
+                      <p className="mt-1 text-xs text-muted-foreground/60">
+                        Ajusta estado o canal para explorar otras piezas del pipeline.
+                      </p>
+                    </SurfaceCard>
+                  )}
+                </div>
+
+                <SurfaceCard variant="inner" className="rounded-lg border bg-muted px-5 py-5">
+                  {selectedContent ? (
+                    <>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">{selectedContent.contentType}</Badge>
+                        <Badge variant="outline" className="text-xs">{selectedContent.status}</Badge>
+                        {selectedContent.scheduledFor ? (
+                          <Badge variant="outline" className="text-xs">
+                            {new Date(selectedContent.scheduledFor).toLocaleString('es-ES')}
+                          </Badge>
+                        ) : null}
+                      </div>
+
+                      <h4 className="mt-4 font-heading text-xl font-semibold text-foreground">
+                        {selectedContent.title}
+                      </h4>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                        {[
+                          { label: 'Views', value: selectedContent.performance?.views ?? 0 },
+                          { label: 'Clicks', value: selectedContent.performance?.clicks ?? 0 },
+                          { label: 'Leads', value: selectedContent.performance?.leadsGenerated ?? 0 },
+                          { label: 'Conversiones', value: selectedContent.performance?.conversions ?? 0 },
+                          { label: 'Lead tracking', value: selectedContent.performance?.leadsTracked ?? 0 },
+                          { label: 'ER', value: `${((selectedContent.performance?.engagementRate ?? 0) * 100).toFixed(1)}%` },
+                        ].map((item) => (
+                          <SurfaceCard key={item.label} variant="inner" className="rounded-lg border bg-background/70 px-4 py-3">
+                            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{item.label}</p>
+                            <p className="mt-2 text-sm font-medium text-foreground">{item.value}</p>
+                          </SurfaceCard>
+                        ))}
+                      </div>
+
+                      <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                        Última actualización editorial {new Date(selectedContent.updatedAt).toLocaleString('es-ES')}
+                        {selectedContent.publishedAt ? ` · Publicado ${new Date(selectedContent.publishedAt).toLocaleDateString('es-ES')}` : ''}
+                      </p>
+
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <Link href={`/dashboard/studio?contentId=${selectedContent.id}`}>
+                          <Button size="sm" variant="outline">Abrir en Studio</Button>
+                        </Link>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex min-h-[240px] flex-col items-center justify-center text-center">
+                      <p className="text-sm font-medium text-muted-foreground">Selecciona una pieza</p>
+                      <p className="mt-1 text-xs text-muted-foreground/60 max-w-xs">
+                        Aquí verás su lectura resumida de rendimiento, señales de lead y estado editorial.
+                      </p>
+                    </div>
+                  )}
+                </SurfaceCard>
+              </div>
             </SurfaceCard>
 
             <SurfaceCard variant="panel" className="p-6">

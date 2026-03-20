@@ -29,15 +29,32 @@ function mapContentTypeToPlatform(contentType: string) {
   }
 }
 
-export async function GET() {
+function clampLimit(rawLimit: string | null) {
+  const parsed = Number.parseInt(rawLimit ?? '12', 10)
+  if (Number.isNaN(parsed)) return 12
+  return Math.min(Math.max(parsed, 1), 50)
+}
+
+export async function GET(request: NextRequest) {
   try {
     const { workspaceId } = await getAuthenticatedWorkspace()
+    const limit = clampLimit(request.nextUrl.searchParams.get('limit'))
+    const statusFilter = request.nextUrl.searchParams.get('status')
+    const contentTypeFilter = request.nextUrl.searchParams.get('contentType')
+
+    const contentConditions = [eq(generatedContent.workspaceId, workspaceId)]
+    if (statusFilter) {
+      contentConditions.push(eq(generatedContent.status, statusFilter as typeof generatedContent.status.enumValues[number]))
+    }
+    if (contentTypeFilter) {
+      contentConditions.push(eq(generatedContent.contentType, contentTypeFilter as typeof generatedContent.contentType.enumValues[number]))
+    }
 
     const [items, scheduledQueue] = await Promise.all([
       db.query.generatedContent.findMany({
-        where: eq(generatedContent.workspaceId, workspaceId),
+        where: contentConditions.length === 1 ? contentConditions[0] : and(...contentConditions),
         orderBy: [desc(generatedContent.updatedAt)],
-        limit: 12,
+        limit,
         columns: {
           id: true,
           title: true,
@@ -70,7 +87,7 @@ export async function GET() {
           )
         )
         .orderBy(asc(scheduledPosts.scheduledFor))
-        .limit(12),
+        .limit(limit),
     ])
 
     const contentIds = items.map((item) => item.id)
