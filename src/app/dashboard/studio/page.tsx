@@ -94,6 +94,8 @@ const strategicPresets = [
 
 function StudioPageContent() {
   const searchParams = useSearchParams()
+  const automationSource = searchParams.get("automationSource")
+  const automationAction = searchParams.get("automationAction")
   const [title, setTitle] = useState("")
   const [contentType, setContentType] = useState<string>("blog")
   const [templateId, setTemplateId] = useState("")
@@ -183,6 +185,23 @@ function StudioPageContent() {
       .filter(Boolean)
       .join("\n")
   }, [audience, microZoneId, objective, title, tone, userContext])
+
+  const automationBadgeLabel = useMemo(() => {
+    switch (automationSource) {
+      case "review_backlog":
+        return "Desbloqueo editorial"
+      case "schedule_gap":
+        return "Hueco de programacion"
+      case "repurpose_winner":
+        return "Derivacion ganadora"
+      case "cta_optimization":
+        return "Optimizacion comercial"
+      case "content_refresh":
+        return "Refresh editorial"
+      default:
+        return null
+    }
+  }, [automationSource])
 
   function applyPreset(index: number) {
     const preset = strategicPresets[index]
@@ -290,6 +309,20 @@ function StudioPageContent() {
   return (
     <div className="grid gap-6 xl:grid-cols-[1.05fr_1.05fr_1.2fr]">
       <div className="space-y-6">
+        {automationAction ? (
+          <SurfaceCard variant="panel" className="border-primary/20 bg-primary/5 p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary">
+                Siguiente accion sugerida
+              </Badge>
+              {automationBadgeLabel ? <Badge variant="secondary">{automationBadgeLabel}</Badge> : null}
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+              {automationAction}
+            </p>
+          </SurfaceCard>
+        ) : null}
+
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">

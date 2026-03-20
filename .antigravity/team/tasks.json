@@ -375,6 +375,23 @@
         "Dashboard con recomendaciones operativas enlazadas a acciones reales",
         "Apertura formal de Fase 5 en roadmap y tablero"
       ]
+    },
+    {
+      "id": 21,
+      "title": "Convertir recomendaciones en acciones asistidas",
+      "description": "Evitar que las recomendaciones sean solo enlaces genéricos, enviando al operador a un Studio precontextualizado con la siguiente accion sugerida y el briefing adecuado.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [20],
+      "priority": "HIGH",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-008",
+      "deliverables": [
+        "Recomendaciones con actionSummary y CTA asistido",
+        "Studio con modo siguiente accion sugerida",
+        "Cierre de la primera iteracion operativa de Fase 5"
+      ]
     }
   ]
 }

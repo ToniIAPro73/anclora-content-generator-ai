@@ -185,6 +185,7 @@ Estado actual:
 - Ya existe una primera capa de recomendaciones operativas explicables en Dashboard.
 - Las sugerencias se generan desde backlog editorial, vacios de programacion, rendimiento comercial y densidad de conocimiento.
 - Las acciones siguen siendo humanas: el sistema recomienda y enlaza, pero no ejecuta cambios destructivos por su cuenta.
+- El Studio ya puede abrir en modo de accion asistida con contexto precargado desde la recomendacion.
 
 ## Decisiones de producto recomendadas
 

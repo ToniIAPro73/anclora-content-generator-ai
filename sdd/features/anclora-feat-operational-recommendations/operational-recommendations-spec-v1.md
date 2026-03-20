@@ -24,12 +24,14 @@ La app ya muestra métricas, cola programada y rendimiento por pieza, pero el op
    - base de conocimiento demasiado delgada
 3. Mostrar esas recomendaciones en Dashboard como capa superior de cockpit
 4. Enlazar cada recomendación a una acción real dentro del producto
+5. Abrir Studio en modo de accion asistida cuando la recomendacion implique revisar, refrescar, derivar o programar una pieza
 
 ## Criterios de aceptación
 
 - Dashboard muestra recomendaciones automáticas si existen señales suficientes
 - Cada recomendación explica el porqué con lenguaje operativo y no opaco
 - Cada recomendación tiene CTA navegable dentro de la app
+- Las recomendaciones editoriales abren Studio con un plan de accion visible y contexto precargado cuando aplica
 - No se ejecuta ninguna automatización destructiva sin confirmación humana
 - `lint` y `build` pasan
 

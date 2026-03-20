@@ -20,12 +20,25 @@ type OperationalRecommendation = {
   title: string
   reason: string
   metric: string
+  actionSummary: string
   href: string
   hrefLabel: string
 }
 
 function recommendationId(type: RecommendationType, suffix: string) {
   return `${type}:${suffix}`
+}
+
+function buildStudioHref(params: Record<string, string | undefined>) {
+  const searchParams = new URLSearchParams()
+
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      searchParams.set(key, value)
+    }
+  })
+
+  return `/dashboard/studio?${searchParams.toString()}`
 }
 
 export async function GET() {
@@ -130,7 +143,12 @@ export async function GET() {
         title: 'Desbloquear una pieza atascada en revisión',
         reason: `${String(reviewBacklog.title)} lleva tiempo esperando validación editorial y está frenando el flujo.`,
         metric: `Última actualización: ${new Date(String(reviewBacklog.updated_at)).toLocaleString('es-ES')}`,
-        href: `/dashboard/studio?contentId=${String(reviewBacklog.id)}`,
+        actionSummary: 'Revisa tesis, CTA y salida editorial antes de aprobar o devolver cambios.',
+        href: buildStudioHref({
+          contentId: String(reviewBacklog.id),
+          automationSource: 'review_backlog',
+          automationAction: 'Valida la tesis, el CTA y la salida editorial para desbloquear esta pieza.',
+        }),
         hrefLabel: 'Revisar pieza',
       })
     }
@@ -145,7 +163,12 @@ export async function GET() {
         title: 'Cierra el hueco de programación',
         reason: `No hay cola programada activa y ${String(approvedBacklog.title)} ya está aprobada para salir.`,
         metric: 'Cola programada pendiente: 0',
-        href: `/dashboard/studio?contentId=${String(approvedBacklog.id)}`,
+        actionSummary: 'Asigna una fecha de salida y valida el canal antes de perder inercia editorial.',
+        href: buildStudioHref({
+          contentId: String(approvedBacklog.id),
+          automationSource: 'schedule_gap',
+          automationAction: 'Programa una ventana de salida para que la cadencia no se quede vacía.',
+        }),
         hrefLabel: 'Programar salida',
       })
     }
@@ -159,7 +182,17 @@ export async function GET() {
         title: 'Deriva el contenido que ya está generando negocio',
         reason: `${String(businessWinner.title)} ya produce señal comercial; conviene reaprovechar su tesis en otro canal.`,
         metric: `${Number(businessWinner.leads ?? 0)} leads · ${Number(businessWinner.conversions ?? 0)} conversiones`,
-        href: `/dashboard/studio?title=${encodeURIComponent(`Derivada de ${String(businessWinner.title)}`)}&contentType=linkedin`,
+        actionSummary: 'Abre una derivada con la misma tesis ganadora, pero empaquetada para un canal distinto.',
+        href: buildStudioHref({
+          automationSource: 'repurpose_winner',
+          automationAction: 'Convierte esta tesis ganadora en una derivada de canal con un CTA más directo.',
+          title: `Derivada de ${String(businessWinner.title)}`,
+          objective: `Reaprovechar una tesis que ya genera negocio en ${String(businessWinner.platform ?? 'otro canal')} sin perder foco comercial.`,
+          audience: 'Inversores y compradores premium que ya han mostrado interes en contenidos de inteligencia inmobiliaria.',
+          context: `${String(businessWinner.title)} ya ha generado ${Number(businessWinner.leads ?? 0)} leads y ${Number(businessWinner.conversions ?? 0)} conversiones. Mantener la misma hipotesis y reforzar el CTA.`,
+          contentType: 'linkedin',
+          tone: 'institucional',
+        }),
         hrefLabel: 'Crear derivada',
       })
     }
@@ -173,7 +206,12 @@ export async function GET() {
         title: 'Optimiza una pieza con mucho tráfico y baja conversión',
         reason: `${String(ctaOpportunity.title)} atrae atención, pero no está convirtiendo ese interés en leads.`,
         metric: `${Number(ctaOpportunity.views ?? 0)} views · ${Number(ctaOpportunity.leads ?? 0)} leads`,
-        href: `/dashboard/studio?contentId=${String(ctaOpportunity.id)}`,
+        actionSummary: 'Reabre la pieza y endurece propuesta de valor, CTA y cierre comercial.',
+        href: buildStudioHref({
+          contentId: String(ctaOpportunity.id),
+          automationSource: 'cta_optimization',
+          automationAction: 'Reescribe el cierre y el CTA para convertir atencion en conversacion comercial.',
+        }),
         hrefLabel: 'Reforzar CTA',
       })
     }
@@ -187,7 +225,8 @@ export async function GET() {
         title: 'Refuerza la base de conocimiento',
         reason: 'El RAG sigue con una base documental pequeña y eso limita la calidad de las tesis editoriales.',
         metric: `${totalSources} fuentes activas`,
-        href: '/dashboard/rag',
+        actionSummary: 'Carga nuevas fuentes antes de abrir mas piezas para que el motor trabaje con contexto suficiente.',
+        href: '/dashboard/rag?automationSource=knowledge_gap',
         hrefLabel: 'Cargar fuentes',
       })
     }
@@ -201,7 +240,12 @@ export async function GET() {
         title: 'Actualiza una pieza publicada que puede haber quedado obsoleta',
         reason: `${String(stalePublished.title)} lleva semanas publicado y puede necesitar refresh con contexto más reciente.`,
         metric: `Publicado: ${new Date(String(stalePublished.published_at)).toLocaleDateString('es-ES')}`,
-        href: `/dashboard/studio?contentId=${String(stalePublished.id)}`,
+        actionSummary: 'Reabre la pieza y actualiza tesis, datos y CTA con contexto más reciente.',
+        href: buildStudioHref({
+          contentId: String(stalePublished.id),
+          automationSource: 'content_refresh',
+          automationAction: 'Actualiza esta pieza publicada con datos mas recientes y una llamada a la accion renovada.',
+        }),
         hrefLabel: 'Actualizar pieza',
       })
     }
