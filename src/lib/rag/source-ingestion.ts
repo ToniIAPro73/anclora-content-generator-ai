@@ -1,7 +1,6 @@
 import { Buffer } from 'node:buffer'
 
 import mammoth from 'mammoth'
-import { PDFParse } from 'pdf-parse'
 import { eq } from 'drizzle-orm'
 
 import { db } from '@/lib/db/neon'
@@ -167,7 +166,11 @@ export async function extractTextFromUploadedFile(file: File) {
   const extension = file.name.split('.').pop()?.toLowerCase()
 
   if (extension === 'pdf') {
-    const parser = new PDFParse({ data: bytes })
+    const { PDFParse } = await import('pdf-parse')
+    const parser = new PDFParse({
+      data: bytes,
+      worker: null as never,
+    })
     try {
       const result = await parser.getText()
       return result.text?.trim() ?? ''
