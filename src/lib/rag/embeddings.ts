@@ -1,7 +1,11 @@
+import { mkdir } from 'node:fs/promises'
+import path from 'node:path'
+
 import { pipeline, type PipelineType, type FeatureExtractionPipeline, type ProgressCallback } from '@huggingface/transformers'
 import { ensureRagBackendCompatibility, getEmbeddingBackend, getGoogleEmbeddingModel } from './config'
 
 const MODEL_NAME = 'Xenova/all-MiniLM-L6-v2'
+const TRANSFORMERS_CACHE_DIR = path.join(process.cwd(), '.cache', 'transformers')
 
 class PipelineSingleton {
   static task: PipelineType = 'feature-extraction'
@@ -10,13 +14,18 @@ class PipelineSingleton {
 
   static async getInstance(progress_callback?: ProgressCallback): Promise<FeatureExtractionPipeline> {
     if (this.instance === null) {
-      // Configuraciones para entorno Node/Edge
       const { env } = await import('@huggingface/transformers')
-      // Deshabilitamos modelos locales para asegurar descarga del Hub
-      env.allowLocalModels = false
+      await mkdir(TRANSFORMERS_CACHE_DIR, { recursive: true })
+
+      // Forzamos una caché escribible fuera de node_modules para evitar locks/permisos en Windows.
+      env.cacheDir = TRANSFORMERS_CACHE_DIR
+      env.allowLocalModels = true
+      env.useFS = true
+      env.useFSCache = true
 
       this.instance = (pipeline(this.task, this.model, {
         progress_callback,
+        dtype: 'q8',
       }) as unknown) as Promise<FeatureExtractionPipeline>
     }
     return this.instance

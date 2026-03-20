@@ -193,6 +193,17 @@ export default function KnowledgeBasePage() {
   const [packError, setPackError] = React.useState<string | null>(null)
   const [manualCategory, setManualCategory] = React.useState<string>("editorial")
 
+  async function parseApiResponse<T>(response: Response): Promise<T> {
+    const contentType = response.headers.get("content-type") ?? ""
+
+    if (contentType.includes("application/json")) {
+      return (await response.json()) as T
+    }
+
+    const text = await response.text()
+    throw new Error(text || "El servidor ha devuelto una respuesta no valida.")
+  }
+
   const loadSources = React.useCallback(async () => {
     const res = await fetch("/api/rag/sources")
     const data = await res.json()
@@ -269,9 +280,10 @@ export default function KnowledgeBasePage() {
           sourceCategory: manualCategory,
         }),
       })
-      const data = await res.json()
-      if (data.source) {
-        setSources((prev) => [data.source, ...prev])
+      const data = await parseApiResponse<{ source?: Source; error?: string }>(res)
+      const source = data.source
+      if (source) {
+        setSources((prev) => [source, ...prev])
       }
       setNewTitle("")
       setNewContent("")
@@ -302,7 +314,7 @@ export default function KnowledgeBasePage() {
         }),
       })
 
-      const data = await res.json()
+      const data = await parseApiResponse<{ error?: string; packId?: string }>(res)
       if (!res.ok) {
         throw new Error(data.error ?? "No se pudo crear el knowledge pack")
       }
@@ -344,7 +356,7 @@ export default function KnowledgeBasePage() {
         body: formData,
       })
 
-      const data = await res.json()
+      const data = await parseApiResponse<{ error?: string }>(res)
       if (!res.ok) {
         throw new Error(data.error ?? "No se pudo importar el documento")
       }
@@ -379,7 +391,7 @@ export default function KnowledgeBasePage() {
         body: formData,
       })
 
-      const data = await res.json()
+      const data = await parseApiResponse<{ error?: string }>(res)
       if (!res.ok) {
         throw new Error(data.error ?? "No se pudo importar el Google Doc")
       }

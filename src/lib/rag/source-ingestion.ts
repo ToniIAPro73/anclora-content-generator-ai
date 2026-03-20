@@ -1,4 +1,5 @@
 import { Buffer } from 'node:buffer'
+import { createRequire } from 'node:module'
 
 import mammoth from 'mammoth'
 import { eq } from 'drizzle-orm'
@@ -12,6 +13,7 @@ import { insertVectorChunks } from '@/lib/rag/vector-store'
 
 type SourceType = (typeof sourceTypeEnum.enumValues)[number]
 type SourceCategory = (typeof sourceCategoryEnum.enumValues)[number]
+const require = createRequire(import.meta.url)
 
 type CreateIndexedSourceInput = {
   workspaceId: string
@@ -166,7 +168,7 @@ export async function extractTextFromUploadedFile(file: File) {
   const extension = file.name.split('.').pop()?.toLowerCase()
 
   if (extension === 'pdf') {
-    const { PDFParse } = await import('pdf-parse')
+    const { PDFParse } = require('pdf-parse') as typeof import('pdf-parse')
     const parser = new PDFParse({
       data: bytes,
       worker: null as never,
