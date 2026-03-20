@@ -92,24 +92,48 @@ const publishingChecklist = [
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [queueActionId, setQueueActionId] = useState<string | null>(null)
+
+  async function fetchMetrics() {
+    try {
+      const response = await fetch('/api/metrics/dashboard')
+      if (response.ok) {
+        const data = await response.json()
+        setMetrics(data.metrics)
+      }
+    } catch {
+      setMetrics(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const response = await fetch('/api/metrics/dashboard')
-        if (response.ok) {
-          const data = await response.json()
-          setMetrics(data.metrics)
-        }
-      } catch {
-        setMetrics(null)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchMetrics()
+    void fetchMetrics()
   }, [])
+
+  async function handleUnschedule(contentId: string) {
+    setQueueActionId(contentId)
+
+    try {
+      const response = await fetch('/api/content/library', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: contentId,
+          action: 'unschedule',
+        }),
+      })
+
+      if (response.ok) {
+        await fetchMetrics()
+      }
+    } finally {
+      setQueueActionId(null)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -365,6 +389,21 @@ export default function DashboardPage() {
                   <p className="mt-2 text-xs text-muted-foreground">
                     Programado para {new Date(item.scheduledFor).toLocaleString("es-ES")}
                   </p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Link href={`/dashboard/studio?contentId=${item.contentId}`}>
+                      <Button size="sm" variant="outline">
+                        Abrir en Studio
+                      </Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={queueActionId === item.contentId}
+                      onClick={() => void handleUnschedule(item.contentId)}
+                    >
+                      {queueActionId === item.contentId ? "Cancelando..." : "Cancelar"}
+                    </Button>
+                  </div>
                 </SurfaceCard>
               ))
             ) : (

@@ -104,6 +104,7 @@ function StudioPageContent() {
   const [scheduleAt, setScheduleAt] = useState("")
 
   useEffect(() => {
+    const sourceContentId = searchParams.get("contentId")
     const sourceOpportunityId = searchParams.get("opportunityId")
     const opportunityTitle = searchParams.get("title")
     const opportunityObjective = searchParams.get("objective")
@@ -113,6 +114,27 @@ function StudioPageContent() {
     const opportunityContentType = searchParams.get("contentType")
     const opportunityTone = searchParams.get("tone")
 
+    if (sourceContentId && !generatedContent?.id) {
+      void (async () => {
+        try {
+          const response = await fetch("/api/content/library")
+          if (!response.ok) return
+
+          const payload = (await response.json()) as {
+            items?: Array<GeneratedContent & { title: string }>
+          }
+          const existingContent = payload.items?.find((item) => item.id === sourceContentId)
+          if (!existingContent) return
+
+          setGeneratedContent(existingContent)
+          setTitle(existingContent.title)
+          setContentType(existingContent.contentType)
+        } catch {
+          // Non-blocking: Studio can still operate in create mode.
+        }
+      })()
+    }
+
     if (sourceOpportunityId && !opportunityId) setOpportunityId(sourceOpportunityId)
     if (opportunityTitle && !title) setTitle(opportunityTitle)
     if (opportunityObjective && !objective) setObjective(opportunityObjective)
@@ -121,7 +143,7 @@ function StudioPageContent() {
     if (opportunityContext && !userContext) setUserContext(opportunityContext)
     if (opportunityContentType && contentType === "blog") setContentType(opportunityContentType)
     if (opportunityTone && tone === "analitico") setTone(opportunityTone)
-  }, [audience, contentType, objective, opportunityId, ragQuery, searchParams, title, tone, userContext])
+  }, [audience, contentType, generatedContent?.id, objective, opportunityId, ragQuery, searchParams, title, tone, userContext])
 
   useEffect(() => {
     if (generatedContent?.scheduledFor) {

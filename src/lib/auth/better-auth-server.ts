@@ -18,10 +18,24 @@ const betterAuthSecret =
   process.env.BETTER_AUTH_SECRET ??
   "anclora-dev-secret-change-me-before-enabling-better-auth"
 
-const betterAuthBaseURL =
-  process.env.BETTER_AUTH_URL ??
-  process.env.NEXT_PUBLIC_APP_URL ??
-  "http://localhost:3000"
+function resolveBetterAuthBaseURL() {
+  if (process.env.BETTER_AUTH_URL) {
+    return process.env.BETTER_AUTH_URL
+  }
+
+  if (process.env.NEXT_PUBLIC_APP_URL && !process.env.NEXT_PUBLIC_APP_URL.includes("localhost")) {
+    return process.env.NEXT_PUBLIC_APP_URL
+  }
+
+  const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL
+  if (vercelUrl) {
+    return `https://${vercelUrl}`
+  }
+
+  return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+}
+
+const betterAuthBaseURL = resolveBetterAuthBaseURL()
 
 export const isBetterAuthEnabled = process.env.BETTER_AUTH_ENABLED === "true"
   || process.env.NEXT_PUBLIC_BETTER_AUTH_ENABLED === "true"

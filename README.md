@@ -113,6 +113,8 @@ Notas:
 - El backend operativo actual sigue siendo `Neon + pgvector`.
 - La configuración futura `Pinecone + Gemini embeddings` queda preparada, pero no activada por defecto.
 - Mientras `RAG_VECTOR_BACKEND=pgvector`, la compatibilidad soportada es `RAG_EMBEDDING_BACKEND=local`.
+- En local puedes usar `http://localhost:3000` para `NEXT_PUBLIC_APP_URL` y `BETTER_AUTH_URL`.
+- En Vercel, evita dejar esas variables apuntando a `localhost`; el cliente de auth ya resuelve por defecto contra el origen desplegado y el servidor intenta autodetectar `VERCEL_URL`.
 
 ### Instalacion
 

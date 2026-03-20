@@ -1,7 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { SurfaceCard } from '@/components/ui/surface-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BarChart3, FileText, Rocket, BookOpen, Layers, Clock } from 'lucide-react'
@@ -18,6 +20,8 @@ interface DashboardMetrics {
   recentActivity?: Array<{ date: string; count: number }>
   recentContent?: Array<{ id: string; title: string; status: string; contentType: string; updatedAt: string }>
   scheduledQueue?: Array<{ id: string; contentId: string; title: string; platform: string; contentType: string; scheduledFor: string }>
+  platformPerformance?: Array<{ platform: string; views: number; impressions: number; clicks: number; leads: number; avgEngagementRate: number }>
+  topPerformingContent?: Array<{ id: string; title: string; contentType: string; platform: string; views: number; impressions: number; clicks: number; leads: number; avgEngagementRate: number; lastSnapshot: string }>
 }
 const amber = 'hsl(38 92% 55%)'
 const sage  = 'hsl(158 42% 45%)'
@@ -36,14 +40,42 @@ function Skeleton({ className }: { className?: string }) {
 export default function MetricsPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [queueActionId, setQueueActionId] = useState<string | null>(null)
 
-  useEffect(() => {
-    fetch('/api/metrics/dashboard')
+  async function fetchMetrics() {
+    await fetch('/api/metrics/dashboard')
       .then((r) => r.json())
       .then((data) => setMetrics(data.metrics ?? null))
       .catch(() => setMetrics(null))
       .finally(() => setIsLoading(false))
+  }
+
+  useEffect(() => {
+    void fetchMetrics()
   }, [])
+
+  async function handleUnschedule(contentId: string) {
+    setQueueActionId(contentId)
+
+    try {
+      const response = await fetch('/api/content/library', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: contentId,
+          action: 'unschedule',
+        }),
+      })
+
+      if (response.ok) {
+        await fetchMetrics()
+      }
+    } finally {
+      setQueueActionId(null)
+    }
+  }
 
   return (
     <div className="space-y-6 p-1">
@@ -197,6 +229,96 @@ export default function MetricsPage() {
               </div>
             </SurfaceCard>
           </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <SurfaceCard variant="panel" className="p-6">
+              <h3 className="font-heading text-sm font-semibold">Rendimiento por Canal</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Lectura inicial de alcance, clics y leads por plataforma.
+              </p>
+              {metrics?.platformPerformance && metrics.platformPerformance.length > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {metrics.platformPerformance.map((item) => (
+                    <SurfaceCard
+                      key={item.platform}
+                      variant="inner"
+                      className="rounded-lg border bg-muted px-4 py-3"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <Badge variant="secondary" className="text-xs">{item.platform}</Badge>
+                        <span className="text-xs text-muted-foreground">
+                          ER {(item.avgEngagementRate * 100).toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                        <div>
+                          <p>Views</p>
+                          <p className="mt-1 font-semibold text-foreground">{item.views}</p>
+                        </div>
+                        <div>
+                          <p>Clicks</p>
+                          <p className="mt-1 font-semibold text-foreground">{item.clicks}</p>
+                        </div>
+                        <div>
+                          <p>Leads</p>
+                          <p className="mt-1 font-semibold text-foreground">{item.leads}</p>
+                        </div>
+                      </div>
+                    </SurfaceCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
+                    <BarChart3 className="h-6 w-6 text-muted-foreground/35" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Sin telemetría por canal todavía</p>
+                  <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
+                    Cuando entren snapshots en content_metrics aparecerán aquí.
+                  </p>
+                </div>
+              )}
+            </SurfaceCard>
+
+            <SurfaceCard variant="panel" className="p-6">
+              <h3 className="font-heading text-sm font-semibold">Piezas con Mayor Tracción</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Ranking operativo para detectar qué tesis ya están empujando demanda.
+              </p>
+              {metrics?.topPerformingContent && metrics.topPerformingContent.length > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {metrics.topPerformingContent.map((item) => (
+                    <SurfaceCard
+                      key={`${item.id}-${item.platform}`}
+                      variant="inner"
+                      className="rounded-lg border bg-muted px-4 py-3"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="secondary" className="text-xs">{item.platform}</Badge>
+                        <Badge variant="outline" className="text-xs">{item.contentType}</Badge>
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-foreground">{item.title}</p>
+                      <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        <span>{item.views} views</span>
+                        <span>{item.clicks} clicks</span>
+                        <span>{item.leads} leads</span>
+                      </div>
+                    </SurfaceCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
+                    <Rocket className="h-6 w-6 text-muted-foreground/35" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Aún no hay piezas con telemetría</p>
+                  <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
+                    Esta vista se activará cuando exista rendimiento persistido por pieza y plataforma.
+                  </p>
+                </div>
+              )}
+            </SurfaceCard>
+          </div>
         </TabsContent>
 
         {/* ── Contenido ── */}
@@ -261,6 +383,19 @@ export default function MetricsPage() {
                       <div className="flex items-center gap-2">
                         <Badge variant="secondary" className="text-xs">{item.platform}</Badge>
                         <Badge className="text-xs" variant="outline">{item.contentType}</Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link href={`/dashboard/studio?contentId=${item.contentId}`}>
+                          <Button size="sm" variant="outline">Abrir</Button>
+                        </Link>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          disabled={queueActionId === item.contentId}
+                          onClick={() => void handleUnschedule(item.contentId)}
+                        >
+                          {queueActionId === item.contentId ? 'Cancelando...' : 'Cancelar'}
+                        </Button>
                       </div>
                     </SurfaceCard>
                   ))}

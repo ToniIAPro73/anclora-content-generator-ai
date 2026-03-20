@@ -290,6 +290,23 @@
         "Accion unschedule desde Studio",
         "Cola programada visible en dashboard y metrics"
       ]
+    },
+    {
+      "id": 16,
+      "title": "Abrir telemetria inicial por pieza y canal",
+      "description": "Usar content_metrics para exponer rendimiento por plataforma, ranking de piezas con traccion y hacer accionable la cola programada desde dashboard y metrics.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [15],
+      "priority": "HIGH",
+      "estimated_hours": "1-3",
+      "feature": "ANCLORA-FEAT-007",
+      "deliverables": [
+        "Dashboard y Metrics con unschedule desde la cola",
+        "Lectura inicial por canal desde content_metrics",
+        "Ranking basico de piezas con mayor traccion"
+      ]
     }
   ]
 }

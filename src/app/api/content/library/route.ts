@@ -41,6 +41,7 @@ export async function GET() {
         columns: {
           id: true,
           title: true,
+          content: true,
           contentType: true,
           status: true,
           createdAt: true,

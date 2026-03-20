@@ -26,6 +26,8 @@ const EMPTY_METRICS = {
   recentActivity: [],
   recentContent: [],
   scheduledQueue: [],
+  platformPerformance: [],
+  topPerformingContent: [],
 }
 
 export async function GET() {
@@ -51,6 +53,8 @@ export async function GET() {
       contentByTypeResult,
       recentContentResult,
       scheduledQueueResult,
+      platformPerformanceResult,
+      topPerformingContentResult,
     ] =
       await Promise.all([
         sql`SELECT COUNT(*) as count FROM generated_content WHERE workspace_id = ${workspaceId}`,
@@ -80,6 +84,39 @@ export async function GET() {
           WHERE sp.workspace_id = ${workspaceId}
             AND sp.status = 'pending'
           ORDER BY sp.scheduled_for ASC
+          LIMIT 5
+        `,
+        sql`
+          SELECT
+            platform,
+            COALESCE(SUM(views), 0) AS views,
+            COALESCE(SUM(impressions), 0) AS impressions,
+            COALESCE(SUM(clicks), 0) AS clicks,
+            COALESCE(SUM(leads_generated), 0) AS leads,
+            COALESCE(AVG(engagement_rate), 0) AS avg_engagement_rate
+          FROM content_metrics
+          WHERE workspace_id = ${workspaceId}
+          GROUP BY platform
+          ORDER BY COALESCE(SUM(views), 0) DESC, COALESCE(SUM(leads_generated), 0) DESC
+          LIMIT 5
+        `,
+        sql`
+          SELECT
+            gc.id,
+            gc.title,
+            gc.content_type,
+            cm.platform,
+            COALESCE(SUM(cm.views), 0) AS views,
+            COALESCE(SUM(cm.impressions), 0) AS impressions,
+            COALESCE(SUM(cm.clicks), 0) AS clicks,
+            COALESCE(SUM(cm.leads_generated), 0) AS leads,
+            COALESCE(AVG(cm.engagement_rate), 0) AS avg_engagement_rate,
+            MAX(cm.snapshot_date) AS last_snapshot
+          FROM content_metrics cm
+          INNER JOIN generated_content gc ON gc.id = cm.content_id
+          WHERE cm.workspace_id = ${workspaceId}
+          GROUP BY gc.id, gc.title, gc.content_type, cm.platform
+          ORDER BY COALESCE(SUM(cm.views), 0) DESC, COALESCE(SUM(cm.leads_generated), 0) DESC
           LIMIT 5
         `,
       ])
@@ -114,6 +151,26 @@ export async function GET() {
           platform: String(row.platform),
           contentType: String(row.content_type),
           scheduledFor: String(row.scheduled_for),
+        })),
+        platformPerformance: platformPerformanceResult.map((row) => ({
+          platform: String(row.platform),
+          views: Number(row.views ?? 0),
+          impressions: Number(row.impressions ?? 0),
+          clicks: Number(row.clicks ?? 0),
+          leads: Number(row.leads ?? 0),
+          avgEngagementRate: Number(row.avg_engagement_rate ?? 0),
+        })),
+        topPerformingContent: topPerformingContentResult.map((row) => ({
+          id: String(row.id),
+          title: String(row.title),
+          contentType: String(row.content_type),
+          platform: String(row.platform),
+          views: Number(row.views ?? 0),
+          impressions: Number(row.impressions ?? 0),
+          clicks: Number(row.clicks ?? 0),
+          leads: Number(row.leads ?? 0),
+          avgEngagementRate: Number(row.avg_engagement_rate ?? 0),
+          lastSnapshot: String(row.last_snapshot),
         })),
       },
     })
