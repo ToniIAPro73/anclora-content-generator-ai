@@ -97,6 +97,7 @@ export default function HomePage() {
         <div className="hidden items-center gap-3 md:flex">
           <Button
             variant="ghost"
+            nativeButton={false}
             render={<Link href="#system" />}
             className="text-muted-foreground hover:text-foreground"
           >
@@ -104,6 +105,7 @@ export default function HomePage() {
           </Button>
           <Button
             variant="default"
+            nativeButton={false}
             render={<Link href="/login" />}
             className="h-11 rounded-full bg-[linear-gradient(135deg,hsl(var(--primary)),hsl(40_100%_44%))] px-5 text-primary-foreground shadow-[0_16px_36px_-24px_rgba(255,198,55,0.8)]"
           >
@@ -145,6 +147,7 @@ export default function HomePage() {
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Button
                 size="lg"
+                nativeButton={false}
                 render={<Link href="/login" />}
                 className="h-12 rounded-full bg-[linear-gradient(135deg,hsl(var(--primary)),hsl(40_100%_44%))] px-6 text-primary-foreground shadow-[0_18px_40px_-24px_rgba(255,198,55,0.7)]"
               >
@@ -154,6 +157,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
+                nativeButton={false}
                 render={<Link href="#workflow" />}
                 className="h-12 rounded-full border-primary/15 bg-card/60 px-6 text-foreground backdrop-blur"
               >
@@ -355,6 +359,7 @@ export default function HomePage() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button
                 size="lg"
+                nativeButton={false}
                 render={<Link href="/login" />}
                 className="h-12 rounded-full bg-[linear-gradient(135deg,hsl(var(--primary)),hsl(40_100%_44%))] px-6 text-primary-foreground shadow-[0_18px_40px_-24px_rgba(255,198,55,0.7)]"
               >
@@ -364,6 +369,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="ghost"
+                nativeButton={false}
                 render={<Link href="#system" />}
                 className="h-12 rounded-full text-[#d5cab8] hover:bg-background/60 hover:text-foreground"
               >
