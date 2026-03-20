@@ -1,6 +1,6 @@
 {
   "project": "Anclora Content Generator AI",
-  "fase_actual": "FASE 4: Telemetria editorial y ciclo operativo",
+  "fase_actual": "FASE 5: Automatizacion y recomendaciones operativas",
   "members": [
     {
       "id": "anclorabot",
@@ -357,6 +357,23 @@
         "API de metrics con platformMomentum",
         "Vista de Metrics con comparativa temporal",
         "Panel de contenido que mueve negocio"
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Abrir recomendaciones operativas auditables",
+      "description": "Activar una primera capa de automatizacion prudente que traduzca el estado editorial, la cola y el rendimiento comercial en siguientes pasos accionables dentro del producto.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [19],
+      "priority": "HIGH",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-008",
+      "deliverables": [
+        "Endpoint /api/automation/recommendations con heuristicas explicables",
+        "Dashboard con recomendaciones operativas enlazadas a acciones reales",
+        "Apertura formal de Fase 5 en roadmap y tablero"
       ]
     }
   ]

@@ -107,7 +107,8 @@ Esto ya se ha corregido para que el dashboard siga siendo un shell contenido, si
 - Fase 1 completada en baseline operativo: Better Auth + `workspace_organizations` y resolucion server-side de `workspaceId`.
 - Fase 2 avanzada parcialmente: shell, sidebar, studio, dashboard y RAG ya operan con una narrativa menos generica.
 - Fase 3 muy avanzada: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `oportunidad -> studio -> draft` y especializacion por categoria de fuente.
-- Fase 4 abierta: primera iteracion del ciclo editorial persistido con `draft`, `review`, `approved`, `scheduled` y `published`.
+- Fase 4 muy avanzada: ciclo editorial persistido, cola programada, drilldown por pieza y comparativa temporal ya operativos.
+- Fase 5 abierta: primera capa de recomendaciones operativas auditables sobre señales reales del sistema.
 
 ## Roadmap recomendado
 
@@ -168,7 +169,8 @@ Estado actual:
 - Studio ya permite mover una pieza entre `review`, `approved`, `scheduled` y `published`.
 - El dashboard ya refleja pipeline editorial reciente.
 - Metrics ya incorpora lectura de `review` y `approved`.
-- Sigue pendiente una capa de scheduling ejecutor real y telemetria por canal.
+- Ya existe drilldown por pieza, lead attribution y comparativa temporal por canal.
+- Sigue pendiente una capa de scheduling ejecutor real y telemetria mas profunda por micro-zona y attribution comercial.
 
 ## Fase 5. Automatizacion y agentes
 
@@ -177,6 +179,12 @@ Objetivo: volver a la vision del `.docx`, pero con base real.
 - Formalizar tareas agenciales sobre procesos claros y auditables.
 - Separar agentes de datos, UX, API y verificacion.
 - Introducir automatizacion solo cuando el flujo core ya sea confiable.
+
+Estado actual:
+
+- Ya existe una primera capa de recomendaciones operativas explicables en Dashboard.
+- Las sugerencias se generan desde backlog editorial, vacios de programacion, rendimiento comercial y densidad de conocimiento.
+- Las acciones siguen siendo humanas: el sistema recomienda y enlaza, pero no ejecuta cambios destructivos por su cuenta.
 
 ## Decisiones de producto recomendadas
 

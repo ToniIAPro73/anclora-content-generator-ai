@@ -48,6 +48,17 @@ interface DashboardMetrics {
     scheduledFor: string
   }>
 }
+
+interface OperationalRecommendation {
+  id: string
+  type: 'review_backlog' | 'schedule_gap' | 'repurpose_winner' | 'cta_optimization' | 'knowledge_gap' | 'content_refresh'
+  priority: 'critical' | 'high' | 'medium'
+  title: string
+  reason: string
+  metric: string
+  href: string
+  hrefLabel: string
+}
 const commandCards = [
   {
     title: "Briefing del dia",
@@ -95,18 +106,29 @@ const publishingChecklist = [
 
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
+  const [recommendations, setRecommendations] = useState<OperationalRecommendation[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [queueActionId, setQueueActionId] = useState<string | null>(null)
 
   async function fetchMetrics() {
     try {
-      const response = await fetch('/api/metrics/dashboard')
-      if (response.ok) {
-        const data = await response.json()
+      const [metricsResponse, recommendationsResponse] = await Promise.all([
+        fetch('/api/metrics/dashboard'),
+        fetch('/api/automation/recommendations'),
+      ])
+
+      if (metricsResponse.ok) {
+        const data = await metricsResponse.json()
         setMetrics(data.metrics)
+      }
+
+      if (recommendationsResponse.ok) {
+        const data = await recommendationsResponse.json()
+        setRecommendations(data.recommendations ?? [])
       }
     } catch {
       setMetrics(null)
+      setRecommendations([])
     } finally {
       setIsLoading(false)
     }
@@ -278,24 +300,57 @@ export default function DashboardPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4 text-primary" />
-              Oportunidades detectadas
+              Recomendaciones automáticas
             </CardTitle>
             <CardDescription>
-              Ideas de alto valor que la interfaz deberia priorizar como piezas editoriales.
+              Siguientes pasos sugeridos a partir del estado editorial y las métricas reales.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            {marketSignals.map((signal) => (
-              <SurfaceCard key={signal.zone} variant="inner" className="border bg-muted/40 p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-medium text-foreground">{signal.zone}</p>
-                  <Badge variant="outline">{signal.signal}</Badge>
-                </div>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {signal.detail}
-                </p>
-              </SurfaceCard>
-            ))}
+            {recommendations.length ? (
+              recommendations.map((item) => (
+                <SurfaceCard key={item.id} variant="inner" className="border bg-muted/40 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-medium text-foreground">{item.title}</p>
+                    <Badge
+                      variant="outline"
+                      className={
+                        item.priority === 'critical'
+                          ? 'border-red-500/30 text-red-300'
+                          : item.priority === 'high'
+                          ? 'border-primary/30 text-primary'
+                          : undefined
+                      }
+                    >
+                      {item.priority}
+                    </Badge>
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {item.reason}
+                  </p>
+                  <p className="mt-3 text-xs text-muted-foreground">{item.metric}</p>
+                  <div className="mt-3">
+                    <Link href={item.href}>
+                      <Button size="sm" variant="outline">
+                        {item.hrefLabel}
+                      </Button>
+                    </Link>
+                  </div>
+                </SurfaceCard>
+              ))
+            ) : (
+              marketSignals.map((signal) => (
+                <SurfaceCard key={signal.zone} variant="inner" className="border bg-muted/40 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-medium text-foreground">{signal.zone}</p>
+                    <Badge variant="outline">{signal.signal}</Badge>
+                  </div>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {signal.detail}
+                  </p>
+                </SurfaceCard>
+              ))
+            )}
           </CardContent>
         </Card>
 
