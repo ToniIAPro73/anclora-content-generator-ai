@@ -106,8 +106,8 @@ Esto ya se ha corregido para que el dashboard siga siendo un shell contenido, si
 - Fase 0 completada: rebaseline documental, naming y narrativa unica de stack.
 - Fase 1 completada en baseline operativo: Better Auth + `workspace_organizations` y resolucion server-side de `workspaceId`.
 - Fase 2 cerrada: shell, sidebar, studio, dashboard, RAG y settings ya comparten una narrativa de cockpit premium.
-- Fase 3 muy avanzada: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `oportunidad -> studio -> draft` y especializacion por categoria de fuente.
-- Fase 4 muy avanzada: ciclo editorial persistido, cola programada, drilldown por pieza y comparativa temporal ya operativos.
+- Fase 3 completada: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `fuente -> oportunidad -> studio -> draft`, libreria persistida de plantillas y micro-zonas ya operativas en Studio, Settings y telemetría.
+- Fase 4 completada: ciclo editorial persistido, cola programada, drilldown por pieza, alertas editoriales y lectura hiperlocal por micro-zona ya operativos.
 - Fase 5 cerrada en baseline operativo: recomendaciones auditables y acciones asistidas ya conectan Dashboard, Studio y RAG sin automatizacion destructiva.
 - Fase 6 cerrada en baseline operativo: cola de ejecucion editorial visible, dispatch manual asistido y configuracion editorial persistida.
 
@@ -160,7 +160,9 @@ Estado actual:
 - `knowledge packs`, jobs y oportunidades editoriales ya estan implementados.
 - La importacion documental ya soporta PDF, DOCX, Google Docs, TXT y Markdown.
 - La trazabilidad ya enlaza `fuente -> oportunidad -> studio -> borrador`.
-- Esta iteracion continua la fase con categorias de fuente de dominio y retrieval legible para operadores.
+- Las plantillas editoriales ya viven en Neon y Studio las consume por workspace y canal.
+- Las micro-zonas ya se gestionan desde Settings, Studio puede vincular piezas a territorio y esa relacion se persiste en cada contenido generado.
+- La fase queda cerrada como baseline de especializacion de dominio y activos estrategicos.
 
 ## Fase 4. Telemetria y ciclo editorial completo
 
@@ -177,7 +179,8 @@ Estado actual:
 - El dashboard ya refleja pipeline editorial reciente.
 - Metrics ya incorpora lectura de `review` y `approved`.
 - Ya existe drilldown por pieza, lead attribution y comparativa temporal por canal.
-- Sigue pendiente una capa de scheduling ejecutor real y telemetria mas profunda por micro-zona y attribution comercial.
+- Dashboard y Metrics ya exponen alertas editoriales operativas y lectura por micro-zona.
+- La fase queda cerrada como baseline del ciclo editorial completo y su telemetría accionable.
 
 ## Fase 5. Automatizacion y agentes
 
@@ -220,11 +223,11 @@ Estado actual:
 
 ## Riesgos abiertos
 
-- Persisten mocks visibles en varias vistas del dashboard.
+- Persisten mocks visibles en varias vistas del dashboard, aunque ya no bloquean el flujo core.
 - El acoplamiento entre UI, API y modelo de datos sigue necesitando limpieza adicional.
 - La estrategia RLS historica ya no debe leerse como control efectivo del sistema actual sobre Neon.
 - Siguen existiendo zonas con persistencia parcial, especialmente en gestión de secretos y conectores externos.
-- Falta la libreria de plantillas Anclora persistida y gobernada desde base de datos.
+- La gestion de secretos y conectores externos sigue siendo parcial y todavía requiere una capa más robusta.
 
 ## Recomendacion final
 

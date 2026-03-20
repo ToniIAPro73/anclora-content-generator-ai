@@ -11,6 +11,8 @@ import {
   Radar,
   Sparkles,
   TrendingUp,
+  MapPinned,
+  TriangleAlert,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -59,6 +61,25 @@ interface DashboardMetrics {
     lastError: string | null
     publishedAt: string | null
     platformPostId: string | null
+  }>
+  microZonePerformance?: Array<{
+    id: string
+    name: string
+    municipality: string
+    totalContent: number
+    publishedContent: number
+    views: number
+    leads: number
+    conversions: number
+    lastActivityAt: string | null
+  }>
+  editorialAlerts?: Array<{
+    id: string
+    tone: 'neutral' | 'warning' | 'critical'
+    title: string
+    description: string
+    href: string
+    hrefLabel: string
   }>
 }
 
@@ -439,6 +460,104 @@ export default function DashboardPage() {
                 </SurfaceCard>
               </Link>
             ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="grid gap-4 xl:grid-cols-[0.9fr_1.1fr]">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TriangleAlert className="h-4 w-4 text-primary" />
+              Alertas editoriales
+            </CardTitle>
+            <CardDescription>
+              Señales operativas que todavía requieren intervención humana para no perder cadencia ni calidad.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {metrics?.editorialAlerts?.length ? (
+              metrics.editorialAlerts.map((alert) => (
+                <SurfaceCard
+                  key={alert.id}
+                  variant="inner"
+                  className={[
+                    'border p-4',
+                    alert.tone === 'critical'
+                      ? 'border-red-500/30 bg-red-500/10'
+                      : alert.tone === 'warning'
+                      ? 'border-primary/20 bg-primary/5'
+                      : 'bg-background/70',
+                  ].join(' ')}
+                >
+                  <p className="font-medium text-foreground">{alert.title}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{alert.description}</p>
+                  <div className="mt-3">
+                    <Link href={alert.href}>
+                      <Button size="sm" variant="outline">
+                        {alert.hrefLabel}
+                      </Button>
+                    </Link>
+                  </div>
+                </SurfaceCard>
+              ))
+            ) : (
+              <SurfaceCard variant="inner" className="border bg-background/70 p-4">
+                <p className="font-medium text-foreground">Sin alertas críticas ahora mismo</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  El pipeline editorial está razonablemente equilibrado entre revisión, programación y delivery.
+                </p>
+              </SurfaceCard>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPinned className="h-4 w-4 text-primary" />
+              Pulso por micro-zona
+            </CardTitle>
+            <CardDescription>
+              Lectura hiperlocal de qué territorios ya tienen contenido, tracción y señales de negocio.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-2">
+            {metrics?.microZonePerformance?.length ? (
+              metrics.microZonePerformance.map((zone) => (
+                <SurfaceCard key={zone.id} variant="inner" className="border bg-background/70 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="font-medium text-foreground">{zone.name}</p>
+                    <Badge variant="outline">{zone.municipality}</Badge>
+                  </div>
+                  <div className="mt-3 grid grid-cols-2 gap-3 text-xs text-muted-foreground">
+                    <div>
+                      <p>Piezas</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{zone.totalContent}</p>
+                    </div>
+                    <div>
+                      <p>Publicadas</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{zone.publishedContent}</p>
+                    </div>
+                    <div>
+                      <p>Views</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{zone.views}</p>
+                    </div>
+                    <div>
+                      <p>Leads</p>
+                      <p className="mt-1 text-sm font-semibold text-foreground">{zone.leads}</p>
+                    </div>
+                  </div>
+                </SurfaceCard>
+              ))
+            ) : (
+              <SurfaceCard variant="inner" className="border bg-background/70 p-4">
+                <p className="font-medium text-foreground">Sin lectura territorial todavía</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Configura micro-zonas y enlaza nuevas piezas desde Studio para activar el análisis por territorio.
+                </p>
+              </SurfaceCard>
+            )}
           </CardContent>
         </Card>
       </section>

@@ -6,7 +6,7 @@ Owner: Anclorabot
 
 ## Objetivo
 
-Abrir la Fase 4 del roadmap implementando un ciclo editorial persistido y accionable sobre el contenido generado.
+Cerrar la Fase 4 del roadmap implementando un ciclo editorial persistido, accionable y medible sobre el contenido generado.
 
 ## Problema
 
@@ -29,6 +29,8 @@ La app ya genera contenido y lo persiste como `draft`, pero el operador todavia 
 7. Reabrir una pieza existente desde la cola programada o la libreria manteniendo visible su señal de rendimiento
 8. Exponer un detalle operativo de pieza con timeline editorial y breakdown de lead attribution
 9. Introducir comparativa temporal por canal y una lectura diferenciada entre engagement e impacto comercial
+10. Exponer alertas editoriales reales en Dashboard y Metrics
+11. Añadir lectura hiperlocal por micro-zona para cerrar el loop editorial sobre territorio
 
 ## Estados de la primera iteracion
 
@@ -51,10 +53,16 @@ La app ya genera contenido y lo persiste como `draft`, pero el operador todavia 
 - Studio puede abrir piezas existentes y mostrar su lectura resumida de views, clicks, leads y conversiones
 - Metrics permite leer el timeline editorial y el breakdown comercial de una pieza sin salir del dashboard
 - Metrics distingue momentum 7d vs periodo previo y separa top engagement de contenido que realmente genera negocio
+- Dashboard y Metrics exponen alertas editoriales accionables
+- Metrics muestra rendimiento por micro-zona
 - `lint` y `build` pasan
 
-## Fuera de alcance
+## Estado de cierre
 
-- Scheduler real de ejecución externa
-- Publicación automática en canales
-- Integración CRM o lead attribution
+La fase queda cerrada cuando el cockpit permite leer, en una sola superficie:
+
+- el estado editorial de cada pieza
+- la cola programada y la cola de entrega
+- la señal comercial por pieza y por canal
+- las alertas que exigen acción humana
+- el rendimiento hiperlocal por micro-zona

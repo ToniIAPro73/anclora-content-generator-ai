@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { SurfaceCard } from '@/components/ui/surface-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { BarChart3, FileText, Rocket, BookOpen, Layers, Clock } from 'lucide-react'
+import { BarChart3, FileText, Rocket, BookOpen, Layers, Clock, MapPinned, TriangleAlert } from 'lucide-react'
 
 interface DashboardMetrics {
   totalContent: number
@@ -30,6 +30,8 @@ interface DashboardMetrics {
   topPerformingContent?: Array<{ id: string; title: string; contentType: string; platform: string; views: number; impressions: number; clicks: number; leads: number; avgEngagementRate: number; lastSnapshot: string }>
   platformMomentum?: Array<{ platform: string; viewsCurrent: number; viewsPrevious: number; leadsCurrent: number; leadsPrevious: number; conversionsCurrent: number; conversionsPrevious: number }>
   businessImpactContent?: Array<{ id: string; title: string; contentType: string; platform: string; views: number; clicks: number; leads: number; conversions: number; leadEfficiency: number; conversionEfficiency: number }>
+  microZonePerformance?: Array<{ id: string; name: string; municipality: string; totalContent: number; publishedContent: number; views: number; leads: number; conversions: number; lastActivityAt: string | null }>
+  editorialAlerts?: Array<{ id: string; tone: 'neutral' | 'warning' | 'critical'; title: string; description: string; href: string; hrefLabel: string }>
 }
 
 interface LibraryContentItem {
@@ -42,6 +44,12 @@ interface LibraryContentItem {
   updatedAt: string
   scheduledFor?: string | null
   publishedAt?: string | null
+  microZoneId?: string | null
+  microZone?: {
+    id: string
+    name: string
+    municipality: string
+  } | null
   performance?: {
     views: number
     impressions: number
@@ -400,6 +408,98 @@ export default function MetricsPage() {
 
           <div className="grid gap-4 md:grid-cols-2">
             <SurfaceCard variant="panel" className="p-6">
+              <h3 className="font-heading text-sm font-semibold">Alertas editoriales</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Puntos del pipeline que exigen una acción del operador.
+              </p>
+              {metrics?.editorialAlerts && metrics.editorialAlerts.length > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {metrics.editorialAlerts.map((alert) => (
+                    <SurfaceCard
+                      key={alert.id}
+                      variant="inner"
+                      className={[
+                        'rounded-lg border px-4 py-3',
+                        alert.tone === 'critical'
+                          ? 'border-red-500/30 bg-red-500/10'
+                          : alert.tone === 'warning'
+                          ? 'bg-primary/5'
+                          : 'bg-muted',
+                      ].join(' ')}
+                    >
+                      <div className="flex items-center gap-2">
+                        <TriangleAlert className="h-4 w-4 text-primary" />
+                        <p className="font-medium text-foreground">{alert.title}</p>
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{alert.description}</p>
+                      <div className="mt-3">
+                        <Link href={alert.href}>
+                          <Button size="sm" variant="outline">{alert.hrefLabel}</Button>
+                        </Link>
+                      </div>
+                    </SurfaceCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
+                    <TriangleAlert className="h-6 w-6 text-muted-foreground/35" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Sin alertas operativas</p>
+                  <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
+                    El pipeline está equilibrado y no hay cuellos de botella relevantes ahora mismo.
+                  </p>
+                </div>
+              )}
+            </SurfaceCard>
+
+            <SurfaceCard variant="panel" className="p-6">
+              <h3 className="font-heading text-sm font-semibold">Micro-zonas</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Lectura territorial del impacto editorial y comercial.
+              </p>
+              {metrics?.microZonePerformance && metrics.microZonePerformance.length > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {metrics.microZonePerformance.map((zone) => (
+                    <SurfaceCard key={zone.id} variant="inner" className="rounded-lg border bg-muted px-4 py-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <MapPinned className="h-3.5 w-3.5 text-primary" />
+                          <p className="font-medium text-foreground">{zone.name}</p>
+                        </div>
+                        <Badge variant="outline" className="text-xs">{zone.municipality}</Badge>
+                      </div>
+                      <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                        <div>
+                          <p>Piezas</p>
+                          <p className="mt-1 font-semibold text-foreground">{zone.totalContent}</p>
+                        </div>
+                        <div>
+                          <p>Leads</p>
+                          <p className="mt-1 font-semibold text-foreground">{zone.leads}</p>
+                        </div>
+                        <div>
+                          <p>Conv.</p>
+                          <p className="mt-1 font-semibold text-foreground">{zone.conversions}</p>
+                        </div>
+                      </div>
+                    </SurfaceCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
+                    <MapPinned className="h-6 w-6 text-muted-foreground/35" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Sin telemetría por micro-zona</p>
+                  <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
+                    Vincula nuevas piezas a zonas concretas desde Studio para cerrar la lectura hiperlocal.
+                  </p>
+                </div>
+              )}
+            </SurfaceCard>
+
+            <SurfaceCard variant="panel" className="p-6">
               <h3 className="font-heading text-sm font-semibold">Rendimiento por Canal</h3>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 Lectura inicial de alcance, clics y leads por plataforma.
@@ -675,11 +775,16 @@ export default function MetricsPage() {
                               : 'bg-muted hover:border-primary/20 hover:bg-primary/5',
                           ].join(' ')}
                         >
-                          <div className="flex items-center justify-between gap-2">
-                            <Badge variant="secondary" className="text-xs">{item.contentType}</Badge>
-                            <Badge variant="outline" className="text-xs">{item.status}</Badge>
-                          </div>
-                          <p className="mt-3 text-sm font-medium text-foreground">{item.title}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="secondary" className="text-xs">{item.contentType}</Badge>
+                        <Badge variant="outline" className="text-xs">{item.status}</Badge>
+                      </div>
+                      {item.microZone ? (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {item.microZone.name} · {item.microZone.municipality}
+                        </p>
+                      ) : null}
+                      <p className="mt-3 text-sm font-medium text-foreground">{item.title}</p>
                           <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
                             <span>{item.performance?.views ?? 0} views</span>
                             <span>{item.performance?.clicks ?? 0} clicks</span>
@@ -704,6 +809,11 @@ export default function MetricsPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary" className="text-xs">{selectedContent.contentType}</Badge>
                         <Badge variant="outline" className="text-xs">{selectedContent.status}</Badge>
+                        {selectedContent.microZone ? (
+                          <Badge variant="outline" className="text-xs">
+                            {selectedContent.microZone.name}
+                          </Badge>
+                        ) : null}
                         {selectedContent.scheduledFor ? (
                           <Badge variant="outline" className="text-xs">
                             {new Date(selectedContent.scheduledFor).toLocaleString('es-ES')}

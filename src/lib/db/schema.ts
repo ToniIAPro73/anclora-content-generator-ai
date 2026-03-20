@@ -6,6 +6,7 @@
  */
 
 import { pgTable, uuid, text, timestamp, integer, jsonb, boolean, real, pgEnum, date, vector } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 import { sql } from 'drizzle-orm'
 export * from './auth-schema'
 
@@ -178,6 +179,7 @@ export const generatedContent = pgTable('generated_content', {
   workspaceId: uuid('workspace_id').notNull(),
   templateId: uuid('template_id').references(() => contentTemplates.id, { onDelete: 'set null' }),
   opportunityId: uuid('opportunity_id').references(() => contentOpportunities.id, { onDelete: 'set null' }),
+  microZoneId: uuid('micro_zone_id').references(() => microZones.id, { onDelete: 'set null' }),
   title: text('title').notNull(),
   content: text('content').notNull(),
   contentType: contentTypeEnum('content_type').notNull(),
@@ -261,6 +263,21 @@ export const leadTracking = pgTable('lead_tracking', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
+
+export const microZonesRelations = relations(microZones, ({ many }) => ({
+  generatedContent: many(generatedContent),
+}))
+
+export const generatedContentRelations = relations(generatedContent, ({ one }) => ({
+  microZone: one(microZones, {
+    fields: [generatedContent.microZoneId],
+    references: [microZones.id],
+  }),
+  template: one(contentTemplates, {
+    fields: [generatedContent.templateId],
+    references: [contentTemplates.id],
+  }),
+}))
 
 // =====================================================
 // TYPE EXPORTS (para inferir tipos de Drizzle)

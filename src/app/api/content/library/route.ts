@@ -78,6 +78,16 @@ export async function GET(request: NextRequest) {
           scheduledFor: true,
           publishedAt: true,
           opportunityId: true,
+          microZoneId: true,
+        },
+        with: {
+          microZone: {
+            columns: {
+              id: true,
+              name: true,
+              municipality: true,
+            },
+          },
         },
       }),
       db
@@ -205,6 +215,13 @@ export async function GET(request: NextRequest) {
 
     const enrichedItems = items.map((item) => ({
       ...item,
+      microZone: item.microZone
+        ? {
+            id: item.microZone.id,
+            name: item.microZone.name,
+            municipality: item.microZone.municipality,
+          }
+        : null,
       performance: {
         views: performanceByContent.get(item.id)?.views ?? 0,
         impressions: performanceByContent.get(item.id)?.impressions ?? 0,

@@ -88,6 +88,8 @@ export async function POST(request: NextRequest) {
 
     // Obtener contexto de micro-zona (si se especificó)
     let microZoneContext = ''
+    let resolvedMicroZoneId: string | null = null
+    let resolvedMicroZoneMetadata: { id: string; name: string; municipality: string } | null = null
 
     if (body.microZoneId && isUuid(body.microZoneId)) {
       const microZone = await db.query.microZones.findFirst({
@@ -103,6 +105,12 @@ export async function POST(request: NextRequest) {
       })
 
       if (microZone) {
+        resolvedMicroZoneId = body.microZoneId
+        resolvedMicroZoneMetadata = {
+          id: body.microZoneId,
+          name: microZone.name,
+          municipality: microZone.municipality,
+        }
         microZoneContext = `\nMicro-zona: ${microZone.name} (${microZone.municipality})\nDatos de mercado: ${JSON.stringify(microZone.marketData, null, 2)}\n`
       }
     }
@@ -129,12 +137,14 @@ export async function POST(request: NextRequest) {
     const generationMetadata = {
       ...result.metadata,
       opportunityId: body.opportunityId ?? null,
+      microZone: resolvedMicroZoneMetadata,
     }
 
     const [savedContent] = await db.insert(generatedContent).values({
       workspaceId,
       templateId: body.templateId || null,
       opportunityId: body.opportunityId && isUuid(body.opportunityId) ? body.opportunityId : null,
+      microZoneId: resolvedMicroZoneId,
       title: body.title,
       content: result.content,
       contentType: body.contentType,

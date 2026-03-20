@@ -29,6 +29,12 @@ interface GeneratedContent {
   content: string
   contentType: string
   status: string
+  microZoneId?: string | null
+  microZone?: {
+    id: string
+    name: string
+    municipality: string
+  } | null
   scheduledFor?: string | null
   publishedAt?: string | null
   performance?: {
@@ -55,6 +61,19 @@ interface GenerationMetadata {
     category: string
     similarity: number
   }>
+}
+
+interface TemplateOption {
+  id: string
+  name: string
+  contentType: string
+  description?: string | null
+}
+
+interface MicroZoneOption {
+  id: string
+  name: string
+  municipality: string
 }
 const contentTypes = [
   { value: "blog", label: "Blog de autoridad", hint: "Articulos profundos y SEO" },
@@ -115,6 +134,32 @@ function StudioPageContent() {
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [editorialMessage, setEditorialMessage] = useState<string | null>(null)
   const [scheduleAt, setScheduleAt] = useState("")
+  const [templates, setTemplates] = useState<TemplateOption[]>([])
+  const [microZones, setMicroZones] = useState<MicroZoneOption[]>([])
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const [templatesResponse, microZonesResponse] = await Promise.all([
+          fetch("/api/content/templates"),
+          fetch("/api/micro-zones"),
+        ])
+
+        if (templatesResponse.ok) {
+          const payload = (await templatesResponse.json()) as { templates?: TemplateOption[] }
+          setTemplates(payload.templates ?? [])
+        }
+
+        if (microZonesResponse.ok) {
+          const payload = (await microZonesResponse.json()) as { microZones?: MicroZoneOption[] }
+          setMicroZones(payload.microZones ?? [])
+        }
+      } catch {
+        setTemplates([])
+        setMicroZones([])
+      }
+    })()
+  }, [])
 
   useEffect(() => {
     const sourceContentId = searchParams.get("contentId")
@@ -142,6 +187,7 @@ function StudioPageContent() {
           setGeneratedContent(existingContent)
           setTitle(existingContent.title)
           setContentType(existingContent.contentType)
+          setMicroZoneId(existingContent.microZoneId ?? "")
         } catch {
           // Non-blocking: Studio can still operate in create mode.
         }
@@ -171,6 +217,21 @@ function StudioPageContent() {
   const selectedType = useMemo(
     () => contentTypes.find((item) => item.value === contentType),
     [contentType]
+  )
+
+  const filteredTemplates = useMemo(
+    () => templates.filter((item) => item.contentType === contentType || item.contentType === "custom"),
+    [contentType, templates]
+  )
+
+  const selectedTemplate = useMemo(
+    () => templates.find((item) => item.id === templateId) ?? null,
+    [templateId, templates]
+  )
+
+  const selectedMicroZone = useMemo(
+    () => microZones.find((item) => item.id === microZoneId) ?? null,
+    [microZoneId, microZones]
   )
 
   const userPrompt = useMemo(() => {
@@ -454,11 +515,22 @@ function StudioPageContent() {
                   <SelectValue placeholder="Selecciona una plantilla" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="template-market-report">Market Report</SelectItem>
-                  <SelectItem value="template-founder-linkedin">Founder LinkedIn</SelectItem>
-                  <SelectItem value="template-investor-brief">Investor Brief</SelectItem>
+                  {filteredTemplates.length ? (
+                    filteredTemplates.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__no-template" disabled>
+                      No hay plantillas persistidas para este canal
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                {selectedTemplate?.description || "La librería de plantillas se carga desde el workspace y filtra por canal."}
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -468,12 +540,24 @@ function StudioPageContent() {
                   <SelectValue placeholder="Selecciona una micro-zona" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="camp-de-mar">Camp de Mar</SelectItem>
-                  <SelectItem value="punta-negra">Punta Negra</SelectItem>
-                  <SelectItem value="palmanova">Palmanova</SelectItem>
-                  <SelectItem value="bendinat">Bendinat</SelectItem>
+                  {microZones.length ? (
+                    microZones.map((item) => (
+                      <SelectItem key={item.id} value={item.id}>
+                        {item.name}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <SelectItem value="__no-zone" disabled>
+                      No hay micro-zonas definidas aún
+                    </SelectItem>
+                  )}
                 </SelectContent>
               </Select>
+              <p className="text-xs text-muted-foreground">
+                {selectedMicroZone
+                  ? `${selectedMicroZone.name} · ${selectedMicroZone.municipality}`
+                  : "Conecta la pieza a una zona real para explotar el RAG y la telemetría hiperlocal."}
+              </p>
             </div>
 
             <div className="space-y-2">

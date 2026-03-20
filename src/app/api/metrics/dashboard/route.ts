@@ -35,6 +35,8 @@ const EMPTY_METRICS = {
   topPerformingContent: [],
   platformMomentum: [],
   businessImpactContent: [],
+  microZonePerformance: [],
+  editorialAlerts: [],
 }
 
 export async function GET() {
@@ -69,6 +71,8 @@ export async function GET() {
       topPerformingContentResult,
       platformMomentumResult,
       businessImpactContentResult,
+      microZonePerformanceResult,
+      failedDeliveriesResult,
     ] =
       await Promise.all([
         sql`SELECT COUNT(*) as count FROM generated_content WHERE workspace_id = ${workspaceId}`,
@@ -200,11 +204,92 @@ export async function GET() {
                    COALESCE(SUM(cm.clicks), 0) DESC
           LIMIT 5
         `,
+        sql`
+          SELECT
+            mz.id,
+            mz.name,
+            mz.municipality,
+            COUNT(DISTINCT gc.id) AS total_content,
+            COUNT(DISTINCT CASE WHEN gc.status = 'published' THEN gc.id END) AS published_content,
+            COALESCE(SUM(cm.views), 0) AS views,
+            COALESCE(SUM(cm.leads_generated), 0) AS leads,
+            COALESCE(SUM(cm.conversions), 0) AS conversions,
+            MAX(gc.updated_at) AS last_activity_at
+          FROM micro_zones mz
+          LEFT JOIN generated_content gc
+            ON gc.micro_zone_id = mz.id
+            AND gc.workspace_id = ${workspaceId}
+          LEFT JOIN content_metrics cm
+            ON cm.content_id = gc.id
+            AND cm.workspace_id = ${workspaceId}
+          WHERE mz.workspace_id = ${workspaceId}
+          GROUP BY mz.id, mz.name, mz.municipality
+          ORDER BY COALESCE(SUM(cm.conversions), 0) DESC,
+                   COALESCE(SUM(cm.leads_generated), 0) DESC,
+                   COUNT(DISTINCT gc.id) DESC,
+                   mz.name ASC
+          LIMIT 8
+        `,
+        sql`
+          SELECT COUNT(*) AS count
+          FROM scheduled_posts
+          WHERE workspace_id = ${workspaceId}
+            AND status = 'failed'
+        `,
       ])
 
     const contentByType = Object.fromEntries(
       contentByTypeResult.map((row) => [String(row.content_type), Number(row.count ?? 0)])
     )
+
+    const reviewCount = parseInt(String(reviewContentResult[0]?.count ?? '0'))
+    const approvedCount = parseInt(String(approvedContentResult[0]?.count ?? '0'))
+    const scheduledCount = parseInt(String(scheduledPostsResult[0]?.count ?? '0'))
+    const failedDeliveries = parseInt(String(failedDeliveriesResult[0]?.count ?? '0'))
+
+    const editorialAlerts = [
+      reviewCount >= 3
+        ? {
+            id: 'review-backlog',
+            tone: 'warning',
+            title: 'Backlog de revisión acumulado',
+            description: `${reviewCount} piezas esperan revisión editorial.`,
+            href: '/dashboard/metrics?tab=content',
+            hrefLabel: 'Abrir pipeline',
+          }
+        : null,
+      approvedCount > 0 && scheduledCount === 0
+        ? {
+            id: 'schedule-gap',
+            tone: 'warning',
+            title: 'Hay piezas aprobadas sin fecha de salida',
+            description: `${approvedCount} piezas aprobadas aún no están programadas.`,
+            href: '/dashboard/studio',
+            hrefLabel: 'Programar piezas',
+          }
+        : null,
+      failedDeliveries > 0
+        ? {
+            id: 'delivery-failed',
+            tone: 'critical',
+            title: 'La cola de entrega necesita atención',
+            description: `${failedDeliveries} entregas fallidas requieren reintento o revisión manual.`,
+            href: '/dashboard/metrics',
+            hrefLabel: 'Revisar delivery queue',
+          }
+        : null,
+      microZonePerformanceResult.length > 0 &&
+      !microZonePerformanceResult.some((row) => Number(row.total_content ?? 0) > 0)
+        ? {
+            id: 'micro-zone-gap',
+            tone: 'neutral',
+            title: 'Aún no hay piezas vinculadas a micro-zonas',
+            description: 'Conecta Studio y tu librería editorial a zonas concretas para cerrar la tesis hiperlocal.',
+            href: '/dashboard/settings',
+            hrefLabel: 'Configurar micro-zonas',
+          }
+        : null,
+    ].filter(Boolean)
 
     return NextResponse.json({
       success: true,
@@ -213,9 +298,9 @@ export async function GET() {
         totalContent: parseInt(String(totalContentResult[0]?.count ?? '0')),
         publishedContent: parseInt(String(publishedContentResult[0]?.count ?? '0')),
         draftContent: parseInt(String(draftContentResult[0]?.count ?? '0')),
-        reviewContent: parseInt(String(reviewContentResult[0]?.count ?? '0')),
-        approvedContent: parseInt(String(approvedContentResult[0]?.count ?? '0')),
-        scheduledPosts: parseInt(String(scheduledPostsResult[0]?.count ?? '0')),
+        reviewContent: reviewCount,
+        approvedContent: approvedCount,
+        scheduledPosts: scheduledCount,
         totalSources: parseInt(String(totalSourcesResult[0]?.count ?? '0')),
         totalLeadsGenerated: parseInt(String(totalLeadsResult[0]?.count ?? '0')),
         totalConversions: parseInt(String(totalConversionsResult[0]?.count ?? '0')),
@@ -291,6 +376,18 @@ export async function GET() {
           leadEfficiency: Number(row.lead_efficiency ?? 0),
           conversionEfficiency: Number(row.conversion_efficiency ?? 0),
         })),
+        microZonePerformance: microZonePerformanceResult.map((row) => ({
+          id: String(row.id),
+          name: String(row.name),
+          municipality: String(row.municipality),
+          totalContent: Number(row.total_content ?? 0),
+          publishedContent: Number(row.published_content ?? 0),
+          views: Number(row.views ?? 0),
+          leads: Number(row.leads ?? 0),
+          conversions: Number(row.conversions ?? 0),
+          lastActivityAt: row.last_activity_at ? String(row.last_activity_at) : null,
+        })),
+        editorialAlerts,
       },
     })
   } catch (error) {

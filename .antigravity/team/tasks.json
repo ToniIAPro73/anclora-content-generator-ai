@@ -494,6 +494,40 @@
         "Roadmap documental alineado",
         "Baseline operativo de ejecucion multicanal completado"
       ]
+    },
+    {
+      "id": 28,
+      "title": "Cerrar Fase 3 con micro-zonas y plantillas operativas",
+      "description": "Persistir la micro-zona en cada pieza, exponer un catalogo real de micro-zonas del workspace y conectar Studio a la libreria de plantillas persistida para cerrar la especializacion del dominio.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [26, 27],
+      "priority": "HIGH",
+      "estimated_hours": "1-3",
+      "feature": "ANCLORA-FEAT-013",
+      "deliverables": [
+        "generated_content enlazado a micro_zones",
+        "API /api/micro-zones y gestión desde Settings",
+        "Studio conectado a plantillas y micro-zonas persistidas"
+      ]
+    },
+    {
+      "id": 29,
+      "title": "Cerrar Fase 4 con telemetría hiperlocal y alertas editoriales",
+      "description": "Completar la telemetría por micro-zona y hacer visibles alertas editoriales reales en Dashboard y Metrics para cerrar el loop operativo del ciclo editorial.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [28],
+      "priority": "HIGH",
+      "estimated_hours": "1-3",
+      "feature": "ANCLORA-FEAT-014",
+      "deliverables": [
+        "Metrics API con microZonePerformance y editorialAlerts",
+        "Dashboard y Metrics con lectura territorial y alertas operativas",
+        "Fases 3 y 4 cerradas en roadmap y especificaciones"
+      ]
     }
   ]
 }

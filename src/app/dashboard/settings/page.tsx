@@ -9,6 +9,7 @@ import {
   Eye,
   EyeOff,
   LayoutTemplate,
+  MapPinned,
   Shield,
   SlidersHorizontal,
   Sparkles,
@@ -111,12 +112,26 @@ export default function SettingsPage() {
   const [isSavingWorkspace, setIsSavingWorkspace] = useState(false)
   const [isSavingModel, setIsSavingModel] = useState(false)
   const [isSavingTemplate, setIsSavingTemplate] = useState(false)
+  const [isSavingMicroZone, setIsSavingMicroZone] = useState(false)
+  const [microZoneName, setMicroZoneName] = useState('')
+  const [microZoneCode, setMicroZoneCode] = useState('')
+  const [microZoneMunicipality, setMicroZoneMunicipality] = useState('Calvia')
+  const [microZoneRegion, setMicroZoneRegion] = useState('Southwest Mallorca')
+  const [microZoneDescription, setMicroZoneDescription] = useState('')
 
   const [existingTemplates, setExistingTemplates] = useState<Array<{
     id?: string
     name: string
     type: string
     intent: string
+  }>>([])
+  const [existingMicroZones, setExistingMicroZones] = useState<Array<{
+    id?: string
+    name: string
+    code: string
+    municipality: string
+    region: string
+    description?: string | null
   }>>([])
 
   function showSaved(message: string) {
@@ -127,9 +142,10 @@ export default function SettingsPage() {
   useEffect(() => {
     void (async () => {
       try {
-        const [settingsResponse, templatesResponse] = await Promise.all([
+        const [settingsResponse, templatesResponse, microZonesResponse] = await Promise.all([
           fetch('/api/workspace/settings'),
           fetch('/api/content/templates'),
+          fetch('/api/micro-zones'),
         ])
 
         if (settingsResponse.ok) {
@@ -154,6 +170,27 @@ export default function SettingsPage() {
               name: template.name,
               type: template.contentType,
               intent: template.description || 'Plantilla editorial persistida en el workspace.',
+            }))
+          )
+        }
+
+        if (microZonesResponse.ok) {
+          const payload = await microZonesResponse.json()
+          setExistingMicroZones(
+            (payload.microZones ?? []).map((microZone: {
+              id: string
+              name: string
+              code: string
+              municipality: string
+              region: string
+              description?: string | null
+            }) => ({
+              id: microZone.id,
+              name: microZone.name,
+              code: microZone.code,
+              municipality: microZone.municipality,
+              region: microZone.region,
+              description: microZone.description || '',
             }))
           )
         }
@@ -282,6 +319,51 @@ export default function SettingsPage() {
     }
   }
 
+  async function saveMicroZone() {
+    if (!microZoneName.trim() || !microZoneCode.trim() || !microZoneMunicipality.trim()) return
+
+    setIsSavingMicroZone(true)
+    try {
+      const response = await fetch('/api/micro-zones', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: microZoneName,
+          code: microZoneCode,
+          municipality: microZoneMunicipality,
+          region: microZoneRegion,
+          description: microZoneDescription,
+          tags: [microZoneMunicipality, microZoneRegion],
+        }),
+      })
+
+      if (response.ok) {
+        const payload = await response.json()
+        if (payload.microZone) {
+          setExistingMicroZones((prev) => [
+            ...prev,
+            {
+              id: payload.microZone.id,
+              name: payload.microZone.name,
+              code: payload.microZone.code,
+              municipality: payload.microZone.municipality,
+              region: payload.microZone.region,
+              description: payload.microZone.description || '',
+            },
+          ].sort((a, b) => a.name.localeCompare(b.name)))
+        }
+        setMicroZoneName('')
+        setMicroZoneCode('')
+        setMicroZoneDescription('')
+        showSaved('Micro-zona guardada')
+      }
+    } finally {
+      setIsSavingMicroZone(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
@@ -348,6 +430,10 @@ export default function SettingsPage() {
           <TabsTrigger value="templates" className="gap-1.5">
             <LayoutTemplate className="h-3.5 w-3.5" />
             Plantillas
+          </TabsTrigger>
+          <TabsTrigger value="microzones" className="gap-1.5">
+            <MapPinned className="h-3.5 w-3.5" />
+            Micro-zonas
           </TabsTrigger>
           <TabsTrigger value="rag" className="gap-1.5">
             <BookOpen className="h-3.5 w-3.5" />
@@ -629,6 +715,99 @@ export default function SettingsPage() {
                   <p className="text-sm leading-relaxed text-muted-foreground">{item}</p>
                 </SurfaceCard>
               ))}
+            </div>
+          </SectionCard>
+        </TabsContent>
+
+        <TabsContent value="microzones" className="grid gap-4 xl:grid-cols-[1fr_0.9fr]">
+          <SectionCard
+            icon={MapPinned}
+            title="Micro-zona operativa"
+            description="Convierte la tesis hiperlocal en un activo persistido del workspace para Studio, RAG y Metrics."
+          >
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="microzone-name">Nombre</Label>
+                <Input
+                  id="microzone-name"
+                  placeholder="Ej. Camp de Mar"
+                  value={microZoneName}
+                  onChange={(event) => setMicroZoneName(event.target.value)}
+                />
+              </div>
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="microzone-code">Code</Label>
+                  <Input
+                    id="microzone-code"
+                    placeholder="camp-de-mar"
+                    value={microZoneCode}
+                    onChange={(event) => setMicroZoneCode(event.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="microzone-municipality">Municipio</Label>
+                  <Input
+                    id="microzone-municipality"
+                    value={microZoneMunicipality}
+                    onChange={(event) => setMicroZoneMunicipality(event.target.value)}
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="microzone-region">Región</Label>
+                <Input
+                  id="microzone-region"
+                  value={microZoneRegion}
+                  onChange={(event) => setMicroZoneRegion(event.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="microzone-description">Descripción</Label>
+                <Textarea
+                  id="microzone-description"
+                  rows={4}
+                  placeholder="Resumen operativo del tipo de oportunidad, inventario y narrativa comercial de la zona."
+                  value={microZoneDescription}
+                  onChange={(event) => setMicroZoneDescription(event.target.value)}
+                  className="resize-none"
+                />
+              </div>
+              <Button
+                onClick={() => void saveMicroZone()}
+                disabled={isSavingMicroZone || !microZoneName.trim() || !microZoneCode.trim()}
+                className="w-full"
+              >
+                {isSavingMicroZone ? 'Guardando...' : 'Guardar micro-zona'}
+              </Button>
+            </div>
+          </SectionCard>
+
+          <SectionCard
+            icon={Sparkles}
+            title="Cobertura hiperlocal"
+            description="Estas zonas alimentan el selector de Studio y permiten leer rendimiento editorial por territorio."
+          >
+            <div className="space-y-3">
+              {existingMicroZones.map((microZone) => (
+                <SurfaceCard key={microZone.id ?? microZone.code} variant="inner" className="border bg-background/70 p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="font-medium text-foreground">{microZone.name}</p>
+                    <Badge variant="outline">{microZone.municipality}</Badge>
+                  </div>
+                  <p className="mt-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">{microZone.code}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {microZone.description || `Micro-zona persistida en ${microZone.region}.`}
+                  </p>
+                </SurfaceCard>
+              ))}
+              {!existingMicroZones.length && !isLoading ? (
+                <SurfaceCard variant="inner" className="border bg-background/70 p-4">
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Aún no hay micro-zonas persistidas. Define la primera para activar telemetría editorial por territorio.
+                  </p>
+                </SurfaceCard>
+              ) : null}
             </div>
           </SectionCard>
         </TabsContent>
