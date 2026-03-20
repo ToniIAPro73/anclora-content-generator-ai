@@ -370,6 +370,7 @@ export default function KnowledgeBasePage() {
     }
 
     const params = new URLSearchParams({
+      opportunityId: opportunity.id,
       title: opportunity.title,
       objective: opportunity.angle,
       audience: opportunity.audience ?? "Audiencia estratégica del workspace",

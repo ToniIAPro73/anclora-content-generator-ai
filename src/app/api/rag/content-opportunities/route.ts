@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
 import { db } from '@/lib/db/neon'
@@ -30,7 +30,7 @@ export async function GET() {
 export async function PATCH(request: Request) {
   try {
     const { workspaceId } = await getAuthenticatedWorkspace()
-    const body = (await request.json()) as { id?: string; status?: 'new' | 'accepted' | 'dismissed' }
+    const body = (await request.json()) as { id?: string; status?: 'new' | 'accepted' | 'converted' | 'dismissed' }
 
     if (!body.id || !body.status) {
       return NextResponse.json({ error: 'id y status son requeridos' }, { status: 400 })
@@ -42,14 +42,19 @@ export async function PATCH(request: Request) {
         status: body.status,
         updatedAt: new Date(),
       })
-      .where(eq(contentOpportunities.id, body.id))
+      .where(
+        and(
+          eq(contentOpportunities.id, body.id),
+          eq(contentOpportunities.workspaceId, workspaceId)
+        )
+      )
       .returning({
         id: contentOpportunities.id,
         workspaceId: contentOpportunities.workspaceId,
         status: contentOpportunities.status,
       })
 
-    if (!updated || updated.workspaceId !== workspaceId) {
+    if (!updated) {
       return NextResponse.json({ error: 'Oportunidad no encontrada' }, { status: 404 })
     }
 

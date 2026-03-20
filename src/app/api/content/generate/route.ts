@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/neon'
-import { contentTemplates, generatedContent, microZones } from '@/lib/db/schema'
+import { contentOpportunities, contentTemplates, generatedContent, microZones } from '@/lib/db/schema'
 import { generateContentWithRAG } from '@/lib/rag/pipeline'
 import { eq, and } from 'drizzle-orm'
 import type { ContentType } from '@/lib/db/types'
@@ -24,6 +24,7 @@ interface GenerateRequest {
   userPrompt: string
   ragQuery?: string
   microZoneId?: string
+  opportunityId?: string
   modelConfig?: {
     temperature?: number
     maxTokens?: number
@@ -114,21 +115,42 @@ export async function POST(request: NextRequest) {
     })
 
     // Guardar contenido generado
+    const generationMetadata = {
+      ...result.metadata,
+      opportunityId: body.opportunityId ?? null,
+    }
+
     const [savedContent] = await db.insert(generatedContent).values({
       workspaceId,
       templateId: body.templateId || null,
+      opportunityId: body.opportunityId && isUuid(body.opportunityId) ? body.opportunityId : null,
       title: body.title,
       content: result.content,
       contentType: body.contentType,
       status: 'draft',
-      generationMetadata: result.metadata,
+      generationMetadata,
       platformPostIds: {}
     }).returning()
+
+    if (body.opportunityId && isUuid(body.opportunityId)) {
+      await db
+        .update(contentOpportunities)
+        .set({
+          status: 'converted',
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(contentOpportunities.id, body.opportunityId),
+            eq(contentOpportunities.workspaceId, workspaceId)
+          )
+        )
+    }
 
     return NextResponse.json({
       success: true,
       content: savedContent,
-      metadata: result.metadata
+      metadata: generationMetadata
     })
 
   } catch (error) {

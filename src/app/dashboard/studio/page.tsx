@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import {
   CheckCircle2,
   Copy,
@@ -80,6 +80,7 @@ export default function StudioPage() {
   const [contentType, setContentType] = useState<string>("blog")
   const [templateId, setTemplateId] = useState("")
   const [microZoneId, setMicroZoneId] = useState("")
+  const [opportunityId, setOpportunityId] = useState("")
   const [objective, setObjective] = useState("")
   const [audience, setAudience] = useState("")
   const [tone, setTone] = useState("analitico")
@@ -91,7 +92,8 @@ export default function StudioPage() {
   const [error, setError] = useState<string | null>(null)
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle")
 
-  useMemo(() => {
+  useEffect(() => {
+    const sourceOpportunityId = searchParams.get("opportunityId")
     const opportunityTitle = searchParams.get("title")
     const opportunityObjective = searchParams.get("objective")
     const opportunityAudience = searchParams.get("audience")
@@ -100,14 +102,15 @@ export default function StudioPage() {
     const opportunityContentType = searchParams.get("contentType")
     const opportunityTone = searchParams.get("tone")
 
+    if (sourceOpportunityId && !opportunityId) setOpportunityId(sourceOpportunityId)
     if (opportunityTitle && !title) setTitle(opportunityTitle)
     if (opportunityObjective && !objective) setObjective(opportunityObjective)
     if (opportunityAudience && !audience) setAudience(opportunityAudience)
     if (opportunityRagQuery && !ragQuery) setRagQuery(opportunityRagQuery)
     if (opportunityContext && !userContext) setUserContext(opportunityContext)
-    if (opportunityContentType && !contentType) setContentType(opportunityContentType)
-    if (opportunityTone && !tone) setTone(opportunityTone)
-  }, [audience, contentType, objective, ragQuery, searchParams, title, tone, userContext])
+    if (opportunityContentType && contentType === "blog") setContentType(opportunityContentType)
+    if (opportunityTone && tone === "analitico") setTone(opportunityTone)
+  }, [audience, contentType, objective, opportunityId, ragQuery, searchParams, title, tone, userContext])
 
   const selectedType = useMemo(
     () => contentTypes.find((item) => item.value === contentType),
@@ -152,6 +155,7 @@ export default function StudioPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          opportunityId: opportunityId || undefined,
           title,
           contentType,
           templateId: templateId || undefined,

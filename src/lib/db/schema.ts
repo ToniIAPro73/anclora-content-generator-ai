@@ -27,7 +27,7 @@ export const knowledgeClaimTypeEnum = pgEnum('knowledge_claim_type', ['market_si
 export const knowledgeSupportLevelEnum = pgEnum('knowledge_support_level', ['high', 'medium', 'low'])
 export const knowledgeEvidenceTypeEnum = pgEnum('knowledge_evidence_type', ['prompt', 'notebook', 'manual', 'derived', 'workflow'])
 export const knowledgeIngestionTriggerEnum = pgEnum('knowledge_ingestion_trigger', ['prompt', 'notebooklm', 'manual'])
-export const contentOpportunityStatusEnum = pgEnum('content_opportunity_status', ['new', 'accepted', 'dismissed'])
+export const contentOpportunityStatusEnum = pgEnum('content_opportunity_status', ['new', 'accepted', 'converted', 'dismissed'])
 
 // =====================================================
 // TABLES
@@ -158,6 +158,7 @@ export const generatedContent = pgTable('generated_content', {
   id: uuid('id').defaultRandom().primaryKey(),
   workspaceId: uuid('workspace_id').notNull(),
   templateId: uuid('template_id').references(() => contentTemplates.id, { onDelete: 'set null' }),
+  opportunityId: uuid('opportunity_id').references(() => contentOpportunities.id, { onDelete: 'set null' }),
   title: text('title').notNull(),
   content: text('content').notNull(),
   contentType: contentTypeEnum('content_type').notNull(),

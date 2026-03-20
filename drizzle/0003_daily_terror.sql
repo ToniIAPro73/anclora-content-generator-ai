@@ -1,0 +1,3 @@
+ALTER TYPE "public"."content_opportunity_status" ADD VALUE 'converted' BEFORE 'dismissed';--> statement-breakpoint
+ALTER TABLE "generated_content" ADD COLUMN "opportunity_id" uuid;--> statement-breakpoint
+ALTER TABLE "generated_content" ADD CONSTRAINT "generated_content_opportunity_id_content_opportunities_id_fk" FOREIGN KEY ("opportunity_id") REFERENCES "public"."content_opportunities"("id") ON DELETE set null ON UPDATE no action;
