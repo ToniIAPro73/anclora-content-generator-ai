@@ -7,21 +7,33 @@ description: Diseñar y construir landing pages premium, minimalistas y orientad
 
 Construir landings que se sientan como un sistema editorial premium, no como una SaaS genérica.
 
+## Framework ANF
+Aplicar el framework `ANF` antes de componer la página:
+
+- `A — Authority`
+  Definir una promesa principal que se perciba cara, seria y diferenciada.
+- `N — Narrative`
+  Ordenar la landing en una secuencia corta: problema, sistema, capacidad, acción.
+- `F — Frictionless action`
+  Llevar toda la experiencia hacia un CTA principal claro, sin dispersión ni ruido.
+
 ## Flujo
 1. Leer `DESIGN.md` antes de diseñar cualquier landing.
-2. Identificar una única conversión principal y como mucho una secundaria.
-3. Resolver la página en 5 bloques máximos:
+2. Leer `references/anf-framework.md` si la página necesita más tensión de conversión o una composición más ambiciosa.
+3. Identificar una única conversión principal y como mucho una secundaria.
+4. Resolver la página en 5 bloques máximos:
    - hero
    - proof strip
    - capability narrative
    - workflow o system block
    - final CTA
-4. Priorizar una promesa fuerte por pantalla.
-5. Mantener el producto como protagonista, sin ruido ni taxonomías excesivas.
+5. Priorizar una promesa fuerte por pantalla.
+6. Mantener el producto como protagonista, sin ruido ni taxonomías excesivas.
 
 ## Reglas visuales
 - Usar fondos cálidos y oscuros, nunca azulados.
 - Usar el dorado ámbar del sistema como acento principal.
+- Tomar como inspiración patrones contemporáneos de 21st.dev como `spotlight card`, `gradient card`, `cards stack`, `glass card` y `gradient button`, pero reinterpretarlos con el lenguaje de Anclora.
 - Evitar layouts plantilla con grids repetitivos y simétricos por defecto.
 - Favorecer titulares grandes, masas oscuras, silencios visuales y profundidad tonal.
 - Mantener bordes en modo fantasma; si un borde llama la atención, sobra.
