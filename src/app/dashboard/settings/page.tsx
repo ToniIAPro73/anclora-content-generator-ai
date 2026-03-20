@@ -380,7 +380,7 @@ export default function SettingsPage() {
                   className="resize-none"
                 />
               </div>
-              <Button onClick={() => showSaved('Identidad del workspace actualizada')} className="w-full">
+              <Button onClick={() => void saveWorkspaceIdentity()} disabled={isSavingWorkspace} className="w-full">
                 {isSavingWorkspace ? 'Guardando...' : 'Guardar identidad'}
               </Button>
             </div>
@@ -475,7 +475,7 @@ export default function SettingsPage() {
               />
             </div>
 
-            <Button onClick={() => showSaved('Stack de modelos actualizado')} className="mt-4 w-full">
+            <Button onClick={() => void saveModelPosture()} disabled={isSavingModel} className="mt-4 w-full">
               {isSavingModel ? 'Guardando...' : 'Guardar postura del modelo'}
             </Button>
           </SectionCard>
@@ -578,7 +578,7 @@ export default function SettingsPage() {
           <SectionCard
             icon={Sparkles}
             title="Librería curada"
-            description="La interfaz ya las trata como activos editoriales, aunque la persistencia total todavía sea el siguiente paso."
+            description="La librería ya se persiste por workspace y puede alimentar el Studio con moldes reutilizables."
           >
             <div className="space-y-3">
               {existingTemplates.map((template) => (
@@ -621,8 +621,8 @@ export default function SettingsPage() {
           >
             <div className="space-y-3">
               {[
-                'Persistir ajustes reales de workspace y librería de plantillas en base de datos.',
-                'Introducir scheduling ejecutor e integraciones externas de publicación.',
+                'Extender la ejecución manual asistida hacia conectores externos de publicación.',
+                'Introducir scheduling ejecutor e integraciones reales por canal.',
                 'Añadir telemetría por micro-zona y lead attribution externo.',
               ].map((item) => (
                 <SurfaceCard key={item} variant="inner" className="border bg-background/70 p-4">

@@ -9,7 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/neon'
-import { contentOpportunities, contentTemplates, generatedContent, microZones } from '@/lib/db/schema'
+import { contentOpportunities, contentTemplates, generatedContent, microZones, workspaceSettings } from '@/lib/db/schema'
 import { generateContentWithRAG } from '@/lib/rag/pipeline'
 import { eq, and } from 'drizzle-orm'
 import type { ContentType } from '@/lib/db/types'
@@ -45,6 +45,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const settings = await db.query.workspaceSettings.findFirst({
+      where: eq(workspaceSettings.workspaceId, workspaceId),
+      columns: {
+        editorialSystemPrompt: true,
+        defaultProvider: true,
+        defaultModel: true,
+        defaultTemperature: true,
+        defaultTopP: true,
+      },
+    })
+
     // Obtener template (si se especificó)
     let systemPrompt = ''
     let templateConfig: { temperature?: number; max_tokens?: number } = {}
@@ -72,7 +83,7 @@ export async function POST(request: NextRequest) {
       templateConfig = template.config as { temperature?: number; max_tokens?: number }
     } else {
       // System prompt por defecto
-      systemPrompt = getDefaultSystemPrompt(body.contentType)
+      systemPrompt = settings?.editorialSystemPrompt || getDefaultSystemPrompt(body.contentType)
     }
 
     // Obtener contexto de micro-zona (si se especificó)
@@ -109,7 +120,7 @@ export async function POST(request: NextRequest) {
       },
       model: 'reasoning',
       modelConfig: {
-        temperature: body.modelConfig?.temperature || templateConfig.temperature || 0.7,
+        temperature: body.modelConfig?.temperature || templateConfig.temperature || settings?.defaultTemperature || 0.7,
         maxTokens: body.modelConfig?.maxTokens || templateConfig.max_tokens || 2500
       }
     })

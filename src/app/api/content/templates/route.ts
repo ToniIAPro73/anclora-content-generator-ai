@@ -1,4 +1,4 @@
-import { and, asc, eq } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'

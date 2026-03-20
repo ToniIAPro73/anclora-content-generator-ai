@@ -109,7 +109,7 @@ Esto ya se ha corregido para que el dashboard siga siendo un shell contenido, si
 - Fase 3 muy avanzada: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `oportunidad -> studio -> draft` y especializacion por categoria de fuente.
 - Fase 4 muy avanzada: ciclo editorial persistido, cola programada, drilldown por pieza y comparativa temporal ya operativos.
 - Fase 5 cerrada en baseline operativo: recomendaciones auditables y acciones asistidas ya conectan Dashboard, Studio y RAG sin automatizacion destructiva.
-- Fase 6 abierta: ejecucion multicanal e integraciones como siguiente expansion natural del producto.
+- Fase 6 cerrada en baseline operativo: cola de ejecucion editorial visible, dispatch manual asistido y configuracion editorial persistida.
 
 ## Roadmap recomendado
 
@@ -207,9 +207,9 @@ Objetivo: conectar el cockpit con ejecucion real fuera de la app.
 
 Estado actual:
 
-- La fase queda abierta como continuacion post-roadmap.
-- El producto ya tiene base suficiente para pasar de recomendacion y operacion interna a ejecucion conectada.
 - Ya existe una primera cola de ejecucion editorial visible en Dashboard y Metrics, con dispatch manual asistido y reintento operativo.
+- `Settings` persiste configuracion del workspace y plantillas editoriales en Neon.
+- La fase queda cerrada en baseline operativo, aunque las integraciones externas reales sigan siendo el siguiente salto.
 
 ## Decisiones de producto recomendadas
 
@@ -223,7 +223,7 @@ Estado actual:
 - Persisten mocks visibles en varias vistas del dashboard.
 - El acoplamiento entre UI, API y modelo de datos sigue necesitando limpieza adicional.
 - La estrategia RLS historica ya no debe leerse como control efectivo del sistema actual sobre Neon.
-- Siguen existiendo zonas con persistencia parcial, especialmente en configuracion editorial y libreria de plantillas.
+- Siguen existiendo zonas con persistencia parcial, especialmente en gestión de secretos y conectores externos.
 - Falta la libreria de plantillas Anclora persistida y gobernada desde base de datos.
 
 ## Recomendacion final

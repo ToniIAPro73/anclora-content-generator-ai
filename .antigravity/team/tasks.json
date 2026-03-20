@@ -1,6 +1,6 @@
 {
   "project": "Anclora Content Generator AI",
-  "fase_actual": "FASE 6 ABIERTA: Ejecucion multicanal e integraciones",
+  "fase_actual": "FASE 6 CERRADA: Ejecucion multicanal e integraciones",
   "members": [
     {
       "id": "anclorabot",
@@ -459,6 +459,40 @@
         "Spec de editorial delivery executor",
         "Dashboard y Metrics con cola de ejecucion",
         "PATCH /api/content/library con dispatch y retry_delivery"
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Persistir configuracion editorial del workspace",
+      "description": "Añadir persistencia real a Settings y a la libreria de plantillas para que la ejecucion multicanal tenga una base configurable y no solo una capa visual.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [25],
+      "priority": "HIGH",
+      "estimated_hours": "1-3",
+      "feature": "ANCLORA-FEAT-012",
+      "deliverables": [
+        "workspace_settings en Neon",
+        "APIs /api/workspace/settings y /api/content/templates",
+        "Settings persistido y conectado al flujo de generación"
+      ]
+    },
+    {
+      "id": 27,
+      "title": "Cerrar Fase 6 en baseline operativo",
+      "description": "Cerrar la fase de ejecucion e integraciones dejando una cola operativa visible, dispatch manual asistido y configuracion editorial persistida.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [26],
+      "priority": "HIGH",
+      "estimated_hours": "0.5-1",
+      "feature": "ANCLORA-FEAT-012",
+      "deliverables": [
+        "Fase 6 cerrada en tablero",
+        "Roadmap documental alineado",
+        "Baseline operativo de ejecucion multicanal completado"
       ]
     }
   ]
