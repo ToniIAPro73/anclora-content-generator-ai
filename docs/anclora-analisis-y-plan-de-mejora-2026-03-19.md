@@ -105,7 +105,7 @@ Esto ya se ha corregido para que el dashboard siga siendo un shell contenido, si
 
 - Fase 0 completada: rebaseline documental, naming y narrativa unica de stack.
 - Fase 1 completada en baseline operativo: Better Auth + `workspace_organizations` y resolucion server-side de `workspaceId`.
-- Fase 2 avanzada parcialmente: shell, sidebar, studio, dashboard y RAG ya operan con una narrativa menos generica.
+- Fase 2 cerrada: shell, sidebar, studio, dashboard, RAG y settings ya comparten una narrativa de cockpit premium.
 - Fase 3 muy avanzada: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `oportunidad -> studio -> draft` y especializacion por categoria de fuente.
 - Fase 4 muy avanzada: ciclo editorial persistido, cola programada, drilldown por pieza y comparativa temporal ya operativos.
 - Fase 5 cerrada en baseline operativo: recomendaciones auditables y acciones asistidas ya conectan Dashboard, Studio y RAG sin automatizacion destructiva.
@@ -138,6 +138,12 @@ Objetivo: que el dashboard sirva para trabajar, no solo para demostrar.
 - Marcar claramente datos mock vs datos persistidos.
 - Introducir estados vacios accionables y onboarding operacional.
 - Incorporar acciones reales de flujo: guardar draft, aprobar, programar, derivar por canal.
+
+Estado actual:
+
+- `Dashboard`, `Studio`, `Metrics`, `RAG` y `Settings` ya comparten un lenguaje visual y operativo coherente.
+- `Settings` deja explicita la diferencia entre configuracion operativa actual y expansion futura.
+- La fase queda cerrada como baseline de UX premium del cockpit.
 
 ## Fase 3. RAG de dominio y activos estrategicos
 
@@ -200,7 +206,7 @@ Estado actual:
 - Persisten mocks visibles en varias vistas del dashboard.
 - El acoplamiento entre UI, API y modelo de datos sigue necesitando limpieza adicional.
 - La estrategia RLS historica ya no debe leerse como control efectivo del sistema actual sobre Neon.
-- Siguen existiendo mocks visibles y contratos editoriales no totalmente cerrados en `Metrics` y `Settings`.
+- Siguen existiendo zonas con persistencia parcial, especialmente en configuracion editorial y libreria de plantillas.
 - Falta la libreria de plantillas Anclora persistida y gobernada desde base de datos.
 
 ## Recomendacion final

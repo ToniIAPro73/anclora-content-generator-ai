@@ -37,3 +37,4 @@ Owner: Anclorabot
 - Preservar coherencia entre UX, API y modelo de datos
 - Evolucionar la Knowledge Base hacia `knowledge packs` curados y trazables
 - Especializar las fuentes del RAG por categoria de dominio y hacer legible la trazabilidad de retrieval
+- Consolidar una UX premium de cockpit antes de abrir integraciones de ejecucion real

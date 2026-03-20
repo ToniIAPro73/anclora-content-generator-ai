@@ -409,6 +409,24 @@
         "Studio con contexto completo de accion asistida",
         "Fase 5 cerrada en tablero y documento"
       ]
+    },
+    {
+      "id": 23,
+      "title": "Cerrar Fase 2 con UX premium completa",
+      "description": "Rematar la deuda de cockpit en Settings y dejar la capa UX principal del dashboard alineada con una experiencia premium y operativa.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [22],
+      "priority": "HIGH",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-009",
+      "deliverables": [
+        "Settings reescrito con lenguaje de cockpit premium",
+        "Cierre formal de Fase 2 en roadmap y tablero",
+        "UX principal del dashboard consolidada"
+      ]
+    },
     }
   ]
 }
