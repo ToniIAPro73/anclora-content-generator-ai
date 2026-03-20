@@ -27,6 +27,8 @@ interface DashboardMetrics {
   scheduledQueue?: Array<{ id: string; contentId: string; title: string; platform: string; contentType: string; scheduledFor: string }>
   platformPerformance?: Array<{ platform: string; views: number; impressions: number; clicks: number; leads: number; avgEngagementRate: number }>
   topPerformingContent?: Array<{ id: string; title: string; contentType: string; platform: string; views: number; impressions: number; clicks: number; leads: number; avgEngagementRate: number; lastSnapshot: string }>
+  platformMomentum?: Array<{ platform: string; viewsCurrent: number; viewsPrevious: number; leadsCurrent: number; leadsPrevious: number; conversionsCurrent: number; conversionsPrevious: number }>
+  businessImpactContent?: Array<{ id: string; title: string; contentType: string; platform: string; views: number; clicks: number; leads: number; conversions: number; leadEfficiency: number; conversionEfficiency: number }>
 }
 
 interface LibraryContentItem {
@@ -76,6 +78,14 @@ const KPI_CARDS = [
 
 function Skeleton({ className }: { className?: string }) {
   return <div className={`rounded animate-pulse bg-muted ${className}`} />
+}
+
+function formatDelta(current: number, previous: number) {
+  if (previous === 0 && current === 0) return '0%'
+  if (previous === 0) return '+100%'
+  const delta = ((current - previous) / previous) * 100
+  const rounded = Math.round(delta)
+  return `${rounded > 0 ? '+' : ''}${rounded}%`
 }
 
 export default function MetricsPage() {
@@ -386,6 +396,92 @@ export default function MetricsPage() {
                   <p className="text-sm font-medium text-muted-foreground">Aún no hay piezas con telemetría</p>
                   <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
                     Esta vista se activará cuando exista rendimiento persistido por pieza y plataforma.
+                  </p>
+                </div>
+              )}
+            </SurfaceCard>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <SurfaceCard variant="panel" className="p-6">
+              <h3 className="font-heading text-sm font-semibold">Momentum 7d vs 7d previos</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Comparativa para saber qué canal está acelerando negocio, no solo alcance.
+              </p>
+              {metrics?.platformMomentum && metrics.platformMomentum.length > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {metrics.platformMomentum.map((item) => (
+                    <SurfaceCard key={item.platform} variant="inner" className="rounded-lg border bg-muted px-4 py-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="secondary" className="text-xs">{item.platform}</Badge>
+                        <span className="text-xs text-muted-foreground">
+                          Leads {formatDelta(item.leadsCurrent, item.leadsPrevious)}
+                        </span>
+                      </div>
+                      <div className="mt-3 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                        <div>
+                          <p>Views</p>
+                          <p className="mt-1 font-semibold text-foreground">{item.viewsCurrent}</p>
+                          <p className="mt-0.5">{formatDelta(item.viewsCurrent, item.viewsPrevious)}</p>
+                        </div>
+                        <div>
+                          <p>Leads</p>
+                          <p className="mt-1 font-semibold text-foreground">{item.leadsCurrent}</p>
+                          <p className="mt-0.5">{formatDelta(item.leadsCurrent, item.leadsPrevious)}</p>
+                        </div>
+                        <div>
+                          <p>Conv.</p>
+                          <p className="mt-1 font-semibold text-foreground">{item.conversionsCurrent}</p>
+                          <p className="mt-0.5">{formatDelta(item.conversionsCurrent, item.conversionsPrevious)}</p>
+                        </div>
+                      </div>
+                    </SurfaceCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
+                    <Clock className="h-6 w-6 text-muted-foreground/35" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Sin ventana comparativa todavía</p>
+                  <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
+                    Necesitamos snapshots repartidos en el tiempo para detectar aceleración real por canal.
+                  </p>
+                </div>
+              )}
+            </SurfaceCard>
+
+            <SurfaceCard variant="panel" className="p-6">
+              <h3 className="font-heading text-sm font-semibold">Contenido que Mueve Negocio</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Separación entre piezas con mucho ruido y piezas que convierten interés en pipeline comercial.
+              </p>
+              {metrics?.businessImpactContent && metrics.businessImpactContent.length > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {metrics.businessImpactContent.map((item) => (
+                    <SurfaceCard key={`${item.id}-${item.platform}`} variant="inner" className="rounded-lg border bg-muted px-4 py-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="secondary" className="text-xs">{item.platform}</Badge>
+                        <Badge variant="outline" className="text-xs">{item.contentType}</Badge>
+                      </div>
+                      <p className="mt-3 text-sm font-medium text-foreground">{item.title}</p>
+                      <div className="mt-3 flex flex-wrap gap-3 text-xs text-muted-foreground">
+                        <span>{item.leads} leads</span>
+                        <span>{item.conversions} conv.</span>
+                        <span>{(item.leadEfficiency * 100).toFixed(1)}% lead/view</span>
+                        <span>{(item.conversionEfficiency * 100).toFixed(1)}% conv/click</span>
+                      </div>
+                    </SurfaceCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
+                    <Rocket className="h-6 w-6 text-muted-foreground/35" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Sin impacto comercial visible aún</p>
+                  <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
+                    Esta vista cobrará sentido cuando las piezas empiecen a acumular leads y conversiones persistidas.
                   </p>
                 </div>
               )}

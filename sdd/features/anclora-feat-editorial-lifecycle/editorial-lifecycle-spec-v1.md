@@ -28,6 +28,7 @@ La app ya genera contenido y lo persiste como `draft`, pero el operador todavia 
 6. Introducir una primera capa de telemetria por pieza y por canal usando `content_metrics`
 7. Reabrir una pieza existente desde la cola programada o la libreria manteniendo visible su señal de rendimiento
 8. Exponer un detalle operativo de pieza con timeline editorial y breakdown de lead attribution
+9. Introducir comparativa temporal por canal y una lectura diferenciada entre engagement e impacto comercial
 
 ## Estados de la primera iteracion
 
@@ -49,6 +50,7 @@ La app ya genera contenido y lo persiste como `draft`, pero el operador todavia 
 - Metrics expone al menos rendimiento por canal y ranking basico de piezas con traccion
 - Studio puede abrir piezas existentes y mostrar su lectura resumida de views, clicks, leads y conversiones
 - Metrics permite leer el timeline editorial y el breakdown comercial de una pieza sin salir del dashboard
+- Metrics distingue momentum 7d vs periodo previo y separa top engagement de contenido que realmente genera negocio
 - `lint` y `build` pasan
 
 ## Fuera de alcance

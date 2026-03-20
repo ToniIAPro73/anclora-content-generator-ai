@@ -32,6 +32,8 @@ const EMPTY_METRICS = {
   scheduledQueue: [],
   platformPerformance: [],
   topPerformingContent: [],
+  platformMomentum: [],
+  businessImpactContent: [],
 }
 
 export async function GET() {
@@ -63,6 +65,8 @@ export async function GET() {
       scheduledQueueResult,
       platformPerformanceResult,
       topPerformingContentResult,
+      platformMomentumResult,
+      businessImpactContentResult,
     ] =
       await Promise.all([
         sql`SELECT COUNT(*) as count FROM generated_content WHERE workspace_id = ${workspaceId}`,
@@ -131,6 +135,49 @@ export async function GET() {
           ORDER BY COALESCE(SUM(cm.views), 0) DESC, COALESCE(SUM(cm.leads_generated), 0) DESC
           LIMIT 5
         `,
+        sql`
+          SELECT
+            platform,
+            COALESCE(SUM(CASE WHEN snapshot_date >= CURRENT_DATE - INTERVAL '7 days' THEN views ELSE 0 END), 0) AS views_current,
+            COALESCE(SUM(CASE WHEN snapshot_date < CURRENT_DATE - INTERVAL '7 days' AND snapshot_date >= CURRENT_DATE - INTERVAL '14 days' THEN views ELSE 0 END), 0) AS views_previous,
+            COALESCE(SUM(CASE WHEN snapshot_date >= CURRENT_DATE - INTERVAL '7 days' THEN leads_generated ELSE 0 END), 0) AS leads_current,
+            COALESCE(SUM(CASE WHEN snapshot_date < CURRENT_DATE - INTERVAL '7 days' AND snapshot_date >= CURRENT_DATE - INTERVAL '14 days' THEN leads_generated ELSE 0 END), 0) AS leads_previous,
+            COALESCE(SUM(CASE WHEN snapshot_date >= CURRENT_DATE - INTERVAL '7 days' THEN conversions ELSE 0 END), 0) AS conversions_current,
+            COALESCE(SUM(CASE WHEN snapshot_date < CURRENT_DATE - INTERVAL '7 days' AND snapshot_date >= CURRENT_DATE - INTERVAL '14 days' THEN conversions ELSE 0 END), 0) AS conversions_previous
+          FROM content_metrics
+          WHERE workspace_id = ${workspaceId}
+          GROUP BY platform
+          ORDER BY COALESCE(SUM(CASE WHEN snapshot_date >= CURRENT_DATE - INTERVAL '7 days' THEN conversions ELSE 0 END), 0) DESC,
+                   COALESCE(SUM(CASE WHEN snapshot_date >= CURRENT_DATE - INTERVAL '7 days' THEN leads_generated ELSE 0 END), 0) DESC
+          LIMIT 5
+        `,
+        sql`
+          SELECT
+            gc.id,
+            gc.title,
+            gc.content_type,
+            cm.platform,
+            COALESCE(SUM(cm.views), 0) AS views,
+            COALESCE(SUM(cm.clicks), 0) AS clicks,
+            COALESCE(SUM(cm.leads_generated), 0) AS leads,
+            COALESCE(SUM(cm.conversions), 0) AS conversions,
+            CASE
+              WHEN COALESCE(SUM(cm.views), 0) = 0 THEN 0
+              ELSE COALESCE(SUM(cm.leads_generated), 0)::float / NULLIF(SUM(cm.views), 0)
+            END AS lead_efficiency,
+            CASE
+              WHEN COALESCE(SUM(cm.clicks), 0) = 0 THEN 0
+              ELSE COALESCE(SUM(cm.conversions), 0)::float / NULLIF(SUM(cm.clicks), 0)
+            END AS conversion_efficiency
+          FROM content_metrics cm
+          INNER JOIN generated_content gc ON gc.id = cm.content_id
+          WHERE cm.workspace_id = ${workspaceId}
+          GROUP BY gc.id, gc.title, gc.content_type, cm.platform
+          ORDER BY COALESCE(SUM(cm.conversions), 0) DESC,
+                   COALESCE(SUM(cm.leads_generated), 0) DESC,
+                   COALESCE(SUM(cm.clicks), 0) DESC
+          LIMIT 5
+        `,
       ])
 
     const contentByType = Object.fromEntries(
@@ -187,6 +234,27 @@ export async function GET() {
           leads: Number(row.leads ?? 0),
           avgEngagementRate: Number(row.avg_engagement_rate ?? 0),
           lastSnapshot: String(row.last_snapshot),
+        })),
+        platformMomentum: platformMomentumResult.map((row) => ({
+          platform: String(row.platform),
+          viewsCurrent: Number(row.views_current ?? 0),
+          viewsPrevious: Number(row.views_previous ?? 0),
+          leadsCurrent: Number(row.leads_current ?? 0),
+          leadsPrevious: Number(row.leads_previous ?? 0),
+          conversionsCurrent: Number(row.conversions_current ?? 0),
+          conversionsPrevious: Number(row.conversions_previous ?? 0),
+        })),
+        businessImpactContent: businessImpactContentResult.map((row) => ({
+          id: String(row.id),
+          title: String(row.title),
+          contentType: String(row.content_type),
+          platform: String(row.platform),
+          views: Number(row.views ?? 0),
+          clicks: Number(row.clicks ?? 0),
+          leads: Number(row.leads ?? 0),
+          conversions: Number(row.conversions ?? 0),
+          leadEfficiency: Number(row.lead_efficiency ?? 0),
+          conversionEfficiency: Number(row.conversion_efficiency ?? 0),
         })),
       },
     })

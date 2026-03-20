@@ -341,6 +341,23 @@
         "Metrics con timeline editorial por pieza",
         "Breakdown A/B/C y estados de lead en el detalle operativo"
       ]
+    },
+    {
+      "id": 19,
+      "title": "Diferenciar momentum y negocio en Metrics",
+      "description": "Añadir comparativa 7d vs 7d previos por canal y una lectura explícita de contenido que impulsa leads o conversiones frente a piezas de simple engagement.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [18],
+      "priority": "HIGH",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-007",
+      "deliverables": [
+        "API de metrics con platformMomentum",
+        "Vista de Metrics con comparativa temporal",
+        "Panel de contenido que mueve negocio"
+      ]
     }
   ]
 }
