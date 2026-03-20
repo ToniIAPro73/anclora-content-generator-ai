@@ -3,15 +3,15 @@ Fecha: 2026-03-20
 De: Anclorabot (Director)
 Para: Todos los agentes
 
-FASE 3 - ESPECIALIZACION DE FUENTES Y TRAZABILIDAD RAG - ACTIVA
+FASE 4 - TELEMETRIA EDITORIAL Y CICLO OPERATIVO - ACTIVA
 
-Equipo, la base de autenticación ya está migrada y el siguiente frente del producto pasa a ser la especialización del RAG sobre la tesis de dominio de Anclora.
+Equipo, la base de autenticación ya está migrada y la base RAG ya ofrece conocimiento curado y trazable. El siguiente frente activo pasa a ser el ciclo editorial persistido y su lectura operativa.
 
 Objetivos inmediatos:
 
-1. Clasificar la ingesta por categorías de dominio (`market`, `regulation`, `lifestyle`, `infrastructure`, `editorial`)
-2. Hacer legible la trazabilidad de retrieval dentro del Studio y la metadata de generación
-3. Mantener convivencia entre ingesta manual, documental y agéntica dentro de `/dashboard/rag`
+1. Consolidar el pipeline `draft -> review -> approved -> scheduled -> published`
+2. Exponer señales reales del ciclo editorial en dashboard y métricas
+3. Preparar la entrada a scheduling y telemetría de canal más fina
 
 Guardarrailes activos:
 
@@ -20,18 +20,19 @@ Guardarrailes activos:
 - En `/dashboard/*` sigue prohibido el scroll vertical global
 - No indexar texto sintético sin separar `claims` y `evidence`
 - `workspace_id` sigue siendo frontera obligatoria para packs, jobs y chunks
-- Toda nueva fuente debe poder clasificarse por categoría de dominio, no solo por tipo técnico
-- El backend vectorial activo sigue siendo `pgvector`, pero el pipeline ya debe aceptar costuras limpias para escalar a Pinecone y Google embeddings
+- Toda transición editorial debe persistirse en server y reflejarse en UI
+- El backend vectorial activo sigue siendo `pgvector`, pero el pipeline ya acepta costuras limpias para escalar a Pinecone y Google embeddings
 
 Stack de referencia vigente:
 
 - Auth: Better Auth + Organizations
 - Datos: Neon PostgreSQL + Drizzle
 - RAG: pgvector + Transformers.js + knowledge packs + categorías de dominio
+- Editorial ops: generated_content + scheduled_posts + dashboard/metrics operativos
 - UI: Next.js 15 + React 19 + Tailwind CSS v4 + shadcn/ui
 
 Siguiente dependencia critica:
 
-- Consolidar activos estratégicos de Fase 3 y preparar la entrada a Fase 4 de telemetría editorial
+- Cerrar la primera iteración de scheduling operativo y preparar telemetría por canal, pieza y micro-zona
 
 -- Anclorabot

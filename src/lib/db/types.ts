@@ -13,7 +13,7 @@
 export type SourceType = 'document' | 'url' | 'rss' | 'manual' | 'api'
 export type SourceStatus = 'pending' | 'processing' | 'completed' | 'error'
 export type ContentType = 'blog' | 'linkedin' | 'instagram' | 'facebook' | 'newsletter' | 'custom'
-export type ContentStatus = 'draft' | 'approved' | 'scheduled' | 'published' | 'archived'
+export type ContentStatus = 'draft' | 'review' | 'approved' | 'scheduled' | 'published' | 'archived'
 export type PlatformType = 'linkedin' | 'facebook' | 'instagram' | 'blog' | 'newsletter'
 export type PostStatus = 'pending' | 'processing' | 'published' | 'failed' | 'cancelled'
 export type LeadScore = 'A' | 'B' | 'C' | 'D' | 'F'

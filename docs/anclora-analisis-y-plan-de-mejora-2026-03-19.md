@@ -106,7 +106,8 @@ Esto ya se ha corregido para que el dashboard siga siendo un shell contenido, si
 - Fase 0 completada: rebaseline documental, naming y narrativa unica de stack.
 - Fase 1 completada en baseline operativo: Better Auth + `workspace_organizations` y resolucion server-side de `workspaceId`.
 - Fase 2 avanzada parcialmente: shell, sidebar, studio, dashboard y RAG ya operan con una narrativa menos generica.
-- Fase 3 activa: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `oportunidad -> studio -> draft` y especializacion por categoria de fuente.
+- Fase 3 muy avanzada: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `oportunidad -> studio -> draft` y especializacion por categoria de fuente.
+- Fase 4 abierta: primera iteracion del ciclo editorial persistido con `draft`, `review`, `approved`, `scheduled` y `published`.
 
 ## Roadmap recomendado
 
@@ -161,6 +162,13 @@ Objetivo: cerrar el loop de valor.
 - Estado editorial: draft, review, approved, scheduled, published.
 - Integracion de scheduling y alertas.
 - Vinculacion futura con CRM/lead tracking.
+
+Estado actual:
+
+- Studio ya permite mover una pieza entre `review`, `approved`, `scheduled` y `published`.
+- El dashboard ya refleja pipeline editorial reciente.
+- Metrics ya incorpora lectura de `review` y `approved`.
+- Sigue pendiente una capa de scheduling ejecutor real y telemetria por canal.
 
 ## Fase 5. Automatizacion y agentes
 

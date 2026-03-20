@@ -10,10 +10,13 @@ interface DashboardMetrics {
   totalContent: number
   publishedContent: number
   draftContent: number
+  reviewContent: number
+  approvedContent: number
   avgTokensUsed: number
   totalKnowledgeChunks: number
   contentByType?: Record<string, number>
   recentActivity?: Array<{ date: string; count: number }>
+  recentContent?: Array<{ id: string; title: string; status: string; contentType: string; updatedAt: string }>
 }
 const amber = 'hsl(38 92% 55%)'
 const sage  = 'hsl(158 42% 45%)'
@@ -22,7 +25,7 @@ const KPI_CARDS = [
   { key: 'totalContent',        label: 'Contenido Total',   sub: 'Piezas generadas',       icon: FileText, accent: amber },
   { key: 'publishedContent',    label: 'Publicado',         sub: 'Del total generado',     icon: Rocket,   accent: sage  },
   { key: 'draftContent',        label: 'Borradores',        sub: 'Pendientes de publicar', icon: Layers,   accent: amber },
-  { key: 'totalKnowledgeChunks',label: 'Knowledge Chunks',  sub: 'En la base de datos',    icon: BookOpen, accent: sage  },
+  { key: 'reviewContent',       label: 'En Revisión',       sub: 'Pendientes de aprobación', icon: Clock,   accent: sage  },
 ]
 
 function Skeleton({ className }: { className?: string }) {
@@ -130,6 +133,8 @@ export default function MetricsPage() {
                 {[
                   { label: 'Publicado', value: metrics?.publishedContent ?? 0, accent: sage  },
                   { label: 'Borrador',  value: metrics?.draftContent ?? 0,      accent: amber },
+                  { label: 'Revisión',  value: metrics?.reviewContent ?? 0,     accent: 'hsl(210 80% 65%)' },
+                  { label: 'Aprobado',  value: metrics?.approvedContent ?? 0,   accent: 'hsl(158 42% 45%)' },
                 ].map(({ label, value, accent }) => {
                   const total = metrics?.totalContent || 1
                   const pct = Math.round((value / total) * 100)
@@ -196,32 +201,26 @@ export default function MetricsPage() {
         {/* ── Contenido ── */}
         <TabsContent value="content">
           <SurfaceCard variant="panel" className="p-6">
-            <h3 className="font-heading text-sm font-semibold">Actividad Reciente</h3>
+            <h3 className="font-heading text-sm font-semibold">Pipeline Editorial</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
-              Contenido generado en los últimos 7 días
+              Estado reciente de las piezas dentro del ciclo editorial
             </p>
-            {metrics?.recentActivity && metrics.recentActivity.length > 0 ? (
+            {metrics?.recentContent && metrics.recentContent.length > 0 ? (
               <div className="mt-5 space-y-2">
-                {metrics.recentActivity.map((activity, i) => (
+                {metrics.recentContent.map((item) => (
                   <SurfaceCard
-                    key={i}
+                    key={item.id}
                     variant="inner"
                     className="flex items-center justify-between rounded-lg border bg-muted px-4 py-2.5"
                   >
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-3.5 w-3.5" />
-                      <span>{activity.date}</span>
+                      <span>{item.title}</span>
                     </div>
-                    <Badge
-                      className="text-xs"
-                      style={{
-                        backgroundColor: `${amber}18`,
-                        color: 'hsl(38 92% 62%)',
-                        border: `1px solid ${amber}35`,
-                      }}
-                    >
-                      {activity.count} piezas
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">{item.contentType}</Badge>
+                      <Badge className="text-xs" variant="outline">{item.status}</Badge>
+                    </div>
                   </SurfaceCard>
                 ))}
               </div>
@@ -230,9 +229,9 @@ export default function MetricsPage() {
                 <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
                   <Clock className="h-6 w-6 text-muted-foreground/35" />
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">Sin actividad reciente</p>
+                <p className="text-sm font-medium text-muted-foreground">Sin actividad editorial reciente</p>
                 <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
-                  Cuando generes contenido aparecerá aquí el historial de los últimos 7 días
+                  Cuando generes y muevas piezas por el pipeline editorial aparecerán aquí
                 </p>
               </div>
             )}

@@ -29,6 +29,8 @@ interface GeneratedContent {
   content: string
   contentType: string
   status: string
+  scheduledFor?: string | null
+  publishedAt?: string | null
 }
 
 interface GenerationMetadata {
@@ -97,6 +99,9 @@ export default function StudioPage() {
   const [metadata, setMetadata] = useState<GenerationMetadata | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle")
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+  const [editorialMessage, setEditorialMessage] = useState<string | null>(null)
+  const [scheduleAt, setScheduleAt] = useState("")
 
   useEffect(() => {
     const sourceOpportunityId = searchParams.get("opportunityId")
@@ -192,6 +197,50 @@ export default function StudioPage() {
     await navigator.clipboard.writeText(generatedContent.content)
     setCopyState("copied")
     window.setTimeout(() => setCopyState("idle"), 1800)
+  }
+
+  async function handleEditorialAction(action: "review" | "approve" | "publish" | "schedule" | "archive") {
+    if (!generatedContent?.id) return
+
+    setIsUpdatingStatus(true)
+    setEditorialMessage(null)
+    setError(null)
+
+    try {
+      const response = await fetch("/api/content/library", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          id: generatedContent.id,
+          action,
+          scheduledFor: action === "schedule" ? scheduleAt : undefined,
+        }),
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data.error || "No se pudo actualizar el estado editorial")
+      }
+
+      setGeneratedContent(data.item)
+      setEditorialMessage(
+        action === "review"
+          ? "La pieza ha pasado a revisión."
+          : action === "approve"
+          ? "La pieza ha sido aprobada."
+          : action === "publish"
+          ? "La pieza se ha marcado como publicada."
+          : action === "schedule"
+          ? "La pieza ha quedado programada."
+          : "La pieza ha sido archivada."
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "No se pudo actualizar el estado")
+    } finally {
+      setIsUpdatingStatus(false)
+    }
   }
 
   return (
@@ -429,7 +478,11 @@ export default function StudioPage() {
                   <Copy className="h-4 w-4" />
                   {copyState === "copied" ? "Copiado" : "Copiar"}
                 </Button>
-                <Button variant="outline" disabled>
+                <Button
+                  variant="outline"
+                  disabled={!generatedContent?.id || isUpdatingStatus || !scheduleAt}
+                  onClick={() => void handleEditorialAction("schedule")}
+                >
                   <FileStack className="h-4 w-4" />
                   Programar
                 </Button>
@@ -485,6 +538,13 @@ export default function StudioPage() {
               </div>
             )}
 
+            {editorialMessage && (
+              <div className="rounded-2xl border border-primary/20 bg-primary/10 p-4">
+                <p className="font-medium text-primary">Pipeline editorial actualizado</p>
+                <p className="mt-1 text-sm text-primary/80">{editorialMessage}</p>
+              </div>
+            )}
+
             {generatedContent && (
               <Tabs defaultValue="content" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
@@ -501,6 +561,40 @@ export default function StudioPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary">{generatedContent.contentType}</Badge>
                     <Badge variant="outline">{generatedContent.status}</Badge>
+                    {generatedContent.publishedAt ? (
+                      <Badge variant="outline">Publicado {new Date(generatedContent.publishedAt).toLocaleDateString("es-ES")}</Badge>
+                    ) : null}
+                  </div>
+
+                  <div className="grid gap-3 md:grid-cols-[1fr_1fr]">
+                    <SurfaceCard variant="inner" className="border bg-background/70 p-4">
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Transiciones editoriales</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" disabled={isUpdatingStatus || generatedContent.status === "review"} onClick={() => void handleEditorialAction("review")}>
+                          Enviar a revisión
+                        </Button>
+                        <Button size="sm" variant="outline" disabled={isUpdatingStatus || generatedContent.status === "approved"} onClick={() => void handleEditorialAction("approve")}>
+                          Aprobar
+                        </Button>
+                        <Button size="sm" disabled={isUpdatingStatus || generatedContent.status === "published"} onClick={() => void handleEditorialAction("publish")}>
+                          Publicar ahora
+                        </Button>
+                      </div>
+                    </SurfaceCard>
+
+                    <SurfaceCard variant="inner" className="border bg-background/70 p-4">
+                      <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Programación</p>
+                      <div className="mt-3 space-y-3">
+                        <Input
+                          type="datetime-local"
+                          value={scheduleAt}
+                          onChange={(event) => setScheduleAt(event.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Guarda una fecha para mover la pieza a `scheduled` y registrarla en `scheduled_posts`.
+                        </p>
+                      </div>
+                    </SurfaceCard>
                   </div>
 
                   <Textarea

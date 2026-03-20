@@ -1,6 +1,6 @@
 {
   "project": "Anclora Content Generator AI",
-  "fase_actual": "FASE 3: Especializacion de fuentes y trazabilidad de dominio para el RAG",
+  "fase_actual": "FASE 4: Telemetria editorial y ciclo operativo",
   "members": [
     {
       "id": "anclorabot",
@@ -238,6 +238,40 @@
         "Facade de vector store",
         "Facade de embeddings",
         ".env.example y README preparados para escalado futuro"
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Abrir ciclo editorial persistido",
+      "description": "Implementar estados editoriales reales y acciones persistidas desde Studio sobre el contenido generado.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [12],
+      "priority": "CRITICAL",
+      "estimated_hours": "2-4",
+      "feature": "ANCLORA-FEAT-007",
+      "deliverables": [
+        "Estado `review` en generated_content",
+        "Endpoint `/api/content/library`",
+        "Acciones de revision, aprobacion, publicacion y programacion desde Studio"
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Exponer senales de pipeline editorial en dashboard y metrics",
+      "description": "Convertir dashboard y metrics en vistas operativas del ciclo editorial real, no solo del volumen de contenido.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [13],
+      "priority": "HIGH",
+      "estimated_hours": "1-3",
+      "feature": "ANCLORA-FEAT-007",
+      "deliverables": [
+        "Dashboard con pipeline editorial reciente",
+        "Metrics con estados review y approved",
+        "Apertura formal de Fase 4 en el tablero"
       ]
     }
   ]

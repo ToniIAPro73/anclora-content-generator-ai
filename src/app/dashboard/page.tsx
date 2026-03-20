@@ -22,10 +22,19 @@ interface DashboardMetrics {
   totalContent: number
   publishedContent: number
   draftContent: number
+  reviewContent: number
+  approvedContent: number
   avgTokensUsed: number
   totalKnowledgeChunks: number
   scheduledPosts?: number
   totalSources?: number
+  recentContent?: Array<{
+    id: string
+    title: string
+    status: string
+    contentType: string
+    updatedAt: string
+  }>
 }
 const commandCards = [
   {
@@ -148,6 +157,11 @@ export default function DashboardPage() {
                 label: "Piezas en borrador",
                 value: metrics?.draftContent ?? 0,
                 helper: "Contenido listo para revisar y derivar.",
+              },
+              {
+                label: "En revision",
+                value: metrics?.reviewContent ?? 0,
+                helper: "Piezas pendientes de aprobacion editorial.",
               },
               {
                 label: "Publicaciones pendientes",
@@ -281,6 +295,43 @@ export default function DashboardPage() {
                 </SurfaceCard>
               </Link>
             ))}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-4 w-4 text-primary" />
+              Pipeline editorial reciente
+            </CardTitle>
+            <CardDescription>
+              Señales reales del flujo draft to review to approved to scheduled to published.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {metrics?.recentContent?.length ? (
+              metrics.recentContent.map((item) => (
+                <SurfaceCard key={item.id} variant="inner" className="border bg-background/70 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="secondary">{item.contentType}</Badge>
+                    <Badge variant="outline">{item.status}</Badge>
+                  </div>
+                  <p className="mt-3 font-medium text-foreground">{item.title}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Actualizado {new Date(item.updatedAt).toLocaleString("es-ES")}
+                  </p>
+                </SurfaceCard>
+              ))
+            ) : (
+              <SurfaceCard variant="inner" className="border bg-background/70 p-4">
+                <p className="font-medium text-foreground">Todavia no hay pipeline editorial visible</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Cuando generes y muevas piezas entre borrador, revision y aprobacion apareceran aqui.
+                </p>
+              </SurfaceCard>
+            )}
           </CardContent>
         </Card>
       </section>
