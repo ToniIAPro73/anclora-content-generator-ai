@@ -13,11 +13,11 @@ import { contentSources } from '@/lib/db/schema'
 import { chunkText } from '@/lib/rag/chunking'
 import { generateLocalEmbeddings } from '@/lib/rag/embeddings'
 import { eq } from 'drizzle-orm'
+import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
 
 export const runtime = 'nodejs'
 
 interface IngestRequest {
-  workspaceId: string
   title: string
   sourceType: 'document' | 'url' | 'rss' | 'manual' | 'api'
   content?: string
@@ -27,12 +27,14 @@ interface IngestRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const { workspaceId } = await getAuthenticatedWorkspace()
+
     // Parsear request
     const body: IngestRequest = await request.json()
 
-    if (!body.workspaceId || !body.title || !body.sourceType) {
+    if (!body.title || !body.sourceType) {
       return NextResponse.json(
-        { error: 'Faltan campos requeridos: workspaceId, title, sourceType' },
+        { error: 'Faltan campos requeridos: title, sourceType' },
         { status: 400 }
       )
     }
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     // Crear source
     const [source] = await db.insert(contentSources).values({
-      workspaceId: body.workspaceId,
+      workspaceId,
       title: body.title,
       sourceType: body.sourceType,
       sourceUrl: body.sourceUrl,
@@ -80,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     // Insertar todos los chunks de una vez (bulk insert)
     await insertChunks({
-      workspaceId: body.workspaceId,
+      workspaceId,
       sourceId: source.id,
       chunks: chunksWithEmbeddings
     })
@@ -103,6 +105,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
+    if (error instanceof WorkspaceAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+
     console.error('[Ingest API] Error:', error)
     return NextResponse.json(
       { error: 'Error interno del servidor', details: String(error) },

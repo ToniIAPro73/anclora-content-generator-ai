@@ -36,9 +36,6 @@ interface GenerationMetadata {
   retrievalTime?: number
   ragSources?: string[]
 }
-
-const workspaceId = "00000000-0000-0000-0000-000000000000"
-
 const contentTypes = [
   { value: "blog", label: "Blog de autoridad", hint: "Articulos profundos y SEO" },
   { value: "linkedin", label: "LinkedIn", hint: "Narrativa ejecutiva y thought leadership" },
@@ -134,7 +131,6 @@ export default function StudioPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          workspaceId,
           title,
           contentType,
           templateId: templateId || undefined,

@@ -33,9 +33,6 @@ type Source = {
   chunks: number
   date: string
 }
-
-const WORKSPACE_ID = '00000000-0000-0000-0000-000000000000'
-
 export default function KnowledgeBasePage() {
   const [sources, setSources] = useState<Source[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -48,7 +45,7 @@ export default function KnowledgeBasePage() {
   async function loadSources() {
     setIsLoading(true)
     try {
-      const res = await fetch(`/api/rag/sources?workspaceId=${WORKSPACE_ID}`)
+      const res = await fetch('/api/rag/sources')
       const data = await res.json()
       setSources(data.sources ?? [])
     } catch {
@@ -63,7 +60,7 @@ export default function KnowledgeBasePage() {
   async function handleDelete(id: string) {
     setSources(prev => prev.filter(s => s.id !== id))
     try {
-      const res = await fetch(`/api/rag/sources/${id}?workspaceId=${WORKSPACE_ID}`, { method: 'DELETE' })
+      const res = await fetch(`/api/rag/sources/${id}`, { method: 'DELETE' })
       if (!res.ok) loadSources()
     } catch {
       loadSources()
@@ -79,7 +76,6 @@ export default function KnowledgeBasePage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          workspaceId: WORKSPACE_ID,
           title: newTitle,
           content: newContent,
           sourceType: 'manual',

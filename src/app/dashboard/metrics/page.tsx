@@ -14,9 +14,6 @@ interface DashboardMetrics {
   contentByType?: Record<string, number>
   recentActivity?: Array<{ date: string; count: number }>
 }
-
-const workspaceId = '00000000-0000-0000-0000-000000000000'
-
 const amber = 'hsl(38 92% 55%)'
 const sage  = 'hsl(158 42% 45%)'
 
@@ -36,7 +33,7 @@ export default function MetricsPage() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    fetch(`/api/metrics/dashboard?workspaceId=${workspaceId}`)
+    fetch('/api/metrics/dashboard')
       .then((r) => r.json())
       .then((data) => setMetrics(data.metrics ?? null))
       .catch(() => setMetrics(null))

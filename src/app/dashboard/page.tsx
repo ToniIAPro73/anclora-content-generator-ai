@@ -26,9 +26,6 @@ interface DashboardMetrics {
   scheduledPosts?: number
   totalSources?: number
 }
-
-const workspaceId = "00000000-0000-0000-0000-000000000000"
-
 const commandCards = [
   {
     title: "Briefing del dia",
@@ -81,7 +78,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await fetch(`/api/metrics/dashboard?workspaceId=${workspaceId}`)
+        const response = await fetch('/api/metrics/dashboard')
         if (response.ok) {
           const data = await response.json()
           setMetrics(data.metrics)

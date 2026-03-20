@@ -15,8 +15,8 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Anclora — Content Intelligence",
-  description: "AI-Powered Content Generation and Brand Authority Engine",
+  title: "Anclora Content Generator AI",
+  description: "Anclora Content Generator AI by Anclora Group",
 };
 
 export default function RootLayout({

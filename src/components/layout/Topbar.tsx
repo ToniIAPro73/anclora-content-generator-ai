@@ -1,7 +1,8 @@
+import { createClient } from "@/utils/supabase/client"
 import * as React from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Sparkles, TrendingUp } from "lucide-react"
+import { usePathname, useRouter } from "next/navigation"
+import { ChevronDown, LogOut, Sparkles, TrendingUp, User } from "lucide-react"
 
 import { ThemeToggle } from "@/components/theme/theme-toggle"
 import {
@@ -10,8 +11,29 @@ import {
 } from "@/components/layout/dashboard-nav"
 
 export function Topbar() {
+  const router = useRouter()
   const pathname = usePathname()
   const page = getDashboardPageMeta(pathname)
+  const supabase = createClient()
+  const [menuOpen, setMenuOpen] = React.useState(false)
+  const menuRef = React.useRef<HTMLDivElement | null>(null)
+
+  React.useEffect(() => {
+    function handlePointerDown(event: MouseEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+
+    window.addEventListener("mousedown", handlePointerDown)
+    return () => window.removeEventListener("mousedown", handlePointerDown)
+  }, [])
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    setMenuOpen(false)
+    window.location.href = "/login"
+  }
 
   return (
     <header className="relative z-10 border-b border-border/70 bg-background/80 backdrop-blur">
@@ -39,8 +61,38 @@ export function Topbar() {
             Mallorca signals online
           </div>
           <ThemeToggle />
-          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-primary/25 bg-primary/10 text-xs font-semibold text-primary">
-            A
+          <div className="relative" ref={menuRef}>
+            <button
+              type="button"
+              onClick={() => setMenuOpen((value) => !value)}
+              className="flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-2 py-1.5 text-xs font-semibold text-primary transition-colors hover:border-primary/40 hover:bg-primary/15"
+            >
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15">
+                A
+              </div>
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${menuOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {menuOpen && (
+              <div className="absolute right-0 top-[calc(100%+0.5rem)] z-20 min-w-44 overflow-hidden rounded-2xl border border-border/70 bg-card/95 p-1.5 shadow-2xl backdrop-blur">
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-muted/70"
+                >
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span>Perfil</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Cerrar</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

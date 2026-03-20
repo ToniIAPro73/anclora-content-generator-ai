@@ -1,30 +1,28 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { createClient } from "@/utils/supabase/client"
 
-/* Anchor SVG — Anclora's mark */
-function AnchorMark({ className, style }: { className?: string; style?: React.CSSProperties }) {
-  return (
-    <svg
-      className={className}
-      style={style}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="5" r="3" />
-      <line x1="12" y1="8" x2="12" y2="22" />
-      <path d="M5 12H2a10 10 0 0 0 20 0h-3" />
-    </svg>
-  )
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined
+
+  const timeoutPromise = new Promise<T>((_, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(message))
+    }, timeoutMs)
+  })
+
+  try {
+    return await Promise.race([promise, timeoutPromise])
+  } finally {
+    if (timeoutId) {
+      clearTimeout(timeoutId)
+    }
+  }
 }
 
 export default function LoginPage() {
@@ -35,7 +33,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
   const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
@@ -44,28 +41,43 @@ export default function LoginPage() {
     setError(null)
     setSuccessMsg(null)
 
-    if (mode === "signin") {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
+    try {
+      if (mode === "signin") {
+        const { error } = await withTimeout(
+          supabase.auth.signInWithPassword({ email, password }),
+          15000,
+          "El login ha tardado demasiado. Revisa tu conexion con Supabase e intentalo de nuevo."
+        )
+
+        if (error) {
+          setError(error.message)
+          return
+        }
+
+        window.location.href = "/dashboard"
+        return
+      }
+
+      const { error } = await withTimeout(
+        supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName } },
+        }),
+        15000,
+        "La creacion de cuenta ha tardado demasiado. Revisa tu conexion con Supabase e intentalo de nuevo."
+      )
+
       if (error) {
         setError(error.message)
-        setIsLoading(false)
-      } else {
-        router.push("/dashboard")
-        router.refresh()
+        return
       }
-    } else {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName } },
-      })
-      if (error) {
-        setError(error.message)
-        setIsLoading(false)
-      } else {
-        setSuccessMsg("Cuenta creada. Revisa tu email para confirmar el registro.")
-        setIsLoading(false)
-      }
+
+      setSuccessMsg("Cuenta creada. Revisa tu email para confirmar el registro.")
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "No se pudo completar la autenticacion.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -117,45 +129,53 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Giant background anchor — the unforgettable detail */}
+        {/* Giant background logo */}
         <div
           className="absolute pointer-events-none select-none"
           style={{
-            right: "-60px",
+            right: "-120px",
             top: "50%",
-            transform: "translateY(-50%) rotate(-8deg)",
-            opacity: 0.045,
+            transform: "translateY(-50%) rotate(-10deg)",
+            opacity: 0.08,
           }}
         >
-          <AnchorMark
-            style={{
-              width: "520px",
-              height: "520px",
-              color: textPrimary,
-              strokeWidth: 1,
-            }}
-          />
+          <div className="relative h-[620px] w-[620px]">
+            <Image
+              src="/logo-content-generator.png"
+              alt=""
+              fill
+              className="object-contain"
+              aria-hidden="true"
+              priority
+            />
+          </div>
         </div>
 
         {/* Panel content */}
         <div className="relative z-10 flex flex-col h-full justify-between p-12">
 
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-md"
-              style={{ backgroundColor: amber }}
-            >
-              <AnchorMark
-                style={{ width: "15px", height: "15px", color: amberDark, strokeWidth: 2.5 }}
+          <div className="flex items-center gap-3">
+            <div className="relative h-10 w-10 overflow-hidden rounded-xl ring-1 ring-white/10">
+              <Image
+                src="/logo-content-generator.png"
+                alt="Anclora Content Generator AI logo"
+                fill
+                className="object-cover"
+                priority
               />
             </div>
-            <span
-              className="font-heading text-sm font-semibold tracking-tight"
-              style={{ color: textPrimary }}
-            >
-              Anclora
-            </span>
+            <div>
+              <p
+                className="font-heading text-sm font-semibold tracking-tight"
+                style={{ color: textPrimary }}
+              >
+                Anclora Content Generator AI
+              </p>
+              <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: textDim }}>
+                by Anclora Group
+              </p>
+            </div>
           </div>
 
           {/* Editorial headline block */}
@@ -185,7 +205,7 @@ export default function LoginPage() {
                 className="text-sm leading-relaxed max-w-sm"
                 style={{ color: textMuted }}
               >
-                Transforma tu estrategia de contenido. Crea, programa y analiza publicaciones que construyen tu marca personal.
+                El cockpit editorial de Anclora Group para convertir inteligencia de mercado en contenido de autoridad.
               </p>
             </div>
 
@@ -234,21 +254,27 @@ export default function LoginPage() {
         <div className="w-full max-w-[370px] space-y-7">
 
           {/* Mobile logo */}
-          <div className="flex items-center gap-2.5 lg:hidden">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-md"
-              style={{ backgroundColor: amber }}
-            >
-              <AnchorMark
-                style={{ width: "15px", height: "15px", color: amberDark, strokeWidth: 2.5 }}
+          <div className="flex items-center gap-3 lg:hidden">
+            <div className="relative h-10 w-10 overflow-hidden rounded-xl ring-1 ring-white/10">
+              <Image
+                src="/logo-content-generator.png"
+                alt="Anclora Content Generator AI logo"
+                fill
+                className="object-cover"
+                priority
               />
             </div>
-            <span
-              className="font-heading text-sm font-semibold"
-              style={{ color: textPrimary }}
-            >
-              Anclora
-            </span>
+            <div>
+              <p
+                className="font-heading text-sm font-semibold"
+                style={{ color: textPrimary }}
+              >
+                Anclora Content Generator AI
+              </p>
+              <p className="text-[11px] uppercase tracking-[0.16em]" style={{ color: textDim }}>
+                by Anclora Group
+              </p>
+            </div>
           </div>
 
           {/* Auth card */}
@@ -292,7 +318,7 @@ export default function LoginPage() {
               </h2>
               <p className="mt-0.5 text-xs" style={{ color: textMuted }}>
                 {mode === "signin"
-                  ? "Accede a tu Content Studio"
+                  ? "Accede a Anclora Content Generator AI"
                   : "Crea tu cuenta en segundos"}
               </p>
             </div>
@@ -421,7 +447,7 @@ export default function LoginPage() {
           </div>
 
           <p className="text-center text-xs" style={{ color: textDim }}>
-            Anclora Content Generator AI · © 2026
+            Anclora Content Generator AI by Anclora Group · © 2026
           </p>
         </div>
       </div>

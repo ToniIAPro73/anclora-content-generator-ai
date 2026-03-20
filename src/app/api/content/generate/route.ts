@@ -13,11 +13,11 @@ import { contentTemplates, generatedContent, microZones } from '@/lib/db/schema'
 import { generateContentWithRAG } from '@/lib/rag/pipeline'
 import { eq, and } from 'drizzle-orm'
 import type { ContentType } from '@/lib/db/types'
+import { getAuthenticatedWorkspace, isUuid, WorkspaceAuthError } from '@/lib/auth/workspace'
 
 export const runtime = 'nodejs'
 
 interface GenerateRequest {
-  workspaceId: string // Por ahora lo pasamos en el body, luego vendrá de Auth
   templateId?: string
   contentType: ContentType
   title: string
@@ -32,12 +32,14 @@ interface GenerateRequest {
 
 export async function POST(request: NextRequest) {
   try {
+    const { workspaceId } = await getAuthenticatedWorkspace()
+
     // Parsear request body
     const body: GenerateRequest = await request.json()
 
-    if (!body.workspaceId || !body.contentType || !body.title || !body.userPrompt) {
+    if (!body.contentType || !body.title || !body.userPrompt) {
       return NextResponse.json(
-        { error: 'Faltan campos requeridos: workspaceId, contentType, title, userPrompt' },
+        { error: 'Faltan campos requeridos: contentType, title, userPrompt' },
         { status: 400 }
       )
     }
@@ -46,11 +48,11 @@ export async function POST(request: NextRequest) {
     let systemPrompt = ''
     let templateConfig: { temperature?: number; max_tokens?: number } = {}
 
-    if (body.templateId) {
+    if (body.templateId && isUuid(body.templateId)) {
       const template = await db.query.contentTemplates.findFirst({
         where: and(
           eq(contentTemplates.id, body.templateId),
-          eq(contentTemplates.workspaceId, body.workspaceId)
+          eq(contentTemplates.workspaceId, workspaceId)
         ),
         columns: {
           systemPrompt: true,
@@ -75,11 +77,11 @@ export async function POST(request: NextRequest) {
     // Obtener contexto de micro-zona (si se especificó)
     let microZoneContext = ''
 
-    if (body.microZoneId) {
+    if (body.microZoneId && isUuid(body.microZoneId)) {
       const microZone = await db.query.microZones.findFirst({
         where: and(
           eq(microZones.id, body.microZoneId),
-          eq(microZones.workspaceId, body.workspaceId)
+          eq(microZones.workspaceId, workspaceId)
         ),
         columns: {
           name: true,
@@ -102,7 +104,7 @@ export async function POST(request: NextRequest) {
       retrievalOptions: {
         topK: 5,
         similarityThreshold: 0.7,
-        workspaceId: body.workspaceId
+        workspaceId
       },
       model: 'reasoning',
       modelConfig: {
@@ -113,7 +115,7 @@ export async function POST(request: NextRequest) {
 
     // Guardar contenido generado
     const [savedContent] = await db.insert(generatedContent).values({
-      workspaceId: body.workspaceId,
+      workspaceId,
       templateId: body.templateId || null,
       title: body.title,
       content: result.content,
@@ -130,6 +132,10 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
+    if (error instanceof WorkspaceAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+
     console.error('[Generate API] Error:', error)
     return NextResponse.json(
       { error: 'Error interno del servidor', details: String(error) },

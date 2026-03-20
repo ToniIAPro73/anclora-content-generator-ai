@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
 
 export const runtime = 'nodejs'
 
-// GET /api/rag/sources?workspaceId=xxx
-export async function GET(request: NextRequest) {
-  if (!process.env.DATABASE_URL) {
-    return NextResponse.json({ success: true, sources: [] })
-  }
-
-  const workspaceId = new URL(request.url).searchParams.get('workspaceId')
-  if (!workspaceId) {
-    return NextResponse.json({ error: 'workspaceId requerido' }, { status: 400 })
-  }
-
+// GET /api/rag/sources
+export async function GET(_request: NextRequest) {
   try {
+    const { workspaceId } = await getAuthenticatedWorkspace()
+
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({ success: true, sources: [] })
+    }
+
     const { neon } = await import('@neondatabase/serverless')
     const sql = neon(process.env.DATABASE_URL)
 
@@ -35,6 +33,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, sources })
   } catch (error) {
+    if (error instanceof WorkspaceAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+
     console.error('[RAG Sources GET]', error)
     return NextResponse.json({ error: 'Error al obtener fuentes' }, { status: 500 })
   }
@@ -42,18 +44,20 @@ export async function GET(request: NextRequest) {
 
 // POST /api/rag/sources  — crear nueva fuente
 export async function POST(request: NextRequest) {
-  if (!process.env.DATABASE_URL) {
-    return NextResponse.json({ error: 'DATABASE_URL no configurado' }, { status: 503 })
-  }
-
-  const body = await request.json()
-  const { workspaceId, title, content, sourceUrl, sourceType = 'manual' } = body
-
-  if (!workspaceId || !title) {
-    return NextResponse.json({ error: 'workspaceId y title son requeridos' }, { status: 400 })
-  }
-
   try {
+    const { workspaceId } = await getAuthenticatedWorkspace()
+
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({ error: 'DATABASE_URL no configurado' }, { status: 503 })
+    }
+
+    const body = await request.json()
+    const { title, content, sourceUrl, sourceType = 'manual' } = body
+
+    if (!title) {
+      return NextResponse.json({ error: 'title es requerido' }, { status: 400 })
+    }
+
     const { neon } = await import('@neondatabase/serverless')
     const sql = neon(process.env.DATABASE_URL)
 
@@ -75,6 +79,10 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
+    if (error instanceof WorkspaceAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+
     console.error('[RAG Sources POST]', error)
     return NextResponse.json({ error: 'Error al crear fuente' }, { status: 500 })
   }

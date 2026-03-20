@@ -2,6 +2,16 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function updateSession(request: NextRequest) {
+  const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard')
+
+  // En desarrollo no necesitamos consultar Supabase para rutas públicas.
+  // Esto evita que / y /login dependan de un fetch auth en el middleware.
+  if (!isDashboardRoute) {
+    return NextResponse.next({
+      request,
+    })
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   })
@@ -30,24 +40,22 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
 
-  // Protect Dashboard routes
-  if (
-    !user &&
-    request.nextUrl.pathname.startsWith('/dashboard')
-  ) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/login'
-    return NextResponse.redirect(url)
+  try {
+    const {
+      data: { user: authenticatedUser },
+    } = await supabase.auth.getUser()
+
+    user = authenticatedUser
+  } catch (error) {
+    console.error('[Supabase middleware] Auth fetch failed:', error)
   }
 
-  // Si tiene sesión activa y está en login o la raíz, mandarlo al dashboard
-  if (user && (request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/')) {
+  // Protect Dashboard routes
+  if (!user) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 

@@ -1,6 +1,6 @@
 {
   "project": "Anclora Content Generator AI",
-  "fase_actual": "FASE 0: Rebaseline documental",
+  "fase_actual": "FASE 1: Hardening de identidad y tenancy",
   "members": [
     {
       "id": "anclorabot",
@@ -108,9 +108,9 @@
       "id": 5,
       "title": "Iniciar Fase 1 de hardening de tenancy",
       "description": "Resolver el workspace desde sesion autenticada, reducir inputs inseguros desde cliente y redefinir el modelo de seguridad real para Neon.",
-      "status": "PENDING",
-      "plan_approved": false,
-      "assigned_to": "agent_a",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
       "dependencies": [4],
       "priority": "CRITICAL",
       "estimated_hours": "3-5",
@@ -118,7 +118,24 @@
       "deliverables": [
         "Spec de Fase 1",
         "Contratos API endurecidos",
-        "Tenancy model actualizado"
+        "Resolucion server-side de workspace en rutas criticas"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Formalizar modelo relacional de workspaces",
+      "description": "Crear un modelo explicito de workspaces y memberships en Neon para sustituir el fallback temporal basado en user.id.",
+      "status": "PENDING",
+      "plan_approved": false,
+      "assigned_to": "agent_a",
+      "dependencies": [5],
+      "priority": "CRITICAL",
+      "estimated_hours": "3-5",
+      "feature": "ANCLORA-FEAT-002",
+      "deliverables": [
+        "Schema de workspaces y memberships",
+        "Plan de migracion desde auth metadata",
+        "Spec de persistencia multi-tenant"
       ]
     }
   ]

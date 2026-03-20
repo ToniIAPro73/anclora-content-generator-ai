@@ -8,6 +8,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
 
 export const runtime = 'nodejs'
 
@@ -24,17 +25,12 @@ const EMPTY_METRICS = {
 }
 
 export async function GET(request: NextRequest) {
-  // Return empty metrics when DATABASE_URL is not configured yet
-  if (!process.env.DATABASE_URL) {
-    return NextResponse.json({ success: true, metrics: EMPTY_METRICS })
-  }
-
   try {
-    const { searchParams } = new URL(request.url)
-    const workspaceId = searchParams.get('workspaceId')
+    const { workspaceId } = await getAuthenticatedWorkspace()
 
-    if (!workspaceId) {
-      return NextResponse.json({ error: 'workspaceId es requerido' }, { status: 400 })
+    // Return empty metrics when DATABASE_URL is not configured yet
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({ success: true, metrics: EMPTY_METRICS })
     }
 
     const { neon } = await import('@neondatabase/serverless')
@@ -59,6 +55,10 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
+    if (error instanceof WorkspaceAuthError) {
+      return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+
     console.error('[Metrics API] Error:', error)
     return NextResponse.json({ success: true, metrics: EMPTY_METRICS })
   }
