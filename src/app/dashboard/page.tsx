@@ -35,6 +35,14 @@ interface DashboardMetrics {
     contentType: string
     updatedAt: string
   }>
+  scheduledQueue?: Array<{
+    id: string
+    contentId: string
+    title: string
+    platform: string
+    contentType: string
+    scheduledFor: string
+  }>
 }
 const commandCards = [
   {
@@ -299,7 +307,7 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      <section>
+      <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -329,6 +337,41 @@ export default function DashboardPage() {
                 <p className="font-medium text-foreground">Todavia no hay pipeline editorial visible</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Cuando generes y muevas piezas entre borrador, revision y aprobacion apareceran aqui.
+                </p>
+              </SurfaceCard>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarClock className="h-4 w-4 text-primary" />
+              Cola programada
+            </CardTitle>
+            <CardDescription>
+              Las siguientes piezas ya tienen ventana de salida asignada.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {metrics?.scheduledQueue?.length ? (
+              metrics.scheduledQueue.map((item) => (
+                <SurfaceCard key={item.id} variant="inner" className="border bg-background/70 p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge variant="secondary">{item.platform}</Badge>
+                    <Badge variant="outline">{item.contentType}</Badge>
+                  </div>
+                  <p className="mt-3 font-medium text-foreground">{item.title}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Programado para {new Date(item.scheduledFor).toLocaleString("es-ES")}
+                  </p>
+                </SurfaceCard>
+              ))
+            ) : (
+              <SurfaceCard variant="inner" className="border bg-background/70 p-4">
+                <p className="font-medium text-foreground">No hay publicaciones programadas</p>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  Cuando apruebes una pieza y la lleves a scheduled aparecerá aquí con su fecha de salida.
                 </p>
               </SurfaceCard>
             )}

@@ -123,6 +123,16 @@ function StudioPageContent() {
     if (opportunityTone && tone === "analitico") setTone(opportunityTone)
   }, [audience, contentType, objective, opportunityId, ragQuery, searchParams, title, tone, userContext])
 
+  useEffect(() => {
+    if (generatedContent?.scheduledFor) {
+      const nextValue = new Date(generatedContent.scheduledFor)
+      const localValue = new Date(nextValue.getTime() - nextValue.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 16)
+      setScheduleAt(localValue)
+    }
+  }, [generatedContent?.scheduledFor])
+
   const selectedType = useMemo(
     () => contentTypes.find((item) => item.value === contentType),
     [contentType]
@@ -199,7 +209,7 @@ function StudioPageContent() {
     window.setTimeout(() => setCopyState("idle"), 1800)
   }
 
-  async function handleEditorialAction(action: "review" | "approve" | "publish" | "schedule" | "archive") {
+  async function handleEditorialAction(action: "review" | "approve" | "publish" | "schedule" | "unschedule" | "archive") {
     if (!generatedContent?.id) return
 
     setIsUpdatingStatus(true)
@@ -234,6 +244,8 @@ function StudioPageContent() {
           ? "La pieza se ha marcado como publicada."
           : action === "schedule"
           ? "La pieza ha quedado programada."
+          : action === "unschedule"
+          ? "La programación se ha cancelado y la pieza vuelve a approved."
           : "La pieza ha sido archivada."
       )
     } catch (err) {
@@ -480,11 +492,11 @@ function StudioPageContent() {
                 </Button>
                 <Button
                   variant="outline"
-                  disabled={!generatedContent?.id || isUpdatingStatus || !scheduleAt}
+                  disabled={!generatedContent?.id || isUpdatingStatus || !scheduleAt || generatedContent.status === "published"}
                   onClick={() => void handleEditorialAction("schedule")}
                 >
                   <FileStack className="h-4 w-4" />
-                  Programar
+                  {generatedContent?.status === "scheduled" ? "Reprogramar" : "Programar"}
                 </Button>
               </div>
             </div>
@@ -561,6 +573,11 @@ function StudioPageContent() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant="secondary">{generatedContent.contentType}</Badge>
                     <Badge variant="outline">{generatedContent.status}</Badge>
+                    {generatedContent.scheduledFor ? (
+                      <Badge variant="outline">
+                        Sale el {new Date(generatedContent.scheduledFor).toLocaleString("es-ES")}
+                      </Badge>
+                    ) : null}
                     {generatedContent.publishedAt ? (
                       <Badge variant="outline">Publicado {new Date(generatedContent.publishedAt).toLocaleDateString("es-ES")}</Badge>
                     ) : null}
@@ -575,6 +592,14 @@ function StudioPageContent() {
                         </Button>
                         <Button size="sm" variant="outline" disabled={isUpdatingStatus || generatedContent.status === "approved"} onClick={() => void handleEditorialAction("approve")}>
                           Aprobar
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isUpdatingStatus || generatedContent.status !== "scheduled"}
+                          onClick={() => void handleEditorialAction("unschedule")}
+                        >
+                          Cancelar programación
                         </Button>
                         <Button size="sm" disabled={isUpdatingStatus || generatedContent.status === "published"} onClick={() => void handleEditorialAction("publish")}>
                           Publicar ahora
@@ -591,7 +616,7 @@ function StudioPageContent() {
                           onChange={(event) => setScheduleAt(event.target.value)}
                         />
                         <p className="text-xs text-muted-foreground">
-                          Guarda una fecha para mover la pieza a `scheduled` y registrarla en `scheduled_posts`.
+                          Guarda o actualiza una fecha para mover la pieza a `scheduled` y mantener una única entrada activa en `scheduled_posts`.
                         </p>
                       </div>
                     </SurfaceCard>

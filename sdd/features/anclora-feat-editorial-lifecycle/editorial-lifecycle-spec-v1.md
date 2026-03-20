@@ -21,7 +21,10 @@ La app ya genera contenido y lo persiste como `draft`, pero el operador todavia 
    - aprobar
    - publicar ahora
    - programar
+   - reprogramar sin duplicar slots
+   - cancelar programacion
 4. Exponer señales de ciclo editorial en dashboard y metricas
+5. Mostrar la cola editorial programada como vista operativa de la fase
 
 ## Estados de la primera iteracion
 
@@ -35,9 +38,11 @@ La app ya genera contenido y lo persiste como `draft`, pero el operador todavia 
 ## Criterios de aceptacion
 
 - El estado de una pieza cambia de forma persistida en DB
-- Programar una pieza crea una entrada en `scheduled_posts`
+- Programar una pieza crea o actualiza una unica entrada activa en `scheduled_posts`
+- Cancelar una programacion marca el slot pendiente como `cancelled` y devuelve la pieza a `approved`
 - Publicar una pieza actualiza `publishedAt`
 - Dashboard y Metrics muestran al menos `draft`, `review`, `approved`, `scheduled`, `published`
+- Dashboard y Metrics hacen visible la cola programada proxima
 - `lint` y `build` pasan
 
 ## Fuera de alcance

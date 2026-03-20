@@ -1,4 +1,4 @@
-import { and, desc, eq } from 'drizzle-orm'
+import { and, asc, desc, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
@@ -7,7 +7,7 @@ import { generatedContent, scheduledPosts } from '@/lib/db/schema'
 
 export const runtime = 'nodejs'
 
-type EditorialAction = 'review' | 'approve' | 'publish' | 'schedule' | 'archive'
+type EditorialAction = 'review' | 'approve' | 'publish' | 'schedule' | 'unschedule' | 'archive'
 
 type UpdateRequest = {
   id?: string
@@ -33,24 +33,46 @@ export async function GET() {
   try {
     const { workspaceId } = await getAuthenticatedWorkspace()
 
-    const items = await db.query.generatedContent.findMany({
-      where: eq(generatedContent.workspaceId, workspaceId),
-      orderBy: [desc(generatedContent.updatedAt)],
-      limit: 12,
-      columns: {
-        id: true,
-        title: true,
-        contentType: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-        scheduledFor: true,
-        publishedAt: true,
-        opportunityId: true,
-      },
-    })
+    const [items, scheduledQueue] = await Promise.all([
+      db.query.generatedContent.findMany({
+        where: eq(generatedContent.workspaceId, workspaceId),
+        orderBy: [desc(generatedContent.updatedAt)],
+        limit: 12,
+        columns: {
+          id: true,
+          title: true,
+          contentType: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          scheduledFor: true,
+          publishedAt: true,
+          opportunityId: true,
+        },
+      }),
+      db
+        .select({
+          id: scheduledPosts.id,
+          contentId: scheduledPosts.contentId,
+          platform: scheduledPosts.platform,
+          scheduledFor: scheduledPosts.scheduledFor,
+          status: scheduledPosts.status,
+          title: generatedContent.title,
+          contentType: generatedContent.contentType,
+        })
+        .from(scheduledPosts)
+        .innerJoin(generatedContent, eq(scheduledPosts.contentId, generatedContent.id))
+        .where(
+          and(
+            eq(scheduledPosts.workspaceId, workspaceId),
+            eq(scheduledPosts.status, 'pending')
+          )
+        )
+        .orderBy(asc(scheduledPosts.scheduledFor))
+        .limit(12),
+    ])
 
-    return NextResponse.json({ success: true, items })
+    return NextResponse.json({ success: true, items, scheduledQueue })
   } catch (error) {
     if (error instanceof WorkspaceAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
@@ -80,6 +102,7 @@ export async function PATCH(request: NextRequest) {
         title: true,
         contentType: true,
         status: true,
+        scheduledFor: true,
       },
     })
 
@@ -97,13 +120,40 @@ export async function PATCH(request: NextRequest) {
         return NextResponse.json({ error: 'scheduledFor no es una fecha valida' }, { status: 400 })
       }
 
-      await db.insert(scheduledPosts).values({
-        workspaceId,
-        contentId: existing.id,
-        platform: mapContentTypeToPlatform(existing.contentType),
-        scheduledFor: scheduledAt,
-        status: 'pending',
+      const pendingSchedule = await db.query.scheduledPosts.findFirst({
+        where: and(
+          eq(scheduledPosts.workspaceId, workspaceId),
+          eq(scheduledPosts.contentId, existing.id),
+          eq(scheduledPosts.status, 'pending')
+        ),
+        columns: {
+          id: true,
+        },
       })
+
+      if (pendingSchedule) {
+        await db
+          .update(scheduledPosts)
+          .set({
+            platform: mapContentTypeToPlatform(existing.contentType),
+            scheduledFor: scheduledAt,
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(scheduledPosts.id, pendingSchedule.id),
+              eq(scheduledPosts.workspaceId, workspaceId)
+            )
+          )
+      } else {
+        await db.insert(scheduledPosts).values({
+          workspaceId,
+          contentId: existing.id,
+          platform: mapContentTypeToPlatform(existing.contentType),
+          scheduledFor: scheduledAt,
+          status: 'pending',
+        })
+      }
 
       const [scheduled] = await db
         .update(generatedContent)
@@ -123,6 +173,39 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ success: true, item: scheduled })
     }
 
+    if (body.action === 'unschedule') {
+      await db
+        .update(scheduledPosts)
+        .set({
+          status: 'cancelled',
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(scheduledPosts.workspaceId, workspaceId),
+            eq(scheduledPosts.contentId, existing.id),
+            eq(scheduledPosts.status, 'pending')
+          )
+        )
+
+      const [unscheduled] = await db
+        .update(generatedContent)
+        .set({
+          status: 'approved',
+          scheduledFor: null,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(generatedContent.id, existing.id),
+            eq(generatedContent.workspaceId, workspaceId)
+          )
+        )
+        .returning()
+
+      return NextResponse.json({ success: true, item: unscheduled })
+    }
+
     const nextStatus =
       body.action === 'review'
         ? 'review'
@@ -132,12 +215,28 @@ export async function PATCH(request: NextRequest) {
         ? 'published'
         : 'archived'
 
+    if (body.action === 'publish' || body.action === 'archive') {
+      await db
+        .update(scheduledPosts)
+        .set({
+          status: 'cancelled',
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(scheduledPosts.workspaceId, workspaceId),
+            eq(scheduledPosts.contentId, existing.id),
+            eq(scheduledPosts.status, 'pending')
+          )
+        )
+    }
+
     const [updated] = await db
       .update(generatedContent)
       .set({
         status: nextStatus,
         publishedAt: body.action === 'publish' ? new Date() : null,
-        scheduledFor: body.action === 'publish' ? null : undefined,
+        scheduledFor: body.action === 'publish' || body.action === 'archive' ? null : undefined,
         updatedAt: new Date(),
       })
       .where(

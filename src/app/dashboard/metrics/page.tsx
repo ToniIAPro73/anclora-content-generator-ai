@@ -17,6 +17,7 @@ interface DashboardMetrics {
   contentByType?: Record<string, number>
   recentActivity?: Array<{ date: string; count: number }>
   recentContent?: Array<{ id: string; title: string; status: string; contentType: string; updatedAt: string }>
+  scheduledQueue?: Array<{ id: string; contentId: string; title: string; platform: string; contentType: string; scheduledFor: string }>
 }
 const amber = 'hsl(38 92% 55%)'
 const sage  = 'hsl(158 42% 45%)'
@@ -200,42 +201,83 @@ export default function MetricsPage() {
 
         {/* ── Contenido ── */}
         <TabsContent value="content">
-          <SurfaceCard variant="panel" className="p-6">
-            <h3 className="font-heading text-sm font-semibold">Pipeline Editorial</h3>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Estado reciente de las piezas dentro del ciclo editorial
-            </p>
-            {metrics?.recentContent && metrics.recentContent.length > 0 ? (
-              <div className="mt-5 space-y-2">
-                {metrics.recentContent.map((item) => (
-                  <SurfaceCard
-                    key={item.id}
-                    variant="inner"
-                    className="flex items-center justify-between rounded-lg border bg-muted px-4 py-2.5"
-                  >
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Clock className="h-3.5 w-3.5" />
-                      <span>{item.title}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge variant="secondary" className="text-xs">{item.contentType}</Badge>
-                      <Badge className="text-xs" variant="outline">{item.status}</Badge>
-                    </div>
-                  </SurfaceCard>
-                ))}
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-center">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
-                  <Clock className="h-6 w-6 text-muted-foreground/35" />
+          <div className="grid gap-4 xl:grid-cols-2">
+            <SurfaceCard variant="panel" className="p-6">
+              <h3 className="font-heading text-sm font-semibold">Pipeline Editorial</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Estado reciente de las piezas dentro del ciclo editorial
+              </p>
+              {metrics?.recentContent && metrics.recentContent.length > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {metrics.recentContent.map((item) => (
+                    <SurfaceCard
+                      key={item.id}
+                      variant="inner"
+                      className="flex items-center justify-between rounded-lg border bg-muted px-4 py-2.5"
+                    >
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" />
+                        <span>{item.title}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">{item.contentType}</Badge>
+                        <Badge className="text-xs" variant="outline">{item.status}</Badge>
+                      </div>
+                    </SurfaceCard>
+                  ))}
                 </div>
-                <p className="text-sm font-medium text-muted-foreground">Sin actividad editorial reciente</p>
-                <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
-                  Cuando generes y muevas piezas por el pipeline editorial aparecerán aquí
-                </p>
-              </div>
-            )}
-          </SurfaceCard>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
+                    <Clock className="h-6 w-6 text-muted-foreground/35" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Sin actividad editorial reciente</p>
+                  <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
+                    Cuando generes y muevas piezas por el pipeline editorial aparecerán aquí
+                  </p>
+                </div>
+              )}
+            </SurfaceCard>
+
+            <SurfaceCard variant="panel" className="p-6">
+              <h3 className="font-heading text-sm font-semibold">Cola Programada</h3>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Próximas piezas listas para salir sin depender de memoria manual.
+              </p>
+              {metrics?.scheduledQueue && metrics.scheduledQueue.length > 0 ? (
+                <div className="mt-5 space-y-2">
+                  {metrics.scheduledQueue.map((item) => (
+                    <SurfaceCard
+                      key={item.id}
+                      variant="inner"
+                      className="flex items-center justify-between rounded-lg border bg-muted px-4 py-2.5"
+                    >
+                      <div>
+                        <p className="text-sm font-medium text-foreground">{item.title}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {new Date(item.scheduledFor).toLocaleString('es-ES')}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-xs">{item.platform}</Badge>
+                        <Badge className="text-xs" variant="outline">{item.contentType}</Badge>
+                      </div>
+                    </SurfaceCard>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-muted">
+                    <Clock className="h-6 w-6 text-muted-foreground/35" />
+                  </div>
+                  <p className="text-sm font-medium text-muted-foreground">Sin cola programada</p>
+                  <p className="mt-1 text-xs text-muted-foreground/55 max-w-xs">
+                    Programa una pieza desde el Studio y aparecerá aquí con su siguiente ventana de salida.
+                  </p>
+                </div>
+              )}
+            </SurfaceCard>
+          </div>
         </TabsContent>
 
         {/* ── RAG ── */}

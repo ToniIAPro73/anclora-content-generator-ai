@@ -25,6 +25,7 @@ const EMPTY_METRICS = {
   contentByType: {},
   recentActivity: [],
   recentContent: [],
+  scheduledQueue: [],
 }
 
 export async function GET() {
@@ -49,6 +50,7 @@ export async function GET() {
       totalSourcesResult,
       contentByTypeResult,
       recentContentResult,
+      scheduledQueueResult,
     ] =
       await Promise.all([
         sql`SELECT COUNT(*) as count FROM generated_content WHERE workspace_id = ${workspaceId}`,
@@ -69,6 +71,15 @@ export async function GET() {
           FROM generated_content
           WHERE workspace_id = ${workspaceId}
           ORDER BY updated_at DESC
+          LIMIT 5
+        `,
+        sql`
+          SELECT sp.id, sp.content_id, sp.platform, sp.scheduled_for, gc.title, gc.content_type
+          FROM scheduled_posts sp
+          INNER JOIN generated_content gc ON gc.id = sp.content_id
+          WHERE sp.workspace_id = ${workspaceId}
+            AND sp.status = 'pending'
+          ORDER BY sp.scheduled_for ASC
           LIMIT 5
         `,
       ])
@@ -95,6 +106,14 @@ export async function GET() {
           status: String(row.status),
           contentType: String(row.content_type),
           updatedAt: String(row.updated_at),
+        })),
+        scheduledQueue: scheduledQueueResult.map((row) => ({
+          id: String(row.id),
+          contentId: String(row.content_id),
+          title: String(row.title),
+          platform: String(row.platform),
+          contentType: String(row.content_type),
+          scheduledFor: String(row.scheduled_for),
         })),
       },
     })
