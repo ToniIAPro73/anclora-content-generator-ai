@@ -5,7 +5,7 @@ Motor editorial y de inteligencia de contenido para Anclora Private Estates.
 ## Baseline actual
 
 - Frontend: Next.js 15, React 19, TypeScript, Tailwind CSS v4, shadcn/ui
-- Auth: Supabase Auth con SSR
+- Auth: Better Auth con email/password y organizations
 - Datos operativos: Neon PostgreSQL con Drizzle ORM
 - RAG: pgvector + Transformers.js para embeddings locales
 - Modelos: Anthropic, Groq y Ollama
@@ -17,11 +17,11 @@ La aplicacion ya cubre una base funcional de dashboard, studio, knowledge base, 
 
 - La vision estrategica es una plataforma de content intelligence para real estate de lujo, no un generador generico.
 - La tenancy sigue necesitando hardening: varias rutas todavia aceptan `workspaceId` desde el cliente.
-- La documentacion historica mezcla Supabase Database, Neon y RLS como si fueran una sola capa cerrada.
+- La documentacion historica mezcla Supabase Auth, Neon y RLS como si fueran una sola capa cerrada.
 
 Este repositorio usa desde ahora una narrativa unica:
 
-- Supabase resuelve autenticacion.
+- Better Auth resuelve autenticacion y organizaciones.
 - Neon + Drizzle resuelven persistencia operativa.
 - El dashboard resuelve operacion editorial.
 
@@ -70,7 +70,6 @@ Este repositorio usa desde ahora una narrativa unica:
 
 - Node.js 20+
 - npm
-- Proyecto de Supabase para Auth
 - Base de datos Neon PostgreSQL
 
 ### Variables de entorno
@@ -79,9 +78,11 @@ Configura `.env.local` con:
 
 ```bash
 DATABASE_URL=postgresql://user:password@endpoint.neon.tech/database?sslmode=require
-NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_APP_URL=http://localhost:3000
+BETTER_AUTH_URL=http://localhost:3000
+BETTER_AUTH_SECRET=change-me
+BETTER_AUTH_ENABLED=true
+NEXT_PUBLIC_BETTER_AUTH_ENABLED=true
 ANTHROPIC_API_KEY=sk-ant-...
 GROQ_API_KEY=gsk_...
 ```
@@ -118,7 +119,7 @@ src/
     ai/                   # Clientes y adaptadores LLM
     db/                   # Schema Drizzle, cliente Neon y tipos
     rag/                  # Chunking, embeddings, retrieval y pipeline
-  utils/supabase/         # Clientes SSR de auth
+    auth/                 # Better Auth, tenancy y helpers de sesion
 supabase/migrations/      # SQL historico y bootstrap
 sdd/                      # Core specs y specs por feature
 .antigravity/             # Rules, skills y orquestacion del equipo
@@ -145,8 +146,8 @@ Payload actual:
 
 Notas:
 
-- `workspaceId` sigue llegando en request body de forma temporal.
 - `contentType` valido: `blog`, `linkedin`, `instagram`, `facebook`, `newsletter`, `custom`.
+- La resolucion autentica de `workspaceId` se hace en server via Better Auth + `workspace_organizations`.
 
 ### `POST /api/content/ingest`
 
@@ -161,12 +162,12 @@ Payload actual:
 }
 ```
 
-### `GET /api/metrics/dashboard?workspaceId=uuid`
+### `GET /api/metrics/dashboard`
 
 Notas:
 
 - Si `DATABASE_URL` no existe, devuelve metricas vacias de forma segura.
-- La resolucion server-side del workspace pertenece a Fase 1.
+- La resolucion server-side del workspace ya no depende de Supabase.
 
 ## Base de datos y tenancy
 
@@ -191,4 +192,4 @@ Hoy la multi-tenancy esta definida a nivel de modelo mediante `workspace_id`, pe
 
 ## Nota de Fase 0
 
-Este README ya refleja el rebaseline documental realizado el 2026-03-19. Si encuentras referencias a Supabase como base de datos operativa, a `tmp-app`, o a rutas/specs legacy, consideralas deuda pendiente o documentacion desactualizada a limpiar en fases siguientes.
+Este README refleja el baseline vigente tras la migracion operativa de auth a Better Auth + Neon. Si encuentras referencias a Supabase Auth o a narrativas antiguas en specs historicas, tratalas como trazabilidad o deuda documental a limpiar.

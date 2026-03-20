@@ -1,6 +1,6 @@
 {
   "project": "Anclora Content Generator AI",
-  "fase_actual": "FASE 1: Hardening de identidad y tenancy",
+  "fase_actual": "FASE 2: Migracion de autenticacion a Better Auth + Neon",
   "members": [
     {
       "id": "anclorabot",
@@ -136,6 +136,23 @@
         "Schema de workspaces y memberships",
         "Plan de migracion desde auth metadata",
         "Spec de persistencia multi-tenant"
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Iniciar migracion de autenticacion a Better Auth + Neon",
+      "description": "Preparar la base tecnica de Better Auth, definir el contrato de coexistencia y dejar lista la siguiente iteracion de migracion real desde Supabase Auth.",
+      "status": "IN_PROGRESS",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [5],
+      "priority": "CRITICAL",
+      "estimated_hours": "4-6",
+      "feature": "ANCLORA-FEAT-003",
+      "deliverables": [
+        "Spec de migracion auth",
+        "Skeleton server/client de Better Auth",
+        "Handler /api/auth coexistente"
       ]
     }
   ]

@@ -1,7 +1,7 @@
 /**
  * ANCLORA CONTENT GENERATOR AI - Database Types
  * Feature: ANCLORA-FEAT-DB-SCHEMA
- * Auto-generated TypeScript types from Supabase schema
+ * Legacy TypeScript types kept for compatibility during database transition
  * Author: Agent A (Database Architect)
  * Date: 2026-03-19
  */

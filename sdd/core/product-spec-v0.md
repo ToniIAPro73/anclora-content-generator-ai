@@ -36,6 +36,6 @@ Anclora Content Generator AI es el motor editorial y de inteligencia de contenid
 ## Restricciones clave
 
 - En `/dashboard/*` no puede haber scroll global del documento
-- La autenticacion depende de Supabase Auth SSR
+- La autenticacion depende de Better Auth sobre Neon
 - La persistencia operativa depende de Neon + Drizzle
 - La seguridad multi-tenant aun requiere cierre adicional en server

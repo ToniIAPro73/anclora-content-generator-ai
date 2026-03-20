@@ -5,7 +5,7 @@ import Image from "next/image"
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { createClient } from "@/utils/supabase/client"
+import { betterAuthClient } from "@/lib/auth/better-auth-client"
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined
@@ -33,7 +33,6 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -44,13 +43,17 @@ export default function LoginPage() {
     try {
       if (mode === "signin") {
         const { error } = await withTimeout(
-          supabase.auth.signInWithPassword({ email, password }),
+          betterAuthClient.signIn.email({
+            email,
+            password,
+            callbackURL: "/dashboard",
+          }),
           15000,
-          "El login ha tardado demasiado. Revisa tu conexion con Supabase e intentalo de nuevo."
+          "El login ha tardado demasiado. Revisa tu conexion e intentalo de nuevo."
         )
 
         if (error) {
-          setError(error.message)
+          setError(error.message ?? "No se pudo iniciar sesion.")
           return
         }
 
@@ -59,21 +62,23 @@ export default function LoginPage() {
       }
 
       const { error } = await withTimeout(
-        supabase.auth.signUp({
+        betterAuthClient.signUp.email({
           email,
           password,
-          options: { data: { full_name: fullName } },
+          name: fullName || email,
         }),
         15000,
-        "La creacion de cuenta ha tardado demasiado. Revisa tu conexion con Supabase e intentalo de nuevo."
+        "La creacion de cuenta ha tardado demasiado. Revisa tu conexion e intentalo de nuevo."
       )
 
       if (error) {
-        setError(error.message)
+        setError(error.message ?? "No se pudo crear la cuenta.")
         return
       }
 
-      setSuccessMsg("Cuenta creada. Revisa tu email para confirmar el registro.")
+      setSuccessMsg("Cuenta creada. Ya puedes iniciar sesion para continuar con la configuracion inicial.")
+      setMode("signin")
+      setPassword("")
     } catch (error) {
       setError(error instanceof Error ? error.message : "No se pudo completar la autenticacion.")
     } finally {
@@ -87,7 +92,6 @@ export default function LoginPage() {
     setSuccessMsg(null)
   }
 
-  /* Hard-coded to dark always — login is a premium dark gate */
   const bg = "hsl(20 18% 5%)"
   const panelBorder = "hsl(20 10% 11%)"
   const cardBg = "hsl(20 14% 8%)"
@@ -106,12 +110,10 @@ export default function LoginPage() {
       className="relative flex h-screen w-full overflow-hidden"
       style={{ backgroundColor: bg }}
     >
-      {/* ─── Left editorial panel (desktop) ─── */}
       <div
         className="hidden lg:flex lg:w-[58%] flex-col justify-between relative overflow-hidden"
         style={{ borderRight: `1px solid ${panelBorder}` }}
       >
-        {/* Dot grid atmosphere */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -120,7 +122,6 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Amber left-edge accent line */}
         <div
           className="absolute left-0 top-0 bottom-0 w-px pointer-events-none"
           style={{
@@ -129,7 +130,6 @@ export default function LoginPage() {
           }}
         />
 
-        {/* Giant background logo */}
         <div
           className="absolute pointer-events-none select-none"
           style={{
@@ -151,10 +151,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Panel content */}
         <div className="relative z-10 flex flex-col h-full justify-between p-12">
-
-          {/* Logo */}
           <div className="flex items-center gap-3">
             <div className="relative h-10 w-10 overflow-hidden rounded-xl ring-1 ring-white/10">
               <Image
@@ -178,7 +175,6 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Editorial headline block */}
           <div className="space-y-7 max-w-[480px]">
             <div className="space-y-4">
               <p
@@ -209,7 +205,6 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Feature list */}
             <div className="space-y-3.5">
               {[
                 { label: "RAG Knowledge Base", desc: "Embeddings propios con pgvector" },
@@ -240,20 +235,14 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Footer */}
           <p className="text-xs" style={{ color: textDim }}>
             © 2026 Anclora Content Generator AI
           </p>
         </div>
       </div>
 
-      {/* ─── Right auth panel ─── */}
-      <div
-        className="flex w-full lg:w-[42%] items-center justify-center p-6 relative z-10"
-      >
+      <div className="flex w-full lg:w-[42%] items-center justify-center p-6 relative z-10">
         <div className="w-full max-w-[370px] space-y-7">
-
-          {/* Mobile logo */}
           <div className="flex items-center gap-3 lg:hidden">
             <div className="relative h-10 w-10 overflow-hidden rounded-xl ring-1 ring-white/10">
               <Image
@@ -277,12 +266,10 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Auth card */}
           <div
             className="rounded-xl p-7"
             style={{ backgroundColor: cardBg, border: `1px solid ${cardBorder}` }}
           >
-            {/* Mode toggle */}
             <div
               className="mb-6 flex rounded-lg p-0.5"
               style={{ backgroundColor: "hsl(20 12% 10%)" }}
@@ -308,7 +295,6 @@ export default function LoginPage() {
               ))}
             </div>
 
-            {/* Heading */}
             <div className="mb-5">
               <h2
                 className="font-heading text-xl font-bold"
@@ -319,11 +305,10 @@ export default function LoginPage() {
               <p className="mt-0.5 text-xs" style={{ color: textMuted }}>
                 {mode === "signin"
                   ? "Accede a Anclora Content Generator AI"
-                  : "Crea tu cuenta en segundos"}
+                  : "Crea tu cuenta y activa despues tu workspace"}
               </p>
             </div>
 
-            {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               {mode === "signup" && (
                 <div className="space-y-1.5">

@@ -7,7 +7,7 @@ Owner: Anclorabot
 
 - Frontend: Next.js 15 + React 19 + TypeScript
 - UI: Tailwind CSS v4 + shadcn/ui
-- Auth: Supabase SSR
+- Auth: Better Auth
 - DB operativa: Neon PostgreSQL
 - ORM: Drizzle
 - RAG: pgvector + Transformers.js
@@ -15,7 +15,7 @@ Owner: Anclorabot
 
 ## Decisiones vigentes
 
-1. Supabase se trata como capa de autenticacion, no como base de datos operativa principal.
+1. Better Auth se trata como capa de autenticacion y organizaciones.
 2. Neon y Drizzle son la fuente de verdad para schema y consultas operativas.
 3. El dashboard debe comportarse como cockpit editorial, no como demo generica de IA.
 4. La tenancy se modela con `workspace_id`, pero el enforcement fuerte debe pasar al server en Fase 1.
@@ -24,7 +24,7 @@ Owner: Anclorabot
 ## Riesgos conocidos
 
 - Rutas API que aceptan `workspaceId` desde cliente
-- Documentacion historica con referencias ambiguas a Supabase DB y RLS
+- Documentacion historica con referencias ambiguas a Supabase Auth y RLS
 - Mocks visibles en varias pantallas del dashboard
 - Diferencia entre discurso multi-tenant y enforcement real
 

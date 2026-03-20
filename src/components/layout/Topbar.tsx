@@ -1,7 +1,7 @@
-import { createClient } from "@/utils/supabase/client"
+import { betterAuthClient } from "@/lib/auth/better-auth-client"
 import * as React from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname } from "next/navigation"
 import { ChevronDown, LogOut, Sparkles, TrendingUp, User } from "lucide-react"
 
 import { ThemeToggle } from "@/components/theme/theme-toggle"
@@ -11,10 +11,8 @@ import {
 } from "@/components/layout/dashboard-nav"
 
 export function Topbar() {
-  const router = useRouter()
   const pathname = usePathname()
   const page = getDashboardPageMeta(pathname)
-  const supabase = createClient()
   const [menuOpen, setMenuOpen] = React.useState(false)
   const menuRef = React.useRef<HTMLDivElement | null>(null)
 
@@ -30,7 +28,7 @@ export function Topbar() {
   }, [])
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    await betterAuthClient.signOut()
     setMenuOpen(false)
     window.location.href = "/login"
   }
@@ -127,7 +125,7 @@ export function Topbar() {
           <Sparkles className="h-3.5 w-3.5 text-primary" />
           Prioridad del dia: detectar oportunidades de contenido con contexto RAG verificable.
         </div>
-        <div>Supabase Auth + Neon Core</div>
+        <div>Better Auth + Neon Core</div>
       </div>
     </header>
   )
