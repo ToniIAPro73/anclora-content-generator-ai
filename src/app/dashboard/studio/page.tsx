@@ -1,5 +1,6 @@
 "use client"
 
+import { useSearchParams } from "next/navigation"
 import { useMemo, useState } from "react"
 import {
   CheckCircle2,
@@ -74,6 +75,7 @@ const strategicPresets = [
 ] as const
 
 export default function StudioPage() {
+  const searchParams = useSearchParams()
   const [title, setTitle] = useState("")
   const [contentType, setContentType] = useState<string>("blog")
   const [templateId, setTemplateId] = useState("")
@@ -88,6 +90,24 @@ export default function StudioPage() {
   const [metadata, setMetadata] = useState<GenerationMetadata | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [copyState, setCopyState] = useState<"idle" | "copied">("idle")
+
+  useMemo(() => {
+    const opportunityTitle = searchParams.get("title")
+    const opportunityObjective = searchParams.get("objective")
+    const opportunityAudience = searchParams.get("audience")
+    const opportunityRagQuery = searchParams.get("ragQuery")
+    const opportunityContext = searchParams.get("context")
+    const opportunityContentType = searchParams.get("contentType")
+    const opportunityTone = searchParams.get("tone")
+
+    if (opportunityTitle && !title) setTitle(opportunityTitle)
+    if (opportunityObjective && !objective) setObjective(opportunityObjective)
+    if (opportunityAudience && !audience) setAudience(opportunityAudience)
+    if (opportunityRagQuery && !ragQuery) setRagQuery(opportunityRagQuery)
+    if (opportunityContext && !userContext) setUserContext(opportunityContext)
+    if (opportunityContentType && !contentType) setContentType(opportunityContentType)
+    if (opportunityTone && !tone) setTone(opportunityTone)
+  }, [audience, contentType, objective, ragQuery, searchParams, title, tone, userContext])
 
   const selectedType = useMemo(
     () => contentTypes.find((item) => item.value === contentType),

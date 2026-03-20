@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   BookOpen,
   BrainCircuit,
@@ -127,6 +129,7 @@ function statusTone(status: string) {
 }
 
 export default function KnowledgeBasePage() {
+  const router = useRouter()
   const [sources, setSources] = React.useState<Source[]>([])
   const [packs, setPacks] = React.useState<KnowledgePack[]>([])
   const [jobs, setJobs] = React.useState<KnowledgeJob[]>([])
@@ -350,6 +353,38 @@ export default function KnowledgeBasePage() {
     } finally {
       setIsImportingGoogleDoc(false)
     }
+  }
+
+  async function handleOpenOpportunity(opportunity: ContentOpportunity) {
+    try {
+      await fetch("/api/rag/content-opportunities", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: opportunity.id,
+          status: "accepted",
+        }),
+      })
+    } catch {
+      // Best-effort status update; navigation remains the primary action.
+    }
+
+    const params = new URLSearchParams({
+      title: opportunity.title,
+      objective: opportunity.angle,
+      audience: opportunity.audience ?? "Audiencia estratégica del workspace",
+      ragQuery: opportunity.title,
+      context: opportunity.rationale,
+      contentType:
+        opportunity.recommendedFormat === "newsletter_brief"
+          ? "newsletter"
+          : opportunity.recommendedFormat === "linkedin_post"
+          ? "linkedin"
+          : "blog",
+      tone: "analitico",
+    })
+
+    router.push(`/dashboard/studio?${params.toString()}`)
   }
 
   const filteredSources = sources.filter((source) =>
@@ -768,6 +803,15 @@ export default function KnowledgeBasePage() {
                     <p className="mt-3 text-xs text-muted-foreground">
                       {item.recommendedFormat} · confianza {Math.round((item.confidenceScore ?? 0) * 100)}%
                     </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="mt-4"
+                      onClick={() => handleOpenOpportunity(item)}
+                    >
+                      Abrir en Studio
+                    </Button>
                   </SurfaceCard>
                 ))}
                 {opportunities.length === 0 ? (
@@ -885,7 +929,9 @@ export default function KnowledgeBasePage() {
                         <TableCell className="font-medium">
                           <div className="flex items-center gap-2">
                             <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
-                            {source.title}
+                            <Link href={`/dashboard/studio?title=${encodeURIComponent(source.title)}&ragQuery=${encodeURIComponent(source.title)}`} className="hover:text-primary transition-colors">
+                              {source.title}
+                            </Link>
                           </div>
                         </TableCell>
                         <TableCell className="capitalize">{source.type}</TableCell>
