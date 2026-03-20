@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
+import { SurfaceCard } from '@/components/ui/surface-card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BarChart3, FileText, Rocket, BookOpen, Layers, Clock } from 'lucide-react'
 
@@ -65,9 +66,10 @@ export default function MetricsPage() {
         {KPI_CARDS.map(({ key, label, sub, icon: Icon, accent }) => {
           const value = metrics?.[key as keyof DashboardMetrics] ?? 0
           return (
-            <div
+            <SurfaceCard
               key={key}
-              className="group relative rounded-xl border border-border bg-card p-5 transition-all duration-200 hover:border-primary/30 hover:shadow-lg overflow-hidden"
+              variant="panel"
+              className="group relative overflow-hidden p-5"
             >
               {/* Amber/sage left accent bar */}
               <div
@@ -91,7 +93,7 @@ export default function MetricsPage() {
                   <Icon className="h-4 w-4" />
                 </div>
               </div>
-            </div>
+            </SurfaceCard>
           )
         })}
       </div>
@@ -119,7 +121,7 @@ export default function MetricsPage() {
           <div className="grid gap-4 md:grid-cols-2">
 
             {/* Content status */}
-            <div className="rounded-xl border border-border bg-card p-6">
+            <SurfaceCard variant="panel" className="p-6">
               <h3 className="font-heading text-sm font-semibold">Estado del Contenido</h3>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 Distribución por estado de publicación
@@ -153,10 +155,10 @@ export default function MetricsPage() {
                   )
                 })}
               </div>
-            </div>
+            </SurfaceCard>
 
             {/* Content types */}
-            <div className="rounded-xl border border-border bg-card p-6">
+            <SurfaceCard variant="panel" className="p-6">
               <h3 className="font-heading text-sm font-semibold">Tipos de Contenido</h3>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 Distribución por tipo generado
@@ -165,13 +167,14 @@ export default function MetricsPage() {
                 {metrics?.contentByType && Object.keys(metrics.contentByType).length > 0 ? (
                   <div className="space-y-2">
                     {Object.entries(metrics.contentByType).map(([type, count]) => (
-                      <div
+                      <SurfaceCard
                         key={type}
-                        className="flex items-center justify-between rounded-lg border border-border bg-muted px-3 py-2"
+                        variant="inner"
+                        className="flex items-center justify-between rounded-lg border bg-muted px-3 py-2"
                       >
                         <Badge variant="secondary" className="text-xs">{type}</Badge>
                         <span className="font-heading text-sm font-semibold" style={{ color: amber }}>{count}</span>
-                      </div>
+                      </SurfaceCard>
                     ))}
                   </div>
                 ) : (
@@ -186,13 +189,13 @@ export default function MetricsPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </SurfaceCard>
           </div>
         </TabsContent>
 
         {/* ── Contenido ── */}
         <TabsContent value="content">
-          <div className="rounded-xl border border-border bg-card p-6">
+          <SurfaceCard variant="panel" className="p-6">
             <h3 className="font-heading text-sm font-semibold">Actividad Reciente</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Contenido generado en los últimos 7 días
@@ -200,9 +203,10 @@ export default function MetricsPage() {
             {metrics?.recentActivity && metrics.recentActivity.length > 0 ? (
               <div className="mt-5 space-y-2">
                 {metrics.recentActivity.map((activity, i) => (
-                  <div
+                  <SurfaceCard
                     key={i}
-                    className="flex items-center justify-between rounded-lg border border-border bg-muted px-4 py-2.5"
+                    variant="inner"
+                    className="flex items-center justify-between rounded-lg border bg-muted px-4 py-2.5"
                   >
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Clock className="h-3.5 w-3.5" />
@@ -218,7 +222,7 @@ export default function MetricsPage() {
                     >
                       {activity.count} piezas
                     </Badge>
-                  </div>
+                  </SurfaceCard>
                 ))}
               </div>
             ) : (
@@ -232,20 +236,21 @@ export default function MetricsPage() {
                 </p>
               </div>
             )}
-          </div>
+          </SurfaceCard>
         </TabsContent>
 
         {/* ── RAG ── */}
         <TabsContent value="rag">
-          <div className="rounded-xl border border-border bg-card p-6">
+          <SurfaceCard variant="panel" className="p-6">
             <h3 className="font-heading text-sm font-semibold">Base de Conocimiento</h3>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Estadísticas del RAG engine
             </p>
             <div className="mt-5 grid gap-3 sm:grid-cols-2">
               {/* Chunks hero stat */}
-              <div
-                className="col-span-full rounded-xl border p-5 flex items-center justify-between"
+              <SurfaceCard
+                variant="inner"
+                className="col-span-full flex items-center justify-between rounded-xl border p-5"
                 style={{
                   backgroundColor: `${sage}0d`,
                   borderColor: `${sage}35`,
@@ -263,7 +268,7 @@ export default function MetricsPage() {
                 >
                   <BookOpen className="h-5 w-5" />
                 </div>
-              </div>
+              </SurfaceCard>
 
               {[
                 { label: 'Dimensiones embedding',  value: '384' },
@@ -271,16 +276,17 @@ export default function MetricsPage() {
                 { label: 'Vector search engine',   value: 'pgvector' },
                 { label: 'Similarity threshold',   value: '0.7' },
               ].map(({ label, value }) => (
-                <div
+                <SurfaceCard
                   key={label}
-                  className="flex items-center justify-between rounded-lg border border-border bg-muted px-4 py-3"
+                  variant="inner"
+                  className="flex items-center justify-between rounded-lg border bg-muted px-4 py-3"
                 >
                   <span className="text-xs text-muted-foreground">{label}</span>
                   <span className="font-mono text-xs font-semibold">{value}</span>
-                </div>
+                </SurfaceCard>
               ))}
             </div>
-          </div>
+          </SurfaceCard>
         </TabsContent>
       </Tabs>
     </div>

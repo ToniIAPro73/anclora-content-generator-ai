@@ -1,6 +1,6 @@
 {
   "project": "Anclora Content Generator AI",
-  "fase_actual": "FASE 2: Migracion de autenticacion a Better Auth + Neon",
+  "fase_actual": "FASE 3: Agentic Knowledge Ingestion y evolucion del RAG",
   "members": [
     {
       "id": "anclorabot",
@@ -153,6 +153,40 @@
         "Spec de migracion auth",
         "Skeleton server/client de Better Auth",
         "Handler /api/auth coexistente"
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Diseñar la feature de ingesta agéntica de conocimiento",
+      "description": "Definir el contrato de knowledge packs, los modos de entrada desde prompt o NotebookLM y la evolucion de la Knowledge Base hacia un pipeline agéntico trazable.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [7],
+      "priority": "HIGH",
+      "estimated_hours": "2-4",
+      "feature": "ANCLORA-FEAT-004",
+      "deliverables": [
+        "Spec de Agentic Knowledge Ingestion",
+        "Test plan de knowledge packs",
+        "Regla y skill de la feature"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Implementar knowledge packs e ingesta agéntica inicial",
+      "description": "Crear el schema, endpoints, normalización, indexación y UI base para el flujo prompt -> knowledge pack -> chunks indexados dentro del dashboard RAG.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [8],
+      "priority": "CRITICAL",
+      "estimated_hours": "4-8",
+      "feature": "ANCLORA-FEAT-004",
+      "deliverables": [
+        "Schema Drizzle y migración SQL para knowledge packs",
+        "Endpoints /api/rag/knowledge-packs y detalle",
+        "UI de RAG con creación de dossier, jobs y detalle trazable"
       ]
     }
   ]

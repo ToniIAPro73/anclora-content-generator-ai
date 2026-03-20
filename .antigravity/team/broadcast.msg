@@ -1,36 +1,35 @@
 === BROADCAST DE ANCLORABOT ===
-Fecha: 2026-03-19
+Fecha: 2026-03-20
 De: Anclorabot (Director)
 Para: Todos los agentes
 
-FASE 2 - MIGRACION DE AUTH A BETTER AUTH + NEON - ACTIVA
+FASE 3 - AGENTIC KNOWLEDGE INGESTION - ACTIVA
 
-Equipo, entramos en la fase de sustitucion gradual de Supabase Auth por Better Auth usando Neon como base unica.
+Equipo, la base de autenticación ya está migrada y el siguiente frente del producto pasa a ser la evolución del RAG hacia conocimiento curado.
 
 Objetivos inmediatos:
 
-1. Preparar Better Auth en coexistencia segura con el flujo actual
-2. Crear tablas auth y organizaciones en Neon
-3. Conectar `organization` con el tenancy historico mediante `workspace_organizations`
+1. Introducir `knowledge_packs` como artefacto intermedio del sistema
+2. Habilitar el flujo `prompt -> dossier normalizado -> chunks indexados`
+3. Mantener convivencia entre ingesta manual y agéntica dentro de `/dashboard/rag`
 
 Guardarrailes activos:
 
 - Toda feature nace en `sdd/features/<feature>/`
-- Antes de cambios significativos, plan y aprobacion
-- Validacion minima para cierre de fase: `npm run lint` y `npm run build`
+- Validación mínima para cierre de fase: `npm run lint` y `npm run build`
 - En `/dashboard/*` sigue prohibido el scroll vertical global
-- La migracion debe ser incremental; no se rompe dashboard mientras coexistan ambos sistemas
-- La resolucion de tenancy debe converger a `activeOrganizationId -> workspace_id`
+- No indexar texto sintético sin separar `claims` y `evidence`
+- `workspace_id` sigue siendo frontera obligatoria para packs, jobs y chunks
 
 Stack de referencia vigente:
 
-- Auth objetivo: Better Auth + Organizations
+- Auth: Better Auth + Organizations
 - Datos: Neon PostgreSQL + Drizzle
-- RAG: pgvector + Transformers.js
+- RAG: pgvector + Transformers.js + knowledge packs
 - UI: Next.js 15 + React 19 + Tailwind CSS v4 + shadcn/ui
 
 Siguiente dependencia critica:
 
-- Tras el schema auth, el siguiente hito es migrar login/logout y proteccion server-side a Better Auth
+- Extender la ingesta inicial hacia workflows agénticos reales y adaptador NotebookLM dedicado
 
 -- Anclorabot

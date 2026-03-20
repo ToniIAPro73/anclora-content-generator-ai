@@ -4,7 +4,15 @@ import { toNextJsHandler, nextCookies } from "better-auth/next-js"
 import { organization } from "better-auth/plugins"
 
 import { db } from "@/lib/db/neon"
-import * as schema from "@/lib/db/schema"
+import {
+  authAccounts,
+  authInvitations,
+  authMembers,
+  authOrganizations,
+  authSessions,
+  authUsers,
+  authVerifications,
+} from "@/lib/db/auth-schema"
 
 const betterAuthSecret =
   process.env.BETTER_AUTH_SECRET ??
@@ -30,7 +38,15 @@ export const auth = createBetterAuth({
   basePath: "/api/auth",
   database: drizzleAdapter(db, {
     provider: "pg",
-    schema,
+    schema: {
+      user: authUsers,
+      session: authSessions,
+      account: authAccounts,
+      verification: authVerifications,
+      organization: authOrganizations,
+      member: authMembers,
+      invitation: authInvitations,
+    },
   }),
   emailAndPassword: {
     enabled: true,

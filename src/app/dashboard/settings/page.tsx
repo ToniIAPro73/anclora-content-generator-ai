@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { SurfaceCard } from '@/components/ui/surface-card'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
@@ -25,7 +26,7 @@ function SectionCard({
   accentColor?: string
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <SurfaceCard variant="panel" className="overflow-hidden">
       {/* Header row with left stripe */}
       <div
         className="flex items-start gap-3 px-6 py-4 border-b border-border"
@@ -43,7 +44,7 @@ function SectionCard({
         </div>
       </div>
       <div className="p-6">{children}</div>
-    </div>
+    </SurfaceCard>
   )
 }
 
@@ -54,11 +55,11 @@ function PlainCard({ title, description, children }: {
   children: React.ReactNode
 }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6">
+    <SurfaceCard variant="panel" className="p-6">
       <h3 className="font-heading text-sm font-semibold">{title}</h3>
       <p className="mt-0.5 mb-5 text-xs text-muted-foreground">{description}</p>
       {children}
-    </div>
+    </SurfaceCard>
   )
 }
 
@@ -234,9 +235,10 @@ export default function SettingsPage() {
           <PlainCard title="Plantillas Existentes" description="Gestiona tus plantillas guardadas">
             <div className="space-y-2">
               {existingTemplates.map(({ name, type, temp }) => (
-                <div
+                <SurfaceCard
                   key={name}
-                  className="flex items-center justify-between rounded-lg border border-border bg-muted px-4 py-3 transition-colors hover:border-primary/25"
+                  variant="inner"
+                  className="flex items-center justify-between rounded-lg border bg-muted px-4 py-3 transition-colors hover:border-primary/25"
                 >
                   <div className="flex items-center gap-3">
                     <div
@@ -256,7 +258,7 @@ export default function SettingsPage() {
                   <Button variant="outline" size="sm" className="h-7 text-xs">
                     Editar
                   </Button>
-                </div>
+                </SurfaceCard>
               ))}
             </div>
           </PlainCard>
@@ -471,9 +473,10 @@ export default function SettingsPage() {
                 { label: 'Top K resultados', value: '5', unit: 'chunks' },
                 { label: 'Similarity threshold', value: '0.7', unit: 'score' },
               ].map(({ label, value, unit }) => (
-                <div
+                <SurfaceCard
                   key={label}
-                  className="rounded-lg border border-border bg-muted p-4"
+                  variant="inner"
+                  className="rounded-lg border bg-muted p-4"
                 >
                   <p className="text-xs text-muted-foreground">{label}</p>
                   <p
@@ -483,7 +486,7 @@ export default function SettingsPage() {
                     {value}
                   </p>
                   <p className="text-xs text-muted-foreground/55">{unit}</p>
-                </div>
+                </SurfaceCard>
               ))}
             </div>
             <p className="mt-3 text-xs text-muted-foreground/45">

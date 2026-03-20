@@ -13,7 +13,7 @@ export * from './auth-schema'
 // ENUMS
 // =====================================================
 
-export const sourceTypeEnum = pgEnum('source_type', ['document', 'url', 'rss', 'manual', 'api'])
+export const sourceTypeEnum = pgEnum('source_type', ['document', 'url', 'rss', 'manual', 'api', 'agentic_research_pack', 'notebooklm_notebook', 'curated_brief'])
 export const sourceStatusEnum = pgEnum('source_status', ['pending', 'processing', 'completed', 'error'])
 export const contentTypeEnum = pgEnum('content_type', ['blog', 'linkedin', 'instagram', 'facebook', 'newsletter', 'custom'])
 export const contentStatusEnum = pgEnum('content_status', ['draft', 'approved', 'scheduled', 'published', 'archived'])
@@ -21,6 +21,12 @@ export const platformTypeEnum = pgEnum('platform_type', ['linkedin', 'facebook',
 export const postStatusEnum = pgEnum('post_status', ['pending', 'processing', 'published', 'failed', 'cancelled'])
 export const leadScoreEnum = pgEnum('lead_score', ['A', 'B', 'C', 'D', 'F'])
 export const leadStatusEnum = pgEnum('lead_status', ['new', 'contacted', 'qualified', 'converted', 'lost'])
+export const knowledgePackTypeEnum = pgEnum('knowledge_pack_type', ['agentic_research_pack', 'notebooklm_notebook', 'curated_brief'])
+export const knowledgePackStatusEnum = pgEnum('knowledge_pack_status', ['queued', 'processing', 'completed', 'failed'])
+export const knowledgeClaimTypeEnum = pgEnum('knowledge_claim_type', ['market_signal', 'thesis', 'recommendation', 'risk'])
+export const knowledgeSupportLevelEnum = pgEnum('knowledge_support_level', ['high', 'medium', 'low'])
+export const knowledgeEvidenceTypeEnum = pgEnum('knowledge_evidence_type', ['prompt', 'notebook', 'manual', 'derived', 'workflow'])
+export const knowledgeIngestionTriggerEnum = pgEnum('knowledge_ingestion_trigger', ['prompt', 'notebooklm', 'manual'])
 
 // =====================================================
 // TABLES
@@ -52,6 +58,69 @@ export const knowledgeChunks = pgTable('knowledge_chunks', {
   metadata: jsonb('metadata').default(sql`'{}'::jsonb`).notNull(),
   tokenCount: integer('token_count'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const knowledgePacks = pgTable('knowledge_packs', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  workspaceId: uuid('workspace_id').notNull(),
+  sourceId: uuid('source_id').references(() => contentSources.id, { onDelete: 'set null' }),
+  sourceType: sourceTypeEnum('source_type').notNull(),
+  title: text('title').notNull(),
+  summary: text('summary').notNull(),
+  status: knowledgePackStatusEnum('status').default('queued').notNull(),
+  packType: knowledgePackTypeEnum('pack_type').notNull(),
+  inputPrompt: text('input_prompt'),
+  createdByUserId: text('created_by_user_id').notNull(),
+  freshnessDate: date('freshness_date'),
+  confidenceScore: real('confidence_score'),
+  tags: jsonb('tags').default(sql`'[]'::jsonb`).notNull(),
+  topics: jsonb('topics').default(sql`'[]'::jsonb`).notNull(),
+  entities: jsonb('entities').default(sql`'[]'::jsonb`).notNull(),
+  recommendedUses: jsonb('recommended_uses').default(sql`'[]'::jsonb`).notNull(),
+  rawPayload: jsonb('raw_payload').default(sql`'{}'::jsonb`).notNull(),
+  normalizedPayload: jsonb('normalized_payload').default(sql`'{}'::jsonb`).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const knowledgePackEvidence = pgTable('knowledge_pack_evidence', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  knowledgePackId: uuid('knowledge_pack_id').notNull().references(() => knowledgePacks.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  url: text('url'),
+  sourceLabel: text('source_label').notNull(),
+  excerpt: text('excerpt').notNull(),
+  evidenceType: knowledgeEvidenceTypeEnum('evidence_type').notNull(),
+  publishedAt: timestamp('published_at', { withTimezone: true }),
+  confidenceScore: real('confidence_score'),
+  position: integer('position').default(0).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const knowledgePackClaims = pgTable('knowledge_pack_claims', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  knowledgePackId: uuid('knowledge_pack_id').notNull().references(() => knowledgePacks.id, { onDelete: 'cascade' }),
+  claimType: knowledgeClaimTypeEnum('claim_type').notNull(),
+  statement: text('statement').notNull(),
+  supportLevel: knowledgeSupportLevelEnum('support_level').notNull(),
+  evidenceRefs: jsonb('evidence_refs').default(sql`'[]'::jsonb`).notNull(),
+  position: integer('position').default(0).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const knowledgeIngestionJobs = pgTable('knowledge_ingestion_jobs', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  workspaceId: uuid('workspace_id').notNull(),
+  knowledgePackId: uuid('knowledge_pack_id').references(() => knowledgePacks.id, { onDelete: 'set null' }),
+  triggerType: knowledgeIngestionTriggerEnum('trigger_type').notNull(),
+  status: knowledgePackStatusEnum('status').default('queued').notNull(),
+  inputPayload: jsonb('input_payload').default(sql`'{}'::jsonb`).notNull(),
+  orchestrator: text('orchestrator').default('anclorabot-core').notNull(),
+  errorMessage: text('error_message'),
+  startedAt: timestamp('started_at', { withTimezone: true }),
+  finishedAt: timestamp('finished_at', { withTimezone: true }),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
 export const contentTemplates = pgTable('content_templates', {
@@ -164,6 +233,18 @@ export type ContentSourceInsert = typeof contentSources.$inferInsert
 
 export type KnowledgeChunk = typeof knowledgeChunks.$inferSelect
 export type KnowledgeChunkInsert = typeof knowledgeChunks.$inferInsert
+
+export type KnowledgePack = typeof knowledgePacks.$inferSelect
+export type KnowledgePackInsert = typeof knowledgePacks.$inferInsert
+
+export type KnowledgePackEvidence = typeof knowledgePackEvidence.$inferSelect
+export type KnowledgePackEvidenceInsert = typeof knowledgePackEvidence.$inferInsert
+
+export type KnowledgePackClaim = typeof knowledgePackClaims.$inferSelect
+export type KnowledgePackClaimInsert = typeof knowledgePackClaims.$inferInsert
+
+export type KnowledgeIngestionJob = typeof knowledgeIngestionJobs.$inferSelect
+export type KnowledgeIngestionJobInsert = typeof knowledgeIngestionJobs.$inferInsert
 
 export type ContentTemplate = typeof contentTemplates.$inferSelect
 export type ContentTemplateInsert = typeof contentTemplates.$inferInsert

@@ -18,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { SurfaceCard } from "@/components/ui/surface-card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 
@@ -259,16 +260,13 @@ export default function StudioPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {strategicPresets.map((preset, index) => (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => applyPreset(index)}
-                className="surface-card-inner w-full rounded-xl border bg-background/70 p-4 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
-              >
-                <p className="font-medium text-foreground">{preset.label}</p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {preset.objective}
-                </p>
+              <button key={preset.label} type="button" onClick={() => applyPreset(index)} className="w-full text-left">
+                <SurfaceCard variant="inner" className="border bg-background/70 p-4 transition-colors hover:border-primary/30 hover:bg-primary/5">
+                  <p className="font-medium text-foreground">{preset.label}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {preset.objective}
+                  </p>
+                </SurfaceCard>
               </button>
             ))}
           </CardContent>
@@ -355,10 +353,10 @@ export default function StudioPage() {
               "La pieza incluye una audiencia concreta y una siguiente accion clara.",
               "La consulta RAG refleja el dato o evento que justifica el contenido.",
             ].map((item) => (
-              <div key={item} className="surface-card-inner flex items-start gap-3 rounded-xl border bg-muted/40 p-4">
+              <SurfaceCard key={item} variant="inner" className="flex items-start gap-3 border bg-muted/40 p-4">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                 <p className="text-sm leading-relaxed text-muted-foreground">{item}</p>
-              </div>
+              </SurfaceCard>
             ))}
 
             <Button
@@ -422,7 +420,7 @@ export default function StudioPage() {
             )}
 
             {!isGenerating && !generatedContent && !error && (
-              <div className="flex h-[520px] flex-col justify-between rounded-2xl border border-dashed border-border bg-muted/30 p-6">
+              <div className="flex min-h-[520px] flex-col gap-8 rounded-2xl border border-dashed border-border bg-muted/30 p-6">
                 <div>
                   <Badge variant="outline" className="border-primary/20 bg-primary/10 text-primary">
                     Ready when you are
@@ -442,9 +440,9 @@ export default function StudioPage() {
                     "Especifica audiencia y objetivo para que el output no sea generico.",
                     "Guarda la pieza final como base para derivadas por canal.",
                   ].map((tip) => (
-                    <div key={tip} className="surface-card-inner rounded-xl border bg-background/70 p-4 text-sm text-muted-foreground">
+                    <SurfaceCard key={tip} variant="inner" className="h-full border bg-background/70 p-4 text-sm text-muted-foreground">
                       {tip}
-                    </div>
+                    </SurfaceCard>
                   ))}
                 </div>
               </div>
@@ -501,16 +499,16 @@ export default function StudioPage() {
                           : "Sin RAG",
                       },
                     ].map((item) => (
-                      <div key={item.label} className="surface-card-inner rounded-xl border bg-background/70 p-4">
+                      <SurfaceCard key={item.label} variant="inner" className="border bg-background/70 p-4">
                         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                           {item.label}
                         </p>
                         <p className="mt-2 text-sm font-medium text-foreground">{item.value}</p>
-                      </div>
+                      </SurfaceCard>
                     ))}
                   </div>
 
-                  <div className="surface-card-inner rounded-xl border bg-muted/40 p-4">
+                  <SurfaceCard variant="inner" className="border bg-muted/40 p-4">
                     <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       Fuentes recuperadas
                     </p>
@@ -519,7 +517,7 @@ export default function StudioPage() {
                         ? metadata.ragSources.join(", ")
                         : "No hay trazas de retrieval en esta generacion."}
                     </p>
-                  </div>
+                  </SurfaceCard>
                 </TabsContent>
               </Tabs>
             )}

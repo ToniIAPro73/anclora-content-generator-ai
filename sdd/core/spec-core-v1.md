@@ -27,6 +27,7 @@ Owner: Anclorabot
 - Documentacion historica con referencias ambiguas a Supabase Auth y RLS
 - Mocks visibles en varias pantallas del dashboard
 - Diferencia entre discurso multi-tenant y enforcement real
+- RAG todavia demasiado orientado a fuentes crudas y no a conocimiento curado
 
 ## Criterios de aceptacion para la siguiente fase
 
@@ -34,3 +35,4 @@ Owner: Anclorabot
 - Reducir contratos inseguros en UI y API
 - Mantener gobernanza de layout del dashboard
 - Preservar coherencia entre UX, API y modelo de datos
+- Evolucionar la Knowledge Base hacia `knowledge packs` curados y trazables

@@ -25,6 +25,26 @@ async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: s
   }
 }
 
+async function bootstrapWorkspace() {
+  if (process.env.NEXT_PUBLIC_BETTER_AUTH_ENABLED !== "true") {
+    return
+  }
+
+  const response = await withTimeout(
+    fetch("/api/auth/bootstrap-workspace", {
+      method: "POST",
+      credentials: "include",
+    }),
+    15000,
+    "La preparacion inicial del workspace ha tardado demasiado. Intentalo de nuevo."
+  )
+
+  if (!response.ok) {
+    const payload = (await response.json().catch(() => null)) as { message?: string } | null
+    throw new Error(payload?.message ?? "No se pudo preparar el workspace inicial.")
+  }
+}
+
 export default function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup">("signin")
   const [email, setEmail] = useState("")
@@ -57,6 +77,7 @@ export default function LoginPage() {
           return
         }
 
+        await bootstrapWorkspace()
         window.location.href = "/dashboard"
         return
       }
@@ -76,9 +97,33 @@ export default function LoginPage() {
         return
       }
 
-      setSuccessMsg("Cuenta creada. Ya puedes iniciar sesion para continuar con la configuracion inicial.")
-      setMode("signin")
-      setPassword("")
+      try {
+        await bootstrapWorkspace()
+        window.location.href = "/dashboard"
+        return
+      } catch {
+        // Some providers do not create an authenticated session immediately after sign up.
+      }
+
+      const signInResult = await withTimeout(
+        betterAuthClient.signIn.email({
+          email,
+          password,
+          callbackURL: "/dashboard",
+        }),
+        15000,
+        "La activacion inicial ha tardado demasiado. Intentalo de nuevo."
+      )
+
+      if (signInResult.error) {
+        setSuccessMsg("Cuenta creada. Ya puedes iniciar sesion para entrar al studio.")
+        setMode("signin")
+        setPassword("")
+        return
+      }
+
+      await bootstrapWorkspace()
+      window.location.href = "/dashboard"
     } catch (error) {
       setError(error instanceof Error ? error.message : "No se pudo completar la autenticacion.")
     } finally {
@@ -305,7 +350,7 @@ export default function LoginPage() {
               <p className="mt-0.5 text-xs" style={{ color: textMuted }}>
                 {mode === "signin"
                   ? "Accede a Anclora Content Generator AI"
-                  : "Crea tu cuenta y activa despues tu workspace"}
+                  : "Crea tu cuenta y entra directamente al studio"}
               </p>
             </div>
 

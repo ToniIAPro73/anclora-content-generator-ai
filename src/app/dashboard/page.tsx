@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { SurfaceCard } from "@/components/ui/surface-card"
 
 interface DashboardMetrics {
   totalContent: number
@@ -154,13 +155,13 @@ export default function DashboardPage() {
                 helper: "Backlog de programacion pendiente.",
               },
             ].map((item) => (
-              <div key={item.label} className="rounded-xl border border-border/70 bg-background/70 p-4">
+              <SurfaceCard key={item.label} variant="inner" className="border bg-background/70 p-4">
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{item.label}</p>
                 <p className="mt-2 font-heading text-3xl font-semibold text-foreground">
                   {isLoading ? "..." : item.value}
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">{item.helper}</p>
-              </div>
+              </SurfaceCard>
             ))}
           </CardContent>
         </Card>
@@ -223,7 +224,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {marketSignals.map((signal) => (
-              <div key={signal.zone} className="rounded-xl border border-border/70 bg-muted/40 p-4">
+              <SurfaceCard key={signal.zone} variant="inner" className="border bg-muted/40 p-4">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-medium text-foreground">{signal.zone}</p>
                   <Badge variant="outline">{signal.signal}</Badge>
@@ -231,7 +232,7 @@ export default function DashboardPage() {
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   {signal.detail}
                 </p>
-              </div>
+              </SurfaceCard>
             ))}
           </CardContent>
         </Card>
@@ -248,12 +249,12 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {publishingChecklist.map((item, index) => (
-              <div key={item} className="flex items-start gap-3 rounded-xl border border-border/70 bg-background/70 p-4">
+              <SurfaceCard key={item} variant="inner" className="flex items-start gap-3 border bg-background/70 p-4">
                 <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
                   {index + 1}
                 </div>
                 <p className="text-sm leading-relaxed text-muted-foreground">{item}</p>
-              </div>
+              </SurfaceCard>
             ))}
           </CardContent>
         </Card>
@@ -267,19 +268,17 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {commandCards.map((item) => (
-              <Link
-                key={item.title}
-                href={item.href}
-                className="block rounded-xl border border-border/70 bg-background/70 p-4 transition-colors hover:border-primary/30 hover:bg-primary/5"
-              >
-                <p className="font-medium text-foreground">{item.title}</p>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                  {item.description}
-                </p>
-                <div className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                  {item.cta}
-                  <ArrowRight className="h-4 w-4" />
-                </div>
+              <Link key={item.title} href={item.href} className="block">
+                <SurfaceCard variant="inner" className="border bg-background/70 p-4 transition-colors hover:border-primary/30 hover:bg-primary/5">
+                  <p className="font-medium text-foreground">{item.title}</p>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {item.description}
+                  </p>
+                  <div className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                    {item.cta}
+                    <ArrowRight className="h-4 w-4" />
+                  </div>
+                </SurfaceCard>
               </Link>
             ))}
           </CardContent>
