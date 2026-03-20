@@ -144,8 +144,11 @@ export function buildContextFromChunks(
   let estimatedTokens = 0
 
   for (const chunk of chunks) {
+    const sourceTitle = typeof chunk.metadata.title === 'string' ? chunk.metadata.title : chunk.source_id
+    const sourceCategory =
+      typeof chunk.metadata.sourceCategory === 'string' ? chunk.metadata.sourceCategory : 'general'
     const chunkText = includeMetadata
-      ? `[Source: ${chunk.source_id} | Similarity: ${chunk.similarity.toFixed(3)}]\n${chunk.content}`
+      ? `[Source: ${sourceTitle} | Category: ${sourceCategory} | Similarity: ${chunk.similarity.toFixed(3)}]\n${chunk.content}`
       : chunk.content
 
     // Estimación simple de tokens (1.3 chars/token para español)

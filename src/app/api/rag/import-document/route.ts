@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
 import { createIndexedSource, extractTextFromUploadedFile, fetchGoogleDocAsText } from '@/lib/rag/source-ingestion'
+import { sourceCategoryEnum } from '@/lib/db/schema'
 
 export const runtime = 'nodejs'
+
+function resolveSourceCategory(rawValue: FormDataEntryValue | null) {
+  const requested = String(rawValue ?? 'general').trim()
+  return sourceCategoryEnum.enumValues.includes(requested as (typeof sourceCategoryEnum.enumValues)[number])
+    ? (requested as (typeof sourceCategoryEnum.enumValues)[number])
+    : 'general'
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +20,7 @@ export async function POST(request: NextRequest) {
 
     const mode = String(formData.get('mode') ?? 'upload')
     const title = String(formData.get('title') ?? '').trim()
+    const sourceCategory = resolveSourceCategory(formData.get('sourceCategory'))
 
     if (!title) {
       return NextResponse.json({ error: 'El titulo es obligatorio' }, { status: 400 })
@@ -28,6 +37,7 @@ export async function POST(request: NextRequest) {
         workspaceId,
         title,
         sourceType: 'url',
+        sourceCategory,
         sourceUrl,
         content,
         metadata: {
@@ -52,6 +62,7 @@ export async function POST(request: NextRequest) {
       workspaceId,
       title,
       sourceType: 'document',
+      sourceCategory,
       content,
       metadata: {
         ingestionMode: 'file-upload',

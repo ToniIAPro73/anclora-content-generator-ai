@@ -9,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
+import { sourceCategoryEnum } from '@/lib/db/schema'
 import { createIndexedSource } from '@/lib/rag/source-ingestion'
 
 export const runtime = 'nodejs'
@@ -16,9 +17,16 @@ export const runtime = 'nodejs'
 interface IngestRequest {
   title: string
   sourceType: 'document' | 'url' | 'rss' | 'manual' | 'api'
+  sourceCategory?: (typeof sourceCategoryEnum.enumValues)[number]
   content?: string
   sourceUrl?: string
   metadata?: Record<string, unknown>
+}
+
+function resolveSourceCategory(category?: string) {
+  return sourceCategoryEnum.enumValues.includes(category as (typeof sourceCategoryEnum.enumValues)[number])
+    ? (category as (typeof sourceCategoryEnum.enumValues)[number])
+    : 'general'
 }
 
 export async function POST(request: NextRequest) {
@@ -46,6 +54,7 @@ export async function POST(request: NextRequest) {
       workspaceId,
       title: body.title,
       sourceType: body.sourceType,
+      sourceCategory: resolveSourceCategory(body.sourceCategory),
       sourceUrl: body.sourceUrl,
       content: body.content || '',
       metadata: body.metadata || {},

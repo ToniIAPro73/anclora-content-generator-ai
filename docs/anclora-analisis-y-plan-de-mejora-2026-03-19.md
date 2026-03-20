@@ -2,6 +2,8 @@
 
 Fecha: 2026-03-19
 
+Actualizacion de estado: 2026-03-20
+
 ## Resumen ejecutivo
 
 El documento `docs/Plan de Desarrollo Anclora Content Generator AI.docx` define una vision potente: convertir Anclora en un motor de inteligencia de mercado y autoridad de marca, apoyado en agentes, RAG profundo, distribucion multicanal y una interfaz de control de mision. Esa vision sigue siendo valida como norte estrategico, pero hoy existe una brecha importante entre el relato del plan y el estado real del producto.
@@ -9,7 +11,7 @@ El documento `docs/Plan de Desarrollo Anclora Content Generator AI.docx` define 
 La app actual ya tiene una base util:
 
 - Next.js 15 + React 19 + TypeScript.
-- Supabase para autenticacion SSR.
+- Better Auth para autenticacion y organizaciones.
 - Neon + Drizzle como base de datos operativa.
 - Primeras rutas API para generacion, ingesta, metricas y fuentes RAG.
 - Un dashboard funcional con shell propio.
@@ -99,6 +101,13 @@ Esto ya se ha corregido para que el dashboard siga siendo un shell contenido, si
 
 - Se ha corregido el riesgo de doble scroll interno en la vista RAG.
 
+## Estado del roadmap a 2026-03-20
+
+- Fase 0 completada: rebaseline documental, naming y narrativa unica de stack.
+- Fase 1 completada en baseline operativo: Better Auth + `workspace_organizations` y resolucion server-side de `workspaceId`.
+- Fase 2 avanzada parcialmente: shell, sidebar, studio, dashboard y RAG ya operan con una narrativa menos generica.
+- Fase 3 activa: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `oportunidad -> studio -> draft` y especializacion por categoria de fuente.
+
 ## Roadmap recomendado
 
 ## Fase 0. Rebaseline documental
@@ -137,6 +146,13 @@ Objetivo: especializar el producto donde realmente gana.
 - Trazabilidad de fuentes utilizadas en cada pieza generada.
 - Libreria de plantillas Anclora por canal y objetivo.
 
+Estado actual:
+
+- `knowledge packs`, jobs y oportunidades editoriales ya estan implementados.
+- La importacion documental ya soporta PDF, DOCX, Google Docs, TXT y Markdown.
+- La trazabilidad ya enlaza `fuente -> oportunidad -> studio -> borrador`.
+- Esta iteracion continua la fase con categorias de fuente de dominio y retrieval legible para operadores.
+
 ## Fase 4. Telemetria y ciclo editorial completo
 
 Objetivo: cerrar el loop de valor.
@@ -157,7 +173,7 @@ Objetivo: volver a la vision del `.docx`, pero con base real.
 ## Decisiones de producto recomendadas
 
 - Tratar el `.docx` como documento estrategico inspirador, no como blueprint tecnico literal.
-- Consolidar una historia unica: Supabase resuelve auth; Neon resuelve datos; el dashboard resuelve operacion editorial.
+- Consolidar una historia unica: Better Auth resuelve auth y organizaciones; Neon resuelve datos; el dashboard resuelve operacion editorial.
 - Hacer que toda decision de UI pase por una pregunta: “Esto parece un generador generico o una plataforma de inteligencia inmobiliaria premium?”
 - Priorizar seguridad de tenancy y persistencia real por encima de nuevas pantallas.
 
@@ -165,8 +181,9 @@ Objetivo: volver a la vision del `.docx`, pero con base real.
 
 - Persisten mocks visibles en varias vistas del dashboard.
 - El acoplamiento entre UI, API y modelo de datos sigue necesitando limpieza adicional.
-- La estrategia RLS actual no representa todavia un control efectivo sobre Neon.
-- Falta validacion completa de build, lint y flujos autenticados end-to-end tras los cambios.
+- La estrategia RLS historica ya no debe leerse como control efectivo del sistema actual sobre Neon.
+- Siguen existiendo mocks visibles y contratos editoriales no totalmente cerrados en `Metrics` y `Settings`.
+- Falta la libreria de plantillas Anclora persistida y gobernada desde base de datos.
 
 ## Recomendacion final
 

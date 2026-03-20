@@ -5,17 +5,19 @@ import { PDFParse } from 'pdf-parse'
 import { eq } from 'drizzle-orm'
 
 import { db, insertChunks } from '@/lib/db/neon'
-import { contentSources, type sourceTypeEnum } from '@/lib/db/schema'
+import { contentSources, type sourceCategoryEnum, type sourceTypeEnum } from '@/lib/db/schema'
 import { chunkText } from '@/lib/rag/chunking'
 import { createContentOpportunitiesFromIngestion } from '@/lib/rag/content-opportunity-agent'
 import { generateLocalEmbeddings } from '@/lib/rag/embeddings'
 
 type SourceType = (typeof sourceTypeEnum.enumValues)[number]
+type SourceCategory = (typeof sourceCategoryEnum.enumValues)[number]
 
 type CreateIndexedSourceInput = {
   workspaceId: string
   title: string
   sourceType: SourceType
+  sourceCategory?: SourceCategory
   content: string
   sourceUrl?: string
   metadata?: Record<string, unknown>
@@ -52,9 +54,13 @@ export async function createIndexedSource(input: CreateIndexedSourceInput) {
       workspaceId: input.workspaceId,
       title: input.title,
       sourceType: input.sourceType,
+      sourceCategory: input.sourceCategory ?? 'general',
       sourceUrl: input.sourceUrl ?? null,
       content: input.content,
-      metadata: input.metadata ?? {},
+      metadata: {
+        sourceCategory: input.sourceCategory ?? 'general',
+        ...(input.metadata ?? {}),
+      },
       status: 'processing',
     })
     .returning()
@@ -75,6 +81,7 @@ export async function createIndexedSource(input: CreateIndexedSourceInput) {
           ...chunk.metadata,
           title: input.title,
           sourceType: input.sourceType,
+          sourceCategory: input.sourceCategory ?? 'general',
         },
         tokenCount: chunk.metadata.tokenCount as number | undefined,
       }))
@@ -107,6 +114,7 @@ export async function createIndexedSource(input: CreateIndexedSourceInput) {
       id: source.id,
       title: input.title,
       type: input.sourceType,
+      category: input.sourceCategory ?? 'general',
       status: 'completed',
       chunks: chunks.length,
       date: new Date().toISOString().slice(0, 10),

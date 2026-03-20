@@ -84,6 +84,12 @@ export interface GenerateContentResult {
     model: string
     tokensUsed: number
     ragSources?: string[]
+    ragSourceDetails?: Array<{
+      sourceId: string
+      title: string
+      category: string
+      similarity: number
+    }>
     retrievalTime?: number
     generationTime: number
   }
@@ -103,6 +109,7 @@ export async function generateContentWithRAG(
     // 1. Retrieval de contexto (si ragQuery está presente)
     let ragContext = ''
     let ragSources: string[] = []
+    let ragSourceDetails: GenerateContentResult['metadata']['ragSourceDetails']
     let retrievalTime = 0
 
     if (options.ragQuery && options.retrievalOptions) {
@@ -118,7 +125,27 @@ export async function generateContentWithRAG(
         includeMetadata: false
       })
 
-      ragSources = retrievalResult.chunks.map(chunk => chunk.source_id)
+      const uniqueSources = new Map<string, { sourceId: string; title: string; category: string; similarity: number }>()
+      for (const chunk of retrievalResult.chunks) {
+        const title = typeof chunk.metadata.title === 'string' ? chunk.metadata.title : chunk.source_id
+        const category =
+          typeof chunk.metadata.sourceCategory === 'string' ? chunk.metadata.sourceCategory : 'general'
+        const existing = uniqueSources.get(chunk.source_id)
+
+        if (!existing || chunk.similarity > existing.similarity) {
+          uniqueSources.set(chunk.source_id, {
+            sourceId: chunk.source_id,
+            title,
+            category,
+            similarity: chunk.similarity,
+          })
+        }
+      }
+
+      ragSourceDetails = Array.from(uniqueSources.values())
+      ragSources = ragSourceDetails.map(
+        (source) => `${source.title} · ${source.category} · ${(source.similarity * 100).toFixed(0)}%`
+      )
       retrievalTime = performance.now() - retrievalStart
     }
 
@@ -146,6 +173,7 @@ export async function generateContentWithRAG(
         model: String(model),
         tokensUsed: usage?.totalTokens || 0,
         ragSources: ragSources.length > 0 ? ragSources : undefined,
+        ragSourceDetails: ragSourceDetails?.length ? ragSourceDetails : undefined,
         retrievalTime: retrievalTime > 0 ? retrievalTime : undefined,
         generationTime
       }

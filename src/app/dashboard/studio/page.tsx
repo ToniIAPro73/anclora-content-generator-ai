@@ -37,6 +37,12 @@ interface GenerationMetadata {
   generationTime?: number
   retrievalTime?: number
   ragSources?: string[]
+  ragSourceDetails?: Array<{
+    sourceId: string
+    title: string
+    category: string
+    similarity: number
+  }>
 }
 const contentTypes = [
   { value: "blog", label: "Blog de autoridad", hint: "Articulos profundos y SEO" },
@@ -536,11 +542,24 @@ export default function StudioPage() {
                     <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       Fuentes recuperadas
                     </p>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {metadata?.ragSources?.length
-                        ? metadata.ragSources.join(", ")
-                        : "No hay trazas de retrieval en esta generacion."}
-                    </p>
+                    {metadata?.ragSourceDetails?.length ? (
+                      <div className="mt-3 grid gap-3 md:grid-cols-2">
+                        {metadata.ragSourceDetails.map((source) => (
+                          <SurfaceCard key={source.sourceId} variant="inner" className="border bg-background/70 p-4">
+                            <p className="font-medium text-foreground">{source.title}</p>
+                            <p className="mt-2 text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                              {source.category} · {(source.similarity * 100).toFixed(0)}% match
+                            </p>
+                          </SurfaceCard>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                        {metadata?.ragSources?.length
+                          ? metadata.ragSources.join(", ")
+                          : "No hay trazas de retrieval en esta generacion."}
+                      </p>
+                    )}
                   </SurfaceCard>
                 </TabsContent>
               </Tabs>

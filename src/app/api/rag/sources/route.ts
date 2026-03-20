@@ -1,8 +1,15 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
+import { sourceCategoryEnum } from '@/lib/db/schema'
 import { createIndexedSource } from '@/lib/rag/source-ingestion'
 
 export const runtime = 'nodejs'
+
+function resolveSourceCategory(category?: string) {
+  return sourceCategoryEnum.enumValues.includes(category as (typeof sourceCategoryEnum.enumValues)[number])
+    ? (category as (typeof sourceCategoryEnum.enumValues)[number])
+    : 'general'
+}
 
 // GET /api/rag/sources
 export async function GET() {
@@ -17,7 +24,7 @@ export async function GET() {
     const sql = neon(process.env.DATABASE_URL)
 
     const rows = await sql`
-      SELECT id, title, source_type, status, chunks_count, created_at
+      SELECT id, title, source_type, source_category, status, chunks_count, created_at
       FROM content_sources
       WHERE workspace_id = ${workspaceId}
       ORDER BY created_at DESC
@@ -27,6 +34,7 @@ export async function GET() {
       id: r.id as string,
       title: r.title as string,
       type: r.source_type as string,
+      category: r.source_category as string,
       status: r.status as string,
       chunks: r.chunks_count as number,
       date: (r.created_at as string).slice(0, 10),
@@ -49,7 +57,7 @@ export async function POST(request: NextRequest) {
     const { workspaceId } = await getAuthenticatedWorkspace()
 
     const body = await request.json()
-    const { title, content, sourceUrl, sourceType = 'manual' } = body
+    const { title, content, sourceUrl, sourceType = 'manual', sourceCategory } = body
 
     if (!title) {
       return NextResponse.json({ error: 'title es requerido' }, { status: 400 })
@@ -59,6 +67,7 @@ export async function POST(request: NextRequest) {
       workspaceId,
       title,
       sourceType,
+      sourceCategory: resolveSourceCategory(sourceCategory),
       sourceUrl: sourceUrl ?? undefined,
       content: content ?? '',
       metadata: {

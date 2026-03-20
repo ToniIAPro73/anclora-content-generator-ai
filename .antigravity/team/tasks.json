@@ -1,6 +1,6 @@
 {
   "project": "Anclora Content Generator AI",
-  "fase_actual": "FASE 3: Agentic Knowledge Ingestion y evolucion del RAG",
+  "fase_actual": "FASE 3: Especializacion de fuentes y trazabilidad de dominio para el RAG",
   "members": [
     {
       "id": "anclorabot",
@@ -124,25 +124,25 @@
     {
       "id": 6,
       "title": "Formalizar modelo relacional de workspaces",
-      "description": "Crear un modelo explicito de workspaces y memberships en Neon para sustituir el fallback temporal basado en user.id.",
-      "status": "PENDING",
-      "plan_approved": false,
-      "assigned_to": "agent_a",
+      "description": "Formalizar el workspace de negocio sobre Organizations de Better Auth y la tabla puente `workspace_organizations`, sustituyendo el fallback previo de tenancy.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
       "dependencies": [5],
       "priority": "CRITICAL",
       "estimated_hours": "3-5",
       "feature": "ANCLORA-FEAT-002",
       "deliverables": [
-        "Schema de workspaces y memberships",
-        "Plan de migracion desde auth metadata",
-        "Spec de persistencia multi-tenant"
+        "Schema puente `workspace_organizations`",
+        "Resolucion server-side desde Better Auth",
+        "Persistencia multi-tenant operativa en Neon"
       ]
     },
     {
       "id": 7,
       "title": "Iniciar migracion de autenticacion a Better Auth + Neon",
-      "description": "Preparar la base tecnica de Better Auth, definir el contrato de coexistencia y dejar lista la siguiente iteracion de migracion real desde Supabase Auth.",
-      "status": "IN_PROGRESS",
+      "description": "Completar la migracion de autenticacion a Better Auth + Neon y retirar Supabase Auth del runtime.",
+      "status": "COMPLETED",
       "plan_approved": true,
       "assigned_to": "anclorabot",
       "dependencies": [5],
@@ -187,6 +187,40 @@
         "Schema Drizzle y migración SQL para knowledge packs",
         "Endpoints /api/rag/knowledge-packs y detalle",
         "UI de RAG con creación de dossier, jobs y detalle trazable"
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Especializar fuentes por categoria de dominio",
+      "description": "Introducir categorias de fuente alineadas con la tesis de Anclora para clasificar la ingesta documental y operativa del RAG.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [9],
+      "priority": "HIGH",
+      "estimated_hours": "2-4",
+      "feature": "ANCLORA-FEAT-005",
+      "deliverables": [
+        "Schema de `source_category`",
+        "UI y endpoints de ingesta con categoria de dominio",
+        "Visualizacion de categoria en Knowledge Base"
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Hacer legible la trazabilidad de retrieval",
+      "description": "Sustituir referencias opacas a source ids por trazas legibles con titulo, categoria y similitud dentro del Studio y la metadata de generacion.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [10],
+      "priority": "HIGH",
+      "estimated_hours": "1-3",
+      "feature": "ANCLORA-FEAT-005",
+      "deliverables": [
+        "Metadata enriquecida de retrieval",
+        "Output Panel con fuentes legibles",
+        "Roadmap y tablero rebaselinizados"
       ]
     }
   ]

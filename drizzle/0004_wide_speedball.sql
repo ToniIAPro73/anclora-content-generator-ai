@@ -1,0 +1,2 @@
+CREATE TYPE "public"."source_category" AS ENUM('market', 'regulation', 'lifestyle', 'infrastructure', 'editorial', 'general');--> statement-breakpoint
+ALTER TABLE "content_sources" ADD COLUMN "source_category" "source_category" DEFAULT 'general' NOT NULL;

@@ -46,6 +46,7 @@ type Source = {
   id: string
   title: string
   type: string
+  category: string
   status: string
   chunks: number
   date: string
@@ -128,6 +129,36 @@ function statusTone(status: string) {
   }
 }
 
+const sourceCategories = [
+  { value: "market", label: "Mercado" },
+  { value: "regulation", label: "Regulación" },
+  { value: "lifestyle", label: "Lifestyle" },
+  { value: "infrastructure", label: "Infraestructuras" },
+  { value: "editorial", label: "Editorial" },
+  { value: "general", label: "General" },
+] as const
+
+function categoryTone(category: string) {
+  switch (category) {
+    case "market":
+      return "border-sky-500/25 bg-sky-500/10 text-sky-200"
+    case "regulation":
+      return "border-violet-500/25 bg-violet-500/10 text-violet-200"
+    case "lifestyle":
+      return "border-emerald-500/25 bg-emerald-500/10 text-emerald-200"
+    case "infrastructure":
+      return "border-amber-500/25 bg-amber-500/10 text-amber-200"
+    case "editorial":
+      return "border-rose-500/25 bg-rose-500/10 text-rose-200"
+    default:
+      return "border-border bg-muted text-muted-foreground"
+  }
+}
+
+function categoryLabel(category: string) {
+  return sourceCategories.find((item) => item.value === category)?.label ?? "General"
+}
+
 export default function KnowledgeBasePage() {
   const router = useRouter()
   const [sources, setSources] = React.useState<Source[]>([])
@@ -143,8 +174,10 @@ export default function KnowledgeBasePage() {
   const [newContent, setNewContent] = React.useState("")
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [importTitle, setImportTitle] = React.useState("")
+  const [importCategory, setImportCategory] = React.useState<string>("market")
   const [googleDocTitle, setGoogleDocTitle] = React.useState("")
   const [googleDocUrl, setGoogleDocUrl] = React.useState("")
+  const [googleDocCategory, setGoogleDocCategory] = React.useState<string>("regulation")
   const [selectedFile, setSelectedFile] = React.useState<File | null>(null)
   const [isImportingFile, setIsImportingFile] = React.useState(false)
   const [isImportingGoogleDoc, setIsImportingGoogleDoc] = React.useState(false)
@@ -158,6 +191,7 @@ export default function KnowledgeBasePage() {
   const [packType, setPackType] = React.useState<"agentic_research_pack" | "notebooklm_notebook">("agentic_research_pack")
   const [isCreatingPack, setIsCreatingPack] = React.useState(false)
   const [packError, setPackError] = React.useState<string | null>(null)
+  const [manualCategory, setManualCategory] = React.useState<string>("editorial")
 
   const loadSources = React.useCallback(async () => {
     const res = await fetch("/api/rag/sources")
@@ -232,6 +266,7 @@ export default function KnowledgeBasePage() {
           title: newTitle,
           content: newContent,
           sourceType: "manual",
+          sourceCategory: manualCategory,
         }),
       })
       const data = await res.json()
@@ -240,6 +275,7 @@ export default function KnowledgeBasePage() {
       }
       setNewTitle("")
       setNewContent("")
+      setManualCategory("editorial")
       setDialogOpen(false)
     } finally {
       setIsSubmitting(false)
@@ -300,6 +336,7 @@ export default function KnowledgeBasePage() {
       const formData = new FormData()
       formData.append("mode", "upload")
       formData.append("title", importTitle)
+      formData.append("sourceCategory", importCategory)
       formData.append("file", selectedFile)
 
       const res = await fetch("/api/rag/import-document", {
@@ -313,6 +350,7 @@ export default function KnowledgeBasePage() {
       }
 
       setImportTitle("")
+      setImportCategory("market")
       setSelectedFile(null)
       await refreshAll()
     } catch (error) {
@@ -333,6 +371,7 @@ export default function KnowledgeBasePage() {
       const formData = new FormData()
       formData.append("mode", "google-doc")
       formData.append("title", googleDocTitle)
+      formData.append("sourceCategory", googleDocCategory)
       formData.append("sourceUrl", googleDocUrl)
 
       const res = await fetch("/api/rag/import-document", {
@@ -347,6 +386,7 @@ export default function KnowledgeBasePage() {
 
       setGoogleDocTitle("")
       setGoogleDocUrl("")
+      setGoogleDocCategory("regulation")
       await refreshAll()
     } catch (error) {
       setImportError(error instanceof Error ? error.message : "No se pudo importar el Google Doc")
@@ -718,6 +758,21 @@ export default function KnowledgeBasePage() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="import-category">Categoría de dominio</Label>
+                  <select
+                    id="import-category"
+                    value={importCategory}
+                    onChange={(event) => setImportCategory(event.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    {sourceCategories.map((category) => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="import-file">Archivo</Label>
                   <Input
                     id="import-file"
@@ -761,6 +816,21 @@ export default function KnowledgeBasePage() {
                     placeholder="Ej. Notas due diligence Palma 2026"
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gdoc-category">Categoría de dominio</Label>
+                  <select
+                    id="gdoc-category"
+                    value={googleDocCategory}
+                    onChange={(event) => setGoogleDocCategory(event.target.value)}
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  >
+                    {sourceCategories.map((category) => (
+                      <option key={category.value} value={category.value}>
+                        {category.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="gdoc-url">URL del documento</Label>
@@ -871,6 +941,21 @@ export default function KnowledgeBasePage() {
                           onChange={(e) => setNewContent(e.target.value)}
                         />
                       </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="source-category">Categoría de dominio</Label>
+                        <select
+                          id="source-category"
+                          value={manualCategory}
+                          onChange={(event) => setManualCategory(event.target.value)}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                        >
+                          {sourceCategories.map((category) => (
+                            <option key={category.value} value={category.value}>
+                              {category.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
                     <DialogFooter>
                       <Button type="submit" disabled={isSubmitting}>
@@ -904,6 +989,7 @@ export default function KnowledgeBasePage() {
                   <TableRow>
                     <TableHead>Fuente</TableHead>
                     <TableHead>Tipo</TableHead>
+                    <TableHead>Categoría</TableHead>
                     <TableHead>Estado</TableHead>
                     <TableHead className="text-right">Chunks</TableHead>
                     <TableHead className="text-right">Añadida</TableHead>
@@ -913,14 +999,14 @@ export default function KnowledgeBasePage() {
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                      <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                         <RefreshCw className="mr-2 inline h-4 w-4 animate-spin" />
                         Cargando fuentes...
                       </TableCell>
                     </TableRow>
                   ) : filteredSources.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                      <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                         {searchQuery ? "No se encontraron fuentes." : "Aún no hay fuentes. Añade tu primera fuente de conocimiento."}
                       </TableCell>
                     </TableRow>
@@ -936,6 +1022,11 @@ export default function KnowledgeBasePage() {
                           </div>
                         </TableCell>
                         <TableCell className="capitalize">{source.type}</TableCell>
+                        <TableCell>
+                          <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${categoryTone(source.category)}`}>
+                            {categoryLabel(source.category)}
+                          </span>
+                        </TableCell>
                         <TableCell>
                           <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusTone(source.status)}`}>
                             {(source.status === "processing" || source.status === "pending") ? (

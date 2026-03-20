@@ -14,6 +14,7 @@ export * from './auth-schema'
 // =====================================================
 
 export const sourceTypeEnum = pgEnum('source_type', ['document', 'url', 'rss', 'manual', 'api', 'agentic_research_pack', 'notebooklm_notebook', 'curated_brief'])
+export const sourceCategoryEnum = pgEnum('source_category', ['market', 'regulation', 'lifestyle', 'infrastructure', 'editorial', 'general'])
 export const sourceStatusEnum = pgEnum('source_status', ['pending', 'processing', 'completed', 'error'])
 export const contentTypeEnum = pgEnum('content_type', ['blog', 'linkedin', 'instagram', 'facebook', 'newsletter', 'custom'])
 export const contentStatusEnum = pgEnum('content_status', ['draft', 'approved', 'scheduled', 'published', 'archived'])
@@ -38,6 +39,7 @@ export const contentSources = pgTable('content_sources', {
   workspaceId: uuid('workspace_id').notNull(),
   title: text('title').notNull(),
   sourceType: sourceTypeEnum('source_type').notNull(),
+  sourceCategory: sourceCategoryEnum('source_category').default('general').notNull(),
   sourceUrl: text('source_url'),
   content: text('content'),
   metadata: jsonb('metadata').default(sql`'{}'::jsonb`).notNull(),

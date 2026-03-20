@@ -25,6 +25,13 @@ Este repositorio usa desde ahora una narrativa unica:
 - Neon + Drizzle resuelven persistencia operativa.
 - El dashboard resuelve operacion editorial.
 
+Estado del roadmap a 2026-03-20:
+
+- Fase 0 completada
+- Fase 1 completada en su baseline operativo con Better Auth + `workspace_organizations`
+- Fase 2 parcialmente avanzada desde UX, pero pendiente de cerrar el ciclo editorial completo
+- Fase 3 activa, con foco actual en especializacion de fuentes, trazabilidad de retrieval y activos editoriales
+
 ## Principios no negociables
 
 - En `/dashboard/*` no se permite scroll vertical global del documento.
@@ -134,8 +141,8 @@ Payload actual:
 
 ```json
 {
-  "workspaceId": "uuid",
   "templateId": "uuid",
+  "opportunityId": "uuid",
   "contentType": "blog",
   "title": "Informe editorial Q2",
   "userPrompt": "Redacta una pieza orientada a compradores internacionales",
@@ -155,9 +162,9 @@ Payload actual:
 
 ```json
 {
-  "workspaceId": "uuid",
   "title": "Informe de mercado",
   "sourceType": "manual",
+  "sourceCategory": "market",
   "content": "Texto base para la knowledge base"
 }
 ```
@@ -174,6 +181,15 @@ Notas:
 La persistencia operativa vive en Neon y se modela con Drizzle. Las migraciones SQL historicas bajo `supabase/migrations/` siguen siendo utiles como referencia y bootstrap, pero no deben leerse como garantia de aislamiento efectivo por si mismas.
 
 Hoy la multi-tenancy esta definida a nivel de modelo mediante `workspace_id`, pero su enforcement todavia no esta completamente endurecido. Esa es la prioridad principal de la Fase 1.
+
+En Fase 3, las fuentes del RAG ya empiezan a especializarse por categoria de dominio:
+
+- `market`
+- `regulation`
+- `lifestyle`
+- `infrastructure`
+- `editorial`
+- `general`
 
 ## SDD y forma de trabajo
 
