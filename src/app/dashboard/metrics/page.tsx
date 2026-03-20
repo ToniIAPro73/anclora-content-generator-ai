@@ -14,6 +14,10 @@ interface DashboardMetrics {
   draftContent: number
   reviewContent: number
   approvedContent: number
+  totalLeadsGenerated?: number
+  totalConversions?: number
+  trackedLeads?: number
+  convertedLeads?: number
   avgTokensUsed: number
   totalKnowledgeChunks: number
   contentByType?: Record<string, number>
@@ -31,6 +35,8 @@ const KPI_CARDS = [
   { key: 'publishedContent',    label: 'Publicado',         sub: 'Del total generado',     icon: Rocket,   accent: sage  },
   { key: 'draftContent',        label: 'Borradores',        sub: 'Pendientes de publicar', icon: Layers,   accent: amber },
   { key: 'reviewContent',       label: 'En Revisión',       sub: 'Pendientes de aprobación', icon: Clock,   accent: sage  },
+  { key: 'totalLeadsGenerated', label: 'Leads',             sub: 'Generados por contenido', icon: Rocket,   accent: 'hsl(210 80% 65%)' },
+  { key: 'totalConversions',    label: 'Conversiones',      sub: 'Negocio atribuido',      icon: FileText, accent: 'hsl(158 42% 52%)' },
 ]
 
 function Skeleton({ className }: { className?: string }) {
@@ -98,7 +104,7 @@ export default function MetricsPage() {
       </div>
 
       {/* ─── KPI Cards ─── */}
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {KPI_CARDS.map(({ key, label, sub, icon: Icon, accent }) => {
           const value = metrics?.[key as keyof DashboardMetrics] ?? 0
           return (

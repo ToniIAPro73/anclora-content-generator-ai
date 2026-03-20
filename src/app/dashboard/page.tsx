@@ -28,6 +28,10 @@ interface DashboardMetrics {
   totalKnowledgeChunks: number
   scheduledPosts?: number
   totalSources?: number
+  totalLeadsGenerated?: number
+  totalConversions?: number
+  trackedLeads?: number
+  convertedLeads?: number
   recentContent?: Array<{
     id: string
     title: string
@@ -213,7 +217,7 @@ export default function DashboardPage() {
         </Card>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {[
           {
             label: "Contenido total",
@@ -238,6 +242,18 @@ export default function DashboardPage() {
             value: metrics?.avgTokensUsed ?? 0,
             note: "Indicador de coste y densidad",
             icon: Sparkles,
+          },
+          {
+            label: "Leads generados",
+            value: metrics?.totalLeadsGenerated ?? 0,
+            note: "Señal comercial atribuida al contenido",
+            icon: TrendingUp,
+          },
+          {
+            label: "Conversiones",
+            value: metrics?.totalConversions ?? 0,
+            note: "Acciones de negocio ya cerradas",
+            icon: CheckCircle2,
           },
         ].map(({ label, value, note, icon: Icon }) => (
           <Card key={label}>

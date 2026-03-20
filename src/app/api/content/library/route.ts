@@ -1,9 +1,9 @@
-import { and, asc, desc, eq } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, sql } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
 import { db } from '@/lib/db/neon'
-import { generatedContent, scheduledPosts } from '@/lib/db/schema'
+import { contentMetrics, generatedContent, leadTracking, scheduledPosts } from '@/lib/db/schema'
 
 export const runtime = 'nodejs'
 
@@ -73,7 +73,84 @@ export async function GET() {
         .limit(12),
     ])
 
-    return NextResponse.json({ success: true, items, scheduledQueue })
+    const contentIds = items.map((item) => item.id)
+
+    const [performanceRows, leadRows] = contentIds.length
+      ? await Promise.all([
+          db
+            .select({
+              contentId: contentMetrics.contentId,
+              views: sql<number>`COALESCE(SUM(${contentMetrics.views}), 0)`,
+              impressions: sql<number>`COALESCE(SUM(${contentMetrics.impressions}), 0)`,
+              clicks: sql<number>`COALESCE(SUM(${contentMetrics.clicks}), 0)`,
+              leadsGenerated: sql<number>`COALESCE(SUM(${contentMetrics.leadsGenerated}), 0)`,
+              conversions: sql<number>`COALESCE(SUM(${contentMetrics.conversions}), 0)`,
+              engagementRate: sql<number>`COALESCE(AVG(${contentMetrics.engagementRate}), 0)`,
+            })
+            .from(contentMetrics)
+            .where(
+              and(
+                eq(contentMetrics.workspaceId, workspaceId),
+                inArray(contentMetrics.contentId, contentIds)
+              )
+            )
+            .groupBy(contentMetrics.contentId),
+          db
+            .select({
+              contentId: leadTracking.contentId,
+              leadsTracked: sql<number>`COUNT(*)`,
+              convertedLeads: sql<number>`COUNT(*) FILTER (WHERE ${leadTracking.status} = 'converted')`,
+            })
+            .from(leadTracking)
+            .where(
+              and(
+                eq(leadTracking.workspaceId, workspaceId),
+                inArray(leadTracking.contentId, contentIds)
+              )
+            )
+            .groupBy(leadTracking.contentId),
+        ])
+      : [[], []]
+
+    const performanceByContent = new Map(
+      performanceRows.map((row) => [
+        row.contentId,
+        {
+          views: Number(row.views ?? 0),
+          impressions: Number(row.impressions ?? 0),
+          clicks: Number(row.clicks ?? 0),
+          leadsGenerated: Number(row.leadsGenerated ?? 0),
+          conversions: Number(row.conversions ?? 0),
+          engagementRate: Number(row.engagementRate ?? 0),
+        },
+      ])
+    )
+
+    const leadsByContent = new Map(
+      leadRows.map((row) => [
+        row.contentId,
+        {
+          leadsTracked: Number(row.leadsTracked ?? 0),
+          convertedLeads: Number(row.convertedLeads ?? 0),
+        },
+      ])
+    )
+
+    const enrichedItems = items.map((item) => ({
+      ...item,
+      performance: {
+        views: performanceByContent.get(item.id)?.views ?? 0,
+        impressions: performanceByContent.get(item.id)?.impressions ?? 0,
+        clicks: performanceByContent.get(item.id)?.clicks ?? 0,
+        leadsGenerated: performanceByContent.get(item.id)?.leadsGenerated ?? 0,
+        conversions: performanceByContent.get(item.id)?.conversions ?? 0,
+        engagementRate: performanceByContent.get(item.id)?.engagementRate ?? 0,
+        leadsTracked: leadsByContent.get(item.id)?.leadsTracked ?? 0,
+        convertedLeads: leadsByContent.get(item.id)?.convertedLeads ?? 0,
+      },
+    }))
+
+    return NextResponse.json({ success: true, items: enrichedItems, scheduledQueue })
   } catch (error) {
     if (error instanceof WorkspaceAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status })

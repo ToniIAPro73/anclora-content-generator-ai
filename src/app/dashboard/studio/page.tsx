@@ -31,6 +31,16 @@ interface GeneratedContent {
   status: string
   scheduledFor?: string | null
   publishedAt?: string | null
+  performance?: {
+    views: number
+    impressions: number
+    clicks: number
+    leadsGenerated: number
+    conversions: number
+    engagementRate: number
+    leadsTracked: number
+    convertedLeads: number
+  }
 }
 
 interface GenerationMetadata {
@@ -702,6 +712,22 @@ function StudioPageContent() {
                       </p>
                     )}
                   </SurfaceCard>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                      { label: "Views", value: generatedContent.performance?.views ?? 0 },
+                      { label: "Clicks", value: generatedContent.performance?.clicks ?? 0 },
+                      { label: "Leads generados", value: generatedContent.performance?.leadsGenerated ?? 0 },
+                      { label: "Leads convertidos", value: generatedContent.performance?.convertedLeads ?? 0 },
+                    ].map((item) => (
+                      <SurfaceCard key={item.label} variant="inner" className="border bg-background/70 p-4">
+                        <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                          {item.label}
+                        </p>
+                        <p className="mt-2 text-sm font-medium text-foreground">{item.value}</p>
+                      </SurfaceCard>
+                    ))}
+                  </div>
                 </TabsContent>
               </Tabs>
             )}

@@ -22,6 +22,10 @@ const EMPTY_METRICS = {
   totalKnowledgeChunks: 0,
   scheduledPosts: 0,
   totalSources: 0,
+  totalLeadsGenerated: 0,
+  totalConversions: 0,
+  trackedLeads: 0,
+  convertedLeads: 0,
   contentByType: {},
   recentActivity: [],
   recentContent: [],
@@ -50,6 +54,10 @@ export async function GET() {
       approvedContentResult,
       scheduledPostsResult,
       totalSourcesResult,
+      totalLeadsResult,
+      totalConversionsResult,
+      trackedLeadsResult,
+      convertedLeadsResult,
       contentByTypeResult,
       recentContentResult,
       scheduledQueueResult,
@@ -64,6 +72,10 @@ export async function GET() {
         sql`SELECT COUNT(*) as count FROM generated_content WHERE workspace_id = ${workspaceId} AND status = 'approved'`,
         sql`SELECT COUNT(*) as count FROM scheduled_posts WHERE workspace_id = ${workspaceId} AND status = 'pending'`,
         sql`SELECT COUNT(*) as count FROM content_sources WHERE workspace_id = ${workspaceId}`,
+        sql`SELECT COALESCE(SUM(leads_generated), 0) as count FROM content_metrics WHERE workspace_id = ${workspaceId}`,
+        sql`SELECT COALESCE(SUM(conversions), 0) as count FROM content_metrics WHERE workspace_id = ${workspaceId}`,
+        sql`SELECT COUNT(*) as count FROM lead_tracking WHERE workspace_id = ${workspaceId}`,
+        sql`SELECT COUNT(*) as count FROM lead_tracking WHERE workspace_id = ${workspaceId} AND status = 'converted'`,
         sql`
           SELECT content_type, COUNT(*) as count
           FROM generated_content
@@ -136,6 +148,10 @@ export async function GET() {
         approvedContent: parseInt(String(approvedContentResult[0]?.count ?? '0')),
         scheduledPosts: parseInt(String(scheduledPostsResult[0]?.count ?? '0')),
         totalSources: parseInt(String(totalSourcesResult[0]?.count ?? '0')),
+        totalLeadsGenerated: parseInt(String(totalLeadsResult[0]?.count ?? '0')),
+        totalConversions: parseInt(String(totalConversionsResult[0]?.count ?? '0')),
+        trackedLeads: parseInt(String(trackedLeadsResult[0]?.count ?? '0')),
+        convertedLeads: parseInt(String(convertedLeadsResult[0]?.count ?? '0')),
         contentByType,
         recentContent: recentContentResult.map((row) => ({
           id: String(row.id),

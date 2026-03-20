@@ -307,6 +307,23 @@
         "Lectura inicial por canal desde content_metrics",
         "Ranking basico de piezas con mayor traccion"
       ]
+    },
+    {
+      "id": 17,
+      "title": "Conectar Studio con telemetria resumida de piezas",
+      "description": "Permitir reabrir piezas existentes desde la cola editorial o la libreria y mostrar su señal resumida de views, clicks, leads y conversiones dentro del Studio.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [16],
+      "priority": "HIGH",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-007",
+      "deliverables": [
+        "GET /api/content/library enriquecido con performance por pieza",
+        "Studio capaz de abrir contenido existente por contentId",
+        "Resumen de rendimiento visible dentro del Output Panel"
+      ]
     }
   ]
 }
