@@ -21,6 +21,7 @@ Guardarrailes activos:
 - No indexar texto sintético sin separar `claims` y `evidence`
 - `workspace_id` sigue siendo frontera obligatoria para packs, jobs y chunks
 - Toda nueva fuente debe poder clasificarse por categoría de dominio, no solo por tipo técnico
+- El backend vectorial activo sigue siendo `pgvector`, pero el pipeline ya debe aceptar costuras limpias para escalar a Pinecone y Google embeddings
 
 Stack de referencia vigente:
 

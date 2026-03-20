@@ -4,11 +4,12 @@ import mammoth from 'mammoth'
 import { PDFParse } from 'pdf-parse'
 import { eq } from 'drizzle-orm'
 
-import { db, insertChunks } from '@/lib/db/neon'
+import { db } from '@/lib/db/neon'
 import { contentSources, type sourceCategoryEnum, type sourceTypeEnum } from '@/lib/db/schema'
 import { chunkText } from '@/lib/rag/chunking'
 import { createContentOpportunitiesFromIngestion } from '@/lib/rag/content-opportunity-agent'
-import { generateLocalEmbeddings } from '@/lib/rag/embeddings'
+import { generateEmbeddings } from '@/lib/rag/embeddings'
+import { insertVectorChunks } from '@/lib/rag/vector-store'
 
 type SourceType = (typeof sourceTypeEnum.enumValues)[number]
 type SourceCategory = (typeof sourceCategoryEnum.enumValues)[number]
@@ -40,7 +41,7 @@ function buildFallbackEmbedding(text: string, dimensions = 384) {
 
 async function generateResilientEmbedding(text: string) {
   try {
-    return await generateLocalEmbeddings(text)
+    return await generateEmbeddings(text)
   } catch (error) {
     console.warn('[Source Ingestion] Falling back to deterministic embedding', error)
     return buildFallbackEmbedding(text)
@@ -87,7 +88,7 @@ export async function createIndexedSource(input: CreateIndexedSourceInput) {
       }))
     )
 
-    await insertChunks({
+    await insertVectorChunks({
       workspaceId: input.workspaceId,
       sourceId: source.id,
       chunks: chunksWithEmbeddings,

@@ -1,6 +1,6 @@
 import { and, desc, eq, sql as drizzleSql } from 'drizzle-orm'
 
-import { db, insertChunks } from '@/lib/db/neon'
+import { db } from '@/lib/db/neon'
 import {
   contentSources,
   knowledgeIngestionJobs,
@@ -10,7 +10,8 @@ import {
 } from '@/lib/db/schema'
 import { chunkText } from '@/lib/rag/chunking'
 import { createContentOpportunitiesFromIngestion } from '@/lib/rag/content-opportunity-agent'
-import { generateLocalEmbeddings } from '@/lib/rag/embeddings'
+import { generateEmbeddings } from '@/lib/rag/embeddings'
+import { insertVectorChunks } from '@/lib/rag/vector-store'
 
 type KnowledgePackKind = 'agentic_research_pack' | 'notebooklm_notebook' | 'curated_brief'
 
@@ -218,7 +219,7 @@ function buildFallbackEmbedding(text: string, dimensions = 384) {
 
 async function generateResilientEmbedding(text: string) {
   try {
-    return await generateLocalEmbeddings(text)
+    return await generateEmbeddings(text)
   } catch (error) {
     console.warn('[Agentic Knowledge] Falling back to deterministic embedding', error)
     return buildFallbackEmbedding(text)
@@ -342,7 +343,7 @@ export async function createAgenticKnowledgePack(input: AgenticPackInput) {
       }))
     )
 
-    const insertedChunks = await insertChunks({
+    const insertedChunks = await insertVectorChunks({
       workspaceId: input.workspaceId,
       sourceId: source.id,
       chunks: chunksWithEmbeddings,

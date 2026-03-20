@@ -222,6 +222,23 @@
         "Output Panel con fuentes legibles",
         "Roadmap y tablero rebaselinizados"
       ]
+    },
+    {
+      "id": 12,
+      "title": "Preparar adaptadores escalables de RAG",
+      "description": "Mantener Neon + pgvector como backend activo dejando costuras de configuración y adaptadores para una futura migración a Pinecone + Gemini embeddings.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [11],
+      "priority": "HIGH",
+      "estimated_hours": "1-3",
+      "feature": "ANCLORA-FEAT-006",
+      "deliverables": [
+        "Facade de vector store",
+        "Facade de embeddings",
+        ".env.example y README preparados para escalado futuro"
+      ]
     }
   ]
 }

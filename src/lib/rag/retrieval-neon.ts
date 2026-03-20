@@ -6,8 +6,9 @@
  * Date: 2026-03-19
  */
 
-import { vectorSearch } from '@/lib/db/neon'
-import { generateLocalEmbeddings } from './embeddings'
+import { generateEmbeddings } from './embeddings'
+import { getRagSimilarityThreshold, getRagTopK } from './config'
+import { searchVectorStore } from './vector-store'
 
 export interface RetrievalOptions {
   /** Número máximo de chunks a retornar */
@@ -36,8 +37,8 @@ export interface RetrievalResult {
 }
 
 const DEFAULT_OPTIONS = {
-  topK: 5,
-  similarityThreshold: 0.7
+  topK: getRagTopK(),
+  similarityThreshold: getRagSimilarityThreshold()
 }
 
 /**
@@ -55,10 +56,10 @@ export async function retrieveSimilarChunks(
 
   try {
     // 1. Generar embedding de la query
-    const queryEmbedding = await generateLocalEmbeddings(query)
+    const queryEmbedding = await generateEmbeddings(query)
 
     // 2. Ejecutar búsqueda vectorial en Neon
-    const results = await vectorSearch({
+    const results = await searchVectorStore({
       embedding: queryEmbedding,
       workspaceId: opts.workspaceId,
       limit: opts.topK,

@@ -11,12 +11,12 @@ import { retrieveSimilarChunks } from '../retrieval-neon'
 
 // Mock the embeddings module
 vi.mock('../embeddings', () => ({
-  generateLocalEmbeddings: vi.fn(async () => new Array(384).fill(0.5)),
+  generateEmbeddings: vi.fn(async () => new Array(384).fill(0.5)),
 }))
 
-// Mock the Neon client
-vi.mock('@/lib/db/neon', () => ({
-  vectorSearch: vi.fn(async (params: {embedding: number[], workspaceId: string, limit?: number, threshold?: number}) => {
+// Mock the vector store facade
+vi.mock('../vector-store', () => ({
+  searchVectorStore: vi.fn(async (params: {embedding: number[], workspaceId: string, limit?: number, threshold?: number}) => {
     const allResults = [
       {
         id: '1',
@@ -151,8 +151,8 @@ describe('retrieveSimilarChunks', () => {
   })
 
   it('should handle empty results', async () => {
-    const { vectorSearch } = await import('@/lib/db/neon')
-    vi.mocked(vectorSearch).mockResolvedValueOnce([])
+    const { searchVectorStore } = await import('../vector-store')
+    vi.mocked(searchVectorStore).mockResolvedValueOnce([])
 
     const query = 'Query with no results'
     const options = {
@@ -168,8 +168,8 @@ describe('retrieveSimilarChunks', () => {
   })
 
   it('should handle errors gracefully', async () => {
-    const { vectorSearch } = await import('@/lib/db/neon')
-    vi.mocked(vectorSearch).mockRejectedValueOnce(new Error('Database error'))
+    const { searchVectorStore } = await import('../vector-store')
+    vi.mocked(searchVectorStore).mockRejectedValueOnce(new Error('Database error'))
 
     const query = 'Test query'
     const options = {
@@ -182,8 +182,8 @@ describe('retrieveSimilarChunks', () => {
   })
 
   it('should use workspace ID for filtering', async () => {
-    const { vectorSearch } = await import('@/lib/db/neon')
-    const mockVectorSearch = vi.mocked(vectorSearch)
+    const { searchVectorStore } = await import('../vector-store')
+    const mockVectorSearch = vi.mocked(searchVectorStore)
 
     const query = 'Test query'
     const workspaceId = 'specific-workspace-123'

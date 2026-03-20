@@ -92,7 +92,27 @@ BETTER_AUTH_ENABLED=true
 NEXT_PUBLIC_BETTER_AUTH_ENABLED=true
 ANTHROPIC_API_KEY=sk-ant-...
 GROQ_API_KEY=gsk_...
+RAG_VECTOR_BACKEND=pgvector
+RAG_EMBEDDING_BACKEND=local
+RAG_SIMILARITY_THRESHOLD=0.7
+RAG_TOP_K=5
 ```
+
+Preparado para escalar a futuro con Pinecone + Gemini embeddings:
+
+```bash
+GOOGLE_AI_API_KEY=...
+GEMINI_EMBEDDING_MODEL=gemini-embedding-001
+GEMINI_GENERATION_MODEL=gemini-2.0-flash
+PINECONE_API_KEY=...
+PINECONE_INDEX_NAME=gemini-rag
+```
+
+Notas:
+
+- El backend operativo actual sigue siendo `Neon + pgvector`.
+- La configuración futura `Pinecone + Gemini embeddings` queda preparada, pero no activada por defecto.
+- Mientras `RAG_VECTOR_BACKEND=pgvector`, la compatibilidad soportada es `RAG_EMBEDDING_BACKEND=local`.
 
 ### Instalacion
 
