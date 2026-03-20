@@ -1,7 +1,7 @@
 "use client"
 
 import { useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import {
   CheckCircle2,
   Copy,
@@ -82,7 +82,7 @@ const strategicPresets = [
   },
 ] as const
 
-export default function StudioPage() {
+function StudioPageContent() {
   const searchParams = useSearchParams()
   const [title, setTitle] = useState("")
   const [contentType, setContentType] = useState<string>("blog")
@@ -662,5 +662,23 @@ export default function StudioPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function StudioPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid gap-6 xl:grid-cols-[1.05fr_1.05fr_1.2fr]">
+          <Card className="xl:col-span-3">
+            <CardContent className="flex min-h-[520px] items-center justify-center">
+              <div className="text-sm text-muted-foreground">Cargando Content Studio...</div>
+            </CardContent>
+          </Card>
+        </div>
+      }
+    >
+      <StudioPageContent />
+    </Suspense>
   )
 }
