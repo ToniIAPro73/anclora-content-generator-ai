@@ -263,7 +263,7 @@ export default function StudioPage() {
                 key={preset.label}
                 type="button"
                 onClick={() => applyPreset(index)}
-                className="w-full rounded-xl border border-border/70 bg-background/70 p-4 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
+                className="surface-card-inner w-full rounded-xl border bg-background/70 p-4 text-left transition-colors hover:border-primary/30 hover:bg-primary/5"
               >
                 <p className="font-medium text-foreground">{preset.label}</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
@@ -355,7 +355,7 @@ export default function StudioPage() {
               "La pieza incluye una audiencia concreta y una siguiente accion clara.",
               "La consulta RAG refleja el dato o evento que justifica el contenido.",
             ].map((item) => (
-              <div key={item} className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/40 p-4">
+              <div key={item} className="surface-card-inner flex items-start gap-3 rounded-xl border bg-muted/40 p-4">
                 <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
                 <p className="text-sm leading-relaxed text-muted-foreground">{item}</p>
               </div>
@@ -442,7 +442,7 @@ export default function StudioPage() {
                     "Especifica audiencia y objetivo para que el output no sea generico.",
                     "Guarda la pieza final como base para derivadas por canal.",
                   ].map((tip) => (
-                    <div key={tip} className="rounded-xl border border-border/70 bg-background/70 p-4 text-sm text-muted-foreground">
+                    <div key={tip} className="surface-card-inner rounded-xl border bg-background/70 p-4 text-sm text-muted-foreground">
                       {tip}
                     </div>
                   ))}
@@ -501,7 +501,7 @@ export default function StudioPage() {
                           : "Sin RAG",
                       },
                     ].map((item) => (
-                      <div key={item.label} className="rounded-xl border border-border/70 bg-background/70 p-4">
+                      <div key={item.label} className="surface-card-inner rounded-xl border bg-background/70 p-4">
                         <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                           {item.label}
                         </p>
@@ -510,7 +510,7 @@ export default function StudioPage() {
                     ))}
                   </div>
 
-                  <div className="rounded-xl border border-border/70 bg-muted/40 p-4">
+                  <div className="surface-card-inner rounded-xl border bg-muted/40 p-4">
                     <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
                       Fuentes recuperadas
                     </p>
