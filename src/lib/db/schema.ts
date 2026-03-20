@@ -156,6 +156,23 @@ export const contentTemplates = pgTable('content_templates', {
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 })
 
+export const workspaceSettings = pgTable('workspace_settings', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  workspaceId: uuid('workspace_id').notNull().unique(),
+  workspaceName: text('workspace_name').notNull(),
+  workspaceDescription: text('workspace_description'),
+  editorialSystemPrompt: text('editorial_system_prompt').notNull(),
+  defaultProvider: text('default_provider').default('anthropic').notNull(),
+  defaultModel: text('default_model').default('claude-sonnet-4-6').notNull(),
+  defaultTemperature: real('default_temperature').default(0.7).notNull(),
+  defaultTopP: real('default_top_p').default(0.9).notNull(),
+  ragChunkSize: integer('rag_chunk_size').default(512).notNull(),
+  ragTopK: integer('rag_top_k').default(5).notNull(),
+  similarityThreshold: real('similarity_threshold').default(0.7).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
 export const generatedContent = pgTable('generated_content', {
   id: uuid('id').defaultRandom().primaryKey(),
   workspaceId: uuid('workspace_id').notNull(),
@@ -272,6 +289,9 @@ export type ContentOpportunityInsert = typeof contentOpportunities.$inferInsert
 
 export type ContentTemplate = typeof contentTemplates.$inferSelect
 export type ContentTemplateInsert = typeof contentTemplates.$inferInsert
+
+export type WorkspaceSettings = typeof workspaceSettings.$inferSelect
+export type WorkspaceSettingsInsert = typeof workspaceSettings.$inferInsert
 
 export type GeneratedContent = typeof generatedContent.$inferSelect
 export type GeneratedContentInsert = typeof generatedContent.$inferInsert

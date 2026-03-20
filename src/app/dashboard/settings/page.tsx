@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   BookOpen,
   Bot,
@@ -107,29 +107,61 @@ export default function SettingsPage() {
   const [temperature, setTemperature] = useState('0.7')
   const [topP, setTopP] = useState('0.9')
   const [savedMsg, setSavedMsg] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSavingWorkspace, setIsSavingWorkspace] = useState(false)
+  const [isSavingModel, setIsSavingModel] = useState(false)
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false)
 
-  const existingTemplates = [
-    {
-      name: 'Founder LinkedIn Thesis',
-      type: 'linkedin',
-      intent: 'Thought leadership con tesis y CTA consultivo',
-    },
-    {
-      name: 'Market Intelligence Article',
-      type: 'blog',
-      intent: 'Pieza ancla para SEO, autoridad y captación',
-    },
-    {
-      name: 'Investor Brief',
-      type: 'newsletter',
-      intent: 'Resumen ejecutivo para capital paciente',
-    },
-  ]
+  const [existingTemplates, setExistingTemplates] = useState<Array<{
+    id?: string
+    name: string
+    type: string
+    intent: string
+  }>>([])
 
   function showSaved(message: string) {
     setSavedMsg(message)
     window.setTimeout(() => setSavedMsg(''), 2400)
   }
+
+  useEffect(() => {
+    void (async () => {
+      try {
+        const [settingsResponse, templatesResponse] = await Promise.all([
+          fetch('/api/workspace/settings'),
+          fetch('/api/content/templates'),
+        ])
+
+        if (settingsResponse.ok) {
+          const payload = await settingsResponse.json()
+          const settings = payload.settings
+          if (settings) {
+            setWorkspaceName(settings.workspaceName ?? 'Anclora Content Generator AI')
+            setWorkspaceDescription(settings.workspaceDescription ?? '')
+            setSystemPrompt(settings.editorialSystemPrompt ?? '')
+            setDefaultProvider(settings.defaultProvider ?? 'anthropic')
+            setDefaultModel(settings.defaultModel ?? 'claude-sonnet-4-6')
+            setTemperature(String(settings.defaultTemperature ?? 0.7))
+            setTopP(String(settings.defaultTopP ?? 0.9))
+          }
+        }
+
+        if (templatesResponse.ok) {
+          const payload = await templatesResponse.json()
+          setExistingTemplates(
+            (payload.templates ?? []).map((template: { id: string; name: string; contentType: string; description?: string | null }) => ({
+              id: template.id,
+              name: template.name,
+              type: template.contentType,
+              intent: template.description || 'Plantilla editorial persistida en el workspace.',
+            }))
+          )
+        }
+      } finally {
+        setIsLoading(false)
+      }
+    })()
+  }, [])
 
   const readiness = useMemo(() => {
     const configuredProviders = [anthropicKey, groqKey].filter(Boolean).length
@@ -147,6 +179,108 @@ export default function SettingsPage() {
       tone: (score >= 4 ? 'good' : score >= 3 ? 'warning' : 'neutral') as 'good' | 'warning' | 'neutral',
     }
   }, [anthropicKey, groqKey, systemPrompt, workspaceDescription, workspaceName])
+
+  async function saveWorkspaceIdentity() {
+    setIsSavingWorkspace(true)
+
+    try {
+      const response = await fetch('/api/workspace/settings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workspaceName,
+          workspaceDescription,
+          editorialSystemPrompt: systemPrompt,
+          defaultProvider,
+          defaultModel,
+          defaultTemperature: Number(temperature),
+          defaultTopP: Number(topP),
+          ragChunkSize: 512,
+          ragTopK: 5,
+          similarityThreshold: 0.7,
+        }),
+      })
+
+      if (response.ok) {
+        showSaved('Identidad del workspace actualizada')
+      }
+    } finally {
+      setIsSavingWorkspace(false)
+    }
+  }
+
+  async function saveModelPosture() {
+    setIsSavingModel(true)
+
+    try {
+      const response = await fetch('/api/workspace/settings', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workspaceName,
+          workspaceDescription,
+          editorialSystemPrompt: systemPrompt,
+          defaultProvider,
+          defaultModel,
+          defaultTemperature: Number(temperature),
+          defaultTopP: Number(topP),
+          ragChunkSize: 512,
+          ragTopK: 5,
+          similarityThreshold: 0.7,
+        }),
+      })
+
+      if (response.ok) {
+        showSaved('Stack de modelos actualizado')
+      }
+    } finally {
+      setIsSavingModel(false)
+    }
+  }
+
+  async function saveTemplate() {
+    if (!templateName.trim() || !systemPrompt.trim()) return
+
+    setIsSavingTemplate(true)
+    try {
+      const response = await fetch('/api/content/templates', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: templateName,
+          contentType: templateType,
+          systemPrompt,
+          description: `Plantilla ${templateType} para el cockpit editorial de Anclora.`,
+        }),
+      })
+
+      if (response.ok) {
+        const payload = await response.json()
+        if (payload.template) {
+          setExistingTemplates((prev) => [
+            ...prev,
+            {
+              id: payload.template.id,
+              name: payload.template.name,
+              type: payload.template.contentType,
+              intent: payload.template.description || 'Plantilla editorial persistida en el workspace.',
+            },
+          ])
+        }
+        setTemplateName('')
+        setTemplateType('blog')
+        showSaved('Plantilla editorial guardada')
+      }
+    } finally {
+      setIsSavingTemplate(false)
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -247,7 +381,7 @@ export default function SettingsPage() {
                 />
               </div>
               <Button onClick={() => showSaved('Identidad del workspace actualizada')} className="w-full">
-                Guardar identidad
+                {isSavingWorkspace ? 'Guardando...' : 'Guardar identidad'}
               </Button>
             </div>
           </SectionCard>
@@ -342,7 +476,7 @@ export default function SettingsPage() {
             </div>
 
             <Button onClick={() => showSaved('Stack de modelos actualizado')} className="mt-4 w-full">
-              Guardar postura del modelo
+              {isSavingModel ? 'Guardando...' : 'Guardar postura del modelo'}
             </Button>
           </SectionCard>
 
@@ -435,8 +569,8 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={() => showSaved('Plantilla editorial guardada')} className="w-full">
-                Guardar plantilla
+              <Button onClick={() => void saveTemplate()} disabled={isSavingTemplate || !templateName.trim()} className="w-full">
+                {isSavingTemplate ? 'Guardando...' : 'Guardar plantilla'}
               </Button>
             </div>
           </SectionCard>
@@ -456,6 +590,13 @@ export default function SettingsPage() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{template.intent}</p>
                 </SurfaceCard>
               ))}
+              {!existingTemplates.length && !isLoading ? (
+                <SurfaceCard variant="inner" className="border bg-background/70 p-4">
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Aún no hay plantillas persistidas en este workspace. Crea la primera desde este panel.
+                  </p>
+                </SurfaceCard>
+              ) : null}
             </div>
           </SectionCard>
         </TabsContent>

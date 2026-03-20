@@ -64,6 +64,23 @@ export interface ContentTemplate {
   updated_at: string
 }
 
+export interface WorkspaceSettings {
+  id: string
+  workspace_id: string
+  workspace_name: string
+  workspace_description?: string
+  editorial_system_prompt: string
+  default_provider: string
+  default_model: string
+  default_temperature: number
+  default_top_p: number
+  rag_chunk_size: number
+  rag_top_k: number
+  similarity_threshold: number
+  created_at: string
+  updated_at: string
+}
+
 export interface TemplateConfig {
   max_tokens?: number
   temperature?: number
@@ -188,6 +205,9 @@ export type KnowledgeChunkUpdate = Partial<KnowledgeChunkInsert>
 export type ContentTemplateInsert = Omit<ContentTemplate, 'id' | 'created_at' | 'updated_at'>
 export type ContentTemplateUpdate = Partial<ContentTemplateInsert>
 
+export type WorkspaceSettingsInsert = Omit<WorkspaceSettings, 'id' | 'created_at' | 'updated_at'>
+export type WorkspaceSettingsUpdate = Partial<WorkspaceSettingsInsert>
+
 export type GeneratedContentInsert = Omit<GeneratedContent, 'id' | 'created_at' | 'updated_at'>
 export type GeneratedContentUpdate = Partial<GeneratedContentInsert>
 
@@ -236,6 +256,11 @@ export interface Database {
         Row: ContentTemplate
         Insert: ContentTemplateInsert
         Update: ContentTemplateUpdate
+      }
+      workspace_settings: {
+        Row: WorkspaceSettings
+        Insert: WorkspaceSettingsInsert
+        Update: WorkspaceSettingsUpdate
       }
       generated_content: {
         Row: GeneratedContent
