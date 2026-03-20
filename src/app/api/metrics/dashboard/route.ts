@@ -7,7 +7,7 @@
  * Date: 2026-03-19
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
 
 export const runtime = 'nodejs'
@@ -24,7 +24,7 @@ const EMPTY_METRICS = {
   recentActivity: [],
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { workspaceId } = await getAuthenticatedWorkspace()
 

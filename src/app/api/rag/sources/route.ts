@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import { getAuthenticatedWorkspace, WorkspaceAuthError } from '@/lib/auth/workspace'
 import { createIndexedSource } from '@/lib/rag/source-ingestion'
 
 export const runtime = 'nodejs'
 
 // GET /api/rag/sources
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const { workspaceId } = await getAuthenticatedWorkspace()
 

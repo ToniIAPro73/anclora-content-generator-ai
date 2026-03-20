@@ -12,7 +12,7 @@ import { generateLocalEmbeddings } from '../embeddings'
 // Mock the Transformers.js pipeline
 vi.mock('@huggingface/transformers', async () => {
   return {
-    pipeline: vi.fn(() => async (text: string) => {
+    pipeline: vi.fn(() => async () => {
       // Return a mock embedding of 384 dimensions (same as all-MiniLM-L6-v2)
       return {
         data: new Float32Array(384).fill(0.5),
