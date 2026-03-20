@@ -117,6 +117,13 @@ export async function GET(request: NextRequest) {
               contentId: leadTracking.contentId,
               leadsTracked: sql<number>`COUNT(*)`,
               convertedLeads: sql<number>`COUNT(*) FILTER (WHERE ${leadTracking.status} = 'converted')`,
+              newLeads: sql<number>`COUNT(*) FILTER (WHERE ${leadTracking.status} = 'new')`,
+              contactedLeads: sql<number>`COUNT(*) FILTER (WHERE ${leadTracking.status} = 'contacted')`,
+              qualifiedLeads: sql<number>`COUNT(*) FILTER (WHERE ${leadTracking.status} = 'qualified')`,
+              lostLeads: sql<number>`COUNT(*) FILTER (WHERE ${leadTracking.status} = 'lost')`,
+              scoreA: sql<number>`COUNT(*) FILTER (WHERE ${leadTracking.score} = 'A')`,
+              scoreB: sql<number>`COUNT(*) FILTER (WHERE ${leadTracking.score} = 'B')`,
+              scoreC: sql<number>`COUNT(*) FILTER (WHERE ${leadTracking.score} = 'C')`,
             })
             .from(leadTracking)
             .where(
@@ -149,6 +156,13 @@ export async function GET(request: NextRequest) {
         {
           leadsTracked: Number(row.leadsTracked ?? 0),
           convertedLeads: Number(row.convertedLeads ?? 0),
+          newLeads: Number(row.newLeads ?? 0),
+          contactedLeads: Number(row.contactedLeads ?? 0),
+          qualifiedLeads: Number(row.qualifiedLeads ?? 0),
+          lostLeads: Number(row.lostLeads ?? 0),
+          scoreA: Number(row.scoreA ?? 0),
+          scoreB: Number(row.scoreB ?? 0),
+          scoreC: Number(row.scoreC ?? 0),
         },
       ])
     )
@@ -164,6 +178,17 @@ export async function GET(request: NextRequest) {
         engagementRate: performanceByContent.get(item.id)?.engagementRate ?? 0,
         leadsTracked: leadsByContent.get(item.id)?.leadsTracked ?? 0,
         convertedLeads: leadsByContent.get(item.id)?.convertedLeads ?? 0,
+        leadStatus: {
+          new: leadsByContent.get(item.id)?.newLeads ?? 0,
+          contacted: leadsByContent.get(item.id)?.contactedLeads ?? 0,
+          qualified: leadsByContent.get(item.id)?.qualifiedLeads ?? 0,
+          lost: leadsByContent.get(item.id)?.lostLeads ?? 0,
+        },
+        leadScore: {
+          A: leadsByContent.get(item.id)?.scoreA ?? 0,
+          B: leadsByContent.get(item.id)?.scoreB ?? 0,
+          C: leadsByContent.get(item.id)?.scoreC ?? 0,
+        },
       },
     }))
 

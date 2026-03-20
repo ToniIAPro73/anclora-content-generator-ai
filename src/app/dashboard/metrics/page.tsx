@@ -35,6 +35,7 @@ interface LibraryContentItem {
   content: string
   contentType: string
   status: string
+  createdAt: string
   updatedAt: string
   scheduledFor?: string | null
   publishedAt?: string | null
@@ -47,6 +48,17 @@ interface LibraryContentItem {
     engagementRate: number
     leadsTracked: number
     convertedLeads: number
+    leadStatus?: {
+      new: number
+      contacted: number
+      qualified: number
+      lost: number
+    }
+    leadScore?: {
+      A: number
+      B: number
+      C: number
+    }
   }
 }
 
@@ -537,10 +549,58 @@ export default function MetricsPage() {
                         ))}
                       </div>
 
-                      <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
-                        Última actualización editorial {new Date(selectedContent.updatedAt).toLocaleString('es-ES')}
-                        {selectedContent.publishedAt ? ` · Publicado ${new Date(selectedContent.publishedAt).toLocaleDateString('es-ES')}` : ''}
-                      </p>
+                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                        <SurfaceCard variant="inner" className="rounded-lg border bg-background/70 px-4 py-4">
+                          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Timeline editorial</p>
+                          <div className="mt-3 space-y-3 text-xs text-muted-foreground">
+                            <div className="flex items-center justify-between gap-3">
+                              <span>Creado</span>
+                              <span>{new Date(selectedContent.createdAt).toLocaleString('es-ES')}</span>
+                            </div>
+                            <div className="flex items-center justify-between gap-3">
+                              <span>Última actualización</span>
+                              <span>{new Date(selectedContent.updatedAt).toLocaleString('es-ES')}</span>
+                            </div>
+                            {selectedContent.scheduledFor ? (
+                              <div className="flex items-center justify-between gap-3">
+                                <span>Programado</span>
+                                <span>{new Date(selectedContent.scheduledFor).toLocaleString('es-ES')}</span>
+                              </div>
+                            ) : null}
+                            {selectedContent.publishedAt ? (
+                              <div className="flex items-center justify-between gap-3">
+                                <span>Publicado</span>
+                                <span>{new Date(selectedContent.publishedAt).toLocaleString('es-ES')}</span>
+                              </div>
+                            ) : null}
+                          </div>
+                        </SurfaceCard>
+
+                        <SurfaceCard variant="inner" className="rounded-lg border bg-background/70 px-4 py-4">
+                          <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Lead attribution</p>
+                          <div className="mt-3 space-y-3 text-xs text-muted-foreground">
+                            {[
+                              { label: 'New', value: selectedContent.performance?.leadStatus?.new ?? 0 },
+                              { label: 'Contacted', value: selectedContent.performance?.leadStatus?.contacted ?? 0 },
+                              { label: 'Qualified', value: selectedContent.performance?.leadStatus?.qualified ?? 0 },
+                              { label: 'Lost', value: selectedContent.performance?.leadStatus?.lost ?? 0 },
+                            ].map((item) => (
+                              <div key={item.label} className="flex items-center justify-between gap-3">
+                                <span>{item.label}</span>
+                                <span className="font-medium text-foreground">{item.value}</span>
+                              </div>
+                            ))}
+                            <div className="border-t border-border/70 pt-3">
+                              <div className="flex items-center justify-between gap-3">
+                                <span>Score A / B / C</span>
+                                <span className="font-medium text-foreground">
+                                  {(selectedContent.performance?.leadScore?.A ?? 0)} / {(selectedContent.performance?.leadScore?.B ?? 0)} / {(selectedContent.performance?.leadScore?.C ?? 0)}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        </SurfaceCard>
+                      </div>
 
                       <div className="mt-4 flex flex-wrap gap-2">
                         <Link href={`/dashboard/studio?contentId=${selectedContent.id}`}>

@@ -324,6 +324,23 @@
         "Studio capaz de abrir contenido existente por contentId",
         "Resumen de rendimiento visible dentro del Output Panel"
       ]
+    },
+    {
+      "id": 18,
+      "title": "Abrir timeline editorial y lead attribution por pieza",
+      "description": "Completar el drilldown de Metrics con timeline editorial, breakdown de leads por estado y lectura de score comercial por pieza.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [17],
+      "priority": "HIGH",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-007",
+      "deliverables": [
+        "GET /api/content/library enriquecido con lead attribution",
+        "Metrics con timeline editorial por pieza",
+        "Breakdown A/B/C y estados de lead en el detalle operativo"
+      ]
     }
   ]
 }
