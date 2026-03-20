@@ -25,6 +25,7 @@ La app ya muestra métricas, cola programada y rendimiento por pieza, pero el op
 3. Mostrar esas recomendaciones en Dashboard como capa superior de cockpit
 4. Enlazar cada recomendación a una acción real dentro del producto
 5. Abrir Studio en modo de accion asistida cuando la recomendacion implique revisar, refrescar, derivar o programar una pieza
+6. Explicar tambien el impacto esperado para que el operador entienda por que merece ejecutar la accion
 
 ## Criterios de aceptación
 
@@ -32,6 +33,7 @@ La app ya muestra métricas, cola programada y rendimiento por pieza, pero el op
 - Cada recomendación explica el porqué con lenguaje operativo y no opaco
 - Cada recomendación tiene CTA navegable dentro de la app
 - Las recomendaciones editoriales abren Studio con un plan de accion visible y contexto precargado cuando aplica
+- Cada recomendacion explicita tambien el impacto esperado de ejecutar esa accion
 - No se ejecuta ninguna automatización destructiva sin confirmación humana
 - `lint` y `build` pasan
 

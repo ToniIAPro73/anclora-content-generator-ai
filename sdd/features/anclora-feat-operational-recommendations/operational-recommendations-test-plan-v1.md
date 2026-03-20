@@ -19,5 +19,6 @@ Validar que la primera capa de automatizacion prudente traduzca senales reales d
 7. Dashboard renderiza las recomendaciones si existen y cae al bloque de senales de mercado si no existen.
 8. Ninguna recomendacion ejecuta cambios persistentes sin accion humana explicita.
 9. Las recomendaciones que apuntan a Studio abren con una accion sugerida visible y contexto precargado cuando aplica.
-10. `npm run lint` pasa.
-11. `npm run build` pasa.
+10. Dashboard muestra tambien el impacto esperado de ejecutar cada recomendacion.
+11. `npm run lint` pasa.
+12. `npm run build` pasa.

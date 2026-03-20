@@ -1,6 +1,6 @@
 {
   "project": "Anclora Content Generator AI",
-  "fase_actual": "FASE 5: Automatizacion y recomendaciones operativas",
+  "fase_actual": "FASE 5 CERRADA: Automatizacion y recomendaciones operativas",
   "members": [
     {
       "id": "anclorabot",
@@ -391,6 +391,23 @@
         "Recomendaciones con actionSummary y CTA asistido",
         "Studio con modo siguiente accion sugerida",
         "Cierre de la primera iteracion operativa de Fase 5"
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Cerrar Fase 5 en baseline operativo",
+      "description": "Añadir impacto esperado a las recomendaciones asistidas, cerrar el loop Dashboard -> Studio y rebaselinar el roadmap como automatizacion prudente ya operativa.",
+      "status": "COMPLETED",
+      "plan_approved": true,
+      "assigned_to": "anclorabot",
+      "dependencies": [21],
+      "priority": "HIGH",
+      "estimated_hours": "1-2",
+      "feature": "ANCLORA-FEAT-008",
+      "deliverables": [
+        "Recomendaciones con impacto esperado",
+        "Studio con contexto completo de accion asistida",
+        "Fase 5 cerrada en tablero y documento"
       ]
     }
   ]

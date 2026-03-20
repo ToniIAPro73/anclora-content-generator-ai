@@ -96,6 +96,7 @@ function StudioPageContent() {
   const searchParams = useSearchParams()
   const automationSource = searchParams.get("automationSource")
   const automationAction = searchParams.get("automationAction")
+  const automationImpact = searchParams.get("automationImpact")
   const [title, setTitle] = useState("")
   const [contentType, setContentType] = useState<string>("blog")
   const [templateId, setTemplateId] = useState("")
@@ -320,6 +321,11 @@ function StudioPageContent() {
             <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
               {automationAction}
             </p>
+            {automationImpact ? (
+              <p className="mt-2 text-xs font-medium text-primary/90">
+                Impacto esperado: {automationImpact}
+              </p>
+            ) : null}
           </SurfaceCard>
         ) : null}
 

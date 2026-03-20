@@ -57,6 +57,7 @@ interface OperationalRecommendation {
   reason: string
   metric: string
   actionSummary: string
+  expectedImpact: string
   href: string
   hrefLabel: string
 }
@@ -331,6 +332,7 @@ export default function DashboardPage() {
                   </p>
                   <p className="mt-3 text-xs text-muted-foreground">{item.metric}</p>
                   <p className="mt-2 text-xs font-medium text-primary/90">{item.actionSummary}</p>
+                  <p className="mt-2 text-xs text-muted-foreground">Impacto esperado: {item.expectedImpact}</p>
                   <div className="mt-3">
                     <Link href={item.href}>
                       <Button size="sm" variant="outline">

@@ -108,7 +108,7 @@ Esto ya se ha corregido para que el dashboard siga siendo un shell contenido, si
 - Fase 2 avanzada parcialmente: shell, sidebar, studio, dashboard y RAG ya operan con una narrativa menos generica.
 - Fase 3 muy avanzada: knowledge packs, ingesta documental, oportunidades editoriales, trazabilidad `oportunidad -> studio -> draft` y especializacion por categoria de fuente.
 - Fase 4 muy avanzada: ciclo editorial persistido, cola programada, drilldown por pieza y comparativa temporal ya operativos.
-- Fase 5 abierta: primera capa de recomendaciones operativas auditables sobre señales reales del sistema.
+- Fase 5 cerrada en baseline operativo: recomendaciones auditables y acciones asistidas ya conectan Dashboard, Studio y RAG sin automatizacion destructiva.
 
 ## Roadmap recomendado
 
@@ -186,6 +186,7 @@ Estado actual:
 - Las sugerencias se generan desde backlog editorial, vacios de programacion, rendimiento comercial y densidad de conocimiento.
 - Las acciones siguen siendo humanas: el sistema recomienda y enlaza, pero no ejecuta cambios destructivos por su cuenta.
 - El Studio ya puede abrir en modo de accion asistida con contexto precargado desde la recomendacion.
+- La fase queda cerrada como automatizacion prudente sobre el core editorial, no como autonomia completa de publicacion.
 
 ## Decisiones de producto recomendadas
 
