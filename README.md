@@ -79,6 +79,16 @@ Estado del roadmap a 2026-03-20:
 - npm
 - Base de datos Neon PostgreSQL
 
+## Contratos UX/UI
+
+Lectura mínima antes de tocar interfaz:
+
+1. `docs/standards/ANCLORA_ECOSYSTEM_CONTRACT_GROUPS.md`
+2. `docs/standards/ANCLORA_INTERNAL_APP_CONTRACT.md`
+3. `docs/standards/UI_MOTION_CONTRACT.md`
+4. `docs/standards/MODAL_CONTRACT.md`
+5. `docs/standards/LOCALIZATION_CONTRACT.md`
+
 ### Variables de entorno
 
 Configura `.env.local` con:
