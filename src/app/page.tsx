@@ -13,6 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { SurfaceCard } from "@/components/ui/surface-card"
+import { CONTENT_GENERATOR_LOGO_SRC } from "@/lib/brand"
 
 export const metadata: Metadata = {
   title: "Anclora Content Generator AI",
@@ -75,7 +76,7 @@ export default function HomePage() {
       <header className="relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-6 lg:px-10">
         <Link href="/" className="flex items-center gap-4">
           <Image
-            src="/logo-content-generator.png"
+            src={CONTENT_GENERATOR_LOGO_SRC}
             alt="Anclora Content Generator AI"
             width={56}
             height={56}
@@ -116,7 +117,7 @@ export default function HomePage() {
         <div className="relative max-w-3xl">
           <div className="pointer-events-none absolute -left-20 top-4 hidden h-[720px] w-[720px] lg:block">
             <Image
-              src="/logo-content-generator.png"
+              src={CONTENT_GENERATOR_LOGO_SRC}
               alt=""
               fill
               className="object-contain opacity-[0.08]"
@@ -280,7 +281,7 @@ export default function HomePage() {
         >
           <div className="pointer-events-none absolute inset-y-0 right-[-8%] hidden w-[340px] lg:block">
             <Image
-              src="/logo-content-generator.png"
+              src={CONTENT_GENERATOR_LOGO_SRC}
               alt=""
               fill
               className="object-contain opacity-[0.08]"

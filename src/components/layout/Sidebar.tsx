@@ -6,6 +6,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ChevronLeft } from "lucide-react"
 import { dashboardNavLinks } from "@/components/layout/dashboard-nav"
+import { CONTENT_GENERATOR_LOGO_SRC } from "@/lib/brand"
 
 export function Sidebar({
   isCollapsed,
@@ -49,7 +50,7 @@ export function Sidebar({
         >
           <div className="relative h-16 w-16 overflow-hidden transition-transform group-hover:scale-[0.98]">
             <Image
-              src="/logo-content-generator.png"
+              src={CONTENT_GENERATOR_LOGO_SRC}
               alt="Anclora Content Generator AI logo"
               fill
               className="object-contain"

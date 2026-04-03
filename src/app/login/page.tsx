@@ -6,6 +6,7 @@ import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { betterAuthClient } from "@/lib/auth/better-auth-client"
+import { CONTENT_GENERATOR_LOGO_SRC } from "@/lib/brand"
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string): Promise<T> {
   let timeoutId: ReturnType<typeof setTimeout> | undefined
@@ -186,7 +187,7 @@ export default function LoginPage() {
         >
           <div className="relative h-[620px] w-[620px]">
             <Image
-              src="/logo-content-generator.png"
+              src={CONTENT_GENERATOR_LOGO_SRC}
               alt=""
               fill
               className="object-contain"
@@ -200,7 +201,7 @@ export default function LoginPage() {
           <div className="flex items-center gap-3">
             <div className="relative h-10 w-10 overflow-hidden rounded-xl ring-1 ring-white/10">
               <Image
-                src="/logo-content-generator.png"
+                src={CONTENT_GENERATOR_LOGO_SRC}
                 alt="Anclora Content Generator AI logo"
                 fill
                 className="object-cover"
@@ -291,7 +292,7 @@ export default function LoginPage() {
           <div className="flex items-center gap-3 lg:hidden">
             <div className="relative h-10 w-10 overflow-hidden rounded-xl ring-1 ring-white/10">
               <Image
-                src="/logo-content-generator.png"
+                src={CONTENT_GENERATOR_LOGO_SRC}
                 alt="Anclora Content Generator AI logo"
                 fill
                 className="object-cover"
