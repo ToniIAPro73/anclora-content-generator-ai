@@ -60,7 +60,8 @@ const config = {
       },
       fontFamily: {
         sans: ["var(--font-inter)"],
-        heading: ["var(--font-outfit)"],
+        heading: ["var(--font-inter)"],
+        mono: ["var(--font-jetbrains)"],
       },
     },
   },

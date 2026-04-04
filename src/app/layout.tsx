@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { CONTENT_GENERATOR_BRAND } from "@/lib/brand";
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
 });
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
-  title: "Anclora Content Generator AI",
-  description: "Anclora Content Generator AI by Anclora Group",
+  title: CONTENT_GENERATOR_BRAND.name,
+  description: CONTENT_GENERATOR_BRAND.description,
+  icons: {
+    icon: [
+      { url: CONTENT_GENERATOR_BRAND.faviconPath },
+      { url: CONTENT_GENERATOR_BRAND.favicon32Path, sizes: "32x32", type: "image/png" },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -26,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${bricolage.variable} ${dmSans.variable} antialiased font-sans`}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased font-sans`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
