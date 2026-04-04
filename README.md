@@ -79,6 +79,18 @@ Estado del roadmap a 2026-03-20:
 - npm
 - Base de datos Neon PostgreSQL
 
+## Branding canónico
+
+- Familia visual: `Interna`
+- Acento objetivo: `#E06848` coral
+- Tipografía objetivo: `Inter`
+- Tipografía monospace: `JetBrains Mono`
+- Borde de icono: plata cromada
+- Interior de icono: carbón cálido `#1A1410`
+- Prefijo de favicon: `contentgen_`
+- Assets finales: pendientes de sustitución cuando el usuario los entregue
+- Alcance de esta fase: branding estructural alineado al contrato `ANCLORA_BRANDING_*`; icono y paleta definitivos pendientes
+
 ## Contratos UX/UI
 
 Lectura mínima antes de tocar interfaz:
